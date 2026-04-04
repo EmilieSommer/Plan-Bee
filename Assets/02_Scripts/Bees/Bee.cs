@@ -37,6 +37,10 @@ public abstract class Bee : MonoBehaviour
     [Header("Roaming")]
     public float roamRadius = 3f;
 
+    [Header("Stuck Detection")]
+    public float stuckCheckInterval = 0.5f;
+    public float stuckMoveThreshold = 0.05f;
+
     protected Vector2 moveDirection;
     protected Vector2 targetPosition;
     protected Vector2 currentVelocity;
@@ -45,6 +49,10 @@ public abstract class Bee : MonoBehaviour
     protected BeeState currentState;
     protected Rigidbody2D rb;
 
+    // 🔥 Stuck detection
+    private float stuckTimer;
+    private Vector2 lastPosition;
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -52,7 +60,6 @@ public abstract class Bee : MonoBehaviour
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
 
-        // 🔥 CRITICAL: prevents physics from freezing bees
         rb.bodyType = RigidbodyType2D.Kinematic;
 
         currentHealth = maxHealth;
@@ -61,12 +68,16 @@ public abstract class Bee : MonoBehaviour
         homePosition = transform.position;
 
         PickRandomDirection();
+
+        lastPosition = rb.position;
     }
 
     protected virtual void Update()
     {
         if (currentState == BeeState.Dead)
             return;
+
+        CheckIfStuck();
 
         StateUpdate();
     }
@@ -82,10 +93,10 @@ public abstract class Bee : MonoBehaviour
         {
             Vector2 steering = moveDirection * moveSpeed;
 
-            // 🔥 Avoid bees BEFORE collision
+            // Avoid bees
             steering += GetForwardAvoidance();
 
-            // 🔥 Keep spacing
+            // Separation
             steering += GetSeparationForce() * separationStrength;
 
             desiredVelocity = steering;
@@ -100,7 +111,6 @@ public abstract class Bee : MonoBehaviour
 
         currentVelocity = Vector2.ClampMagnitude(currentVelocity, moveSpeed);
 
-        // 🔥 MOVE USING KINEMATIC MOTION (NO FREEZE)
         rb.MovePosition(rb.position + currentVelocity * Time.fixedDeltaTime);
 
         RotateTowardsMovement();
@@ -129,6 +139,10 @@ public abstract class Bee : MonoBehaviour
         }
     }
 
+    // ------------------------
+    // MOVEMENT
+    // ------------------------
+
     protected void MoveToTarget()
     {
         Vector2 toTarget = targetPosition - rb.position;
@@ -155,7 +169,10 @@ public abstract class Bee : MonoBehaviour
         currentVelocity = moveDirection * adjustedSpeed;
     }
 
-    // 🔥 Predictive avoidance (prevents collision freezing)
+    // ------------------------
+    // AVOIDANCE
+    // ------------------------
+
     protected Vector2 GetForwardAvoidance()
     {
         Vector2 forward = currentVelocity;
@@ -183,10 +200,12 @@ public abstract class Bee : MonoBehaviour
                 avoidance += diff.normalized / dist;
         }
 
-        return avoidance.normalized * avoidanceStrength;
+        if (avoidance != Vector2.zero)
+            return avoidance.normalized * avoidanceStrength;
+
+        return Vector2.zero;
     }
 
-    // 🔥 Keeps bees from clustering too tightly
     protected Vector2 GetSeparationForce()
     {
         Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, separationRadius);
@@ -207,6 +226,47 @@ public abstract class Bee : MonoBehaviour
         return force;
     }
 
+    // ------------------------
+    // STUCK SYSTEM
+    // ------------------------
+
+    void CheckIfStuck()
+    {
+        stuckTimer += Time.deltaTime;
+
+        if (stuckTimer >= stuckCheckInterval)
+        {
+            float moved = Vector2.Distance(rb.position, lastPosition);
+
+            if (moved < stuckMoveThreshold)
+            {
+                ResolveStuck();
+            }
+
+            lastPosition = rb.position;
+            stuckTimer = 0f;
+        }
+    }
+
+    void ResolveStuck()
+    {
+        Vector2 randomDir = Random.insideUnitCircle.normalized;
+
+        Vector2 newDir = (moveDirection + randomDir).normalized;
+
+        moveDirection = newDir;
+
+        // Nudge out of overlap
+        rb.MovePosition(rb.position + newDir * 0.2f);
+
+        // Adjust target slightly
+        targetPosition += randomDir * 0.5f;
+    }
+
+    // ------------------------
+    // ROTATION
+    // ------------------------
+
     protected void RotateTowardsMovement()
     {
         if (currentVelocity.sqrMagnitude > 0.01f)
@@ -221,10 +281,29 @@ public abstract class Bee : MonoBehaviour
         moveDirection = Random.insideUnitCircle.normalized;
     }
 
+    // ------------------------
+    // STATES
+    // ------------------------
+
     protected virtual void OnReachedTarget()
     {
         currentState = BeeState.Idle;
     }
+
+    protected virtual void IdleBehavior()
+    {
+        Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
+        targetPosition = homePosition + randomOffset;
+
+        currentState = BeeState.Moving;
+    }
+
+    protected abstract void WorkBehavior();
+    protected abstract void ReturnBehavior();
+
+    // ------------------------
+    // HEALTH
+    // ------------------------
 
     public virtual void TakeDamage(float amount)
     {
@@ -240,16 +319,4 @@ public abstract class Bee : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         Destroy(gameObject);
     }
-
-    // 🐝 ROAMING BEHAVIOR
-    protected virtual void IdleBehavior()
-    {
-        Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
-        targetPosition = homePosition + randomOffset;
-
-        currentState = BeeState.Moving;
-    }
-
-    protected abstract void WorkBehavior();
-    protected abstract void ReturnBehavior();
 }

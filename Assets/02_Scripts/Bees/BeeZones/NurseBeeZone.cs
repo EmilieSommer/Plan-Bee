@@ -12,6 +12,13 @@ public class NurseBeeZone : MonoBehaviour
     private void Awake()
     {
         box = GetComponent<BoxCollider2D>();
+
+        if (box == null)
+        {
+            Debug.LogError("NurseBeeZone: Missing BoxCollider2D!");
+            return;
+        }
+
         box.isTrigger = false;
     }
 
