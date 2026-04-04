@@ -5,7 +5,23 @@ public class Egg : MonoBehaviour
 {
     public static List<Egg> allEggs = new List<Egg>();
 
-    public System.Action OnHatched; // ✅ event
+    public System.Action OnHatched;
+
+    [Header("Egg Settings")]
+    public float hatchTime = 10f;
+
+    private float timer;
+
+    public GameObject beePrefab;
+
+    [Header("Tending")]
+    public float tendSpeedMultiplier = 1f;
+
+    // 🐝 Only ONE nurse allowed
+    private NurseBee currentNurse = null;
+
+    // 🔒 Reservation system (prevents multiple bees targeting same egg)
+    private NurseBee reservedNurse = null;
 
     private void OnEnable()
     {
@@ -17,17 +33,6 @@ public class Egg : MonoBehaviour
         allEggs.Remove(this);
     }
 
-    [Header("Egg Settings")]
-    public float hatchTime = 10f;
-
-    private float timer;
-
-    public GameObject beePrefab;
-
-    [Header("Tending")]
-    public int nursesTending = 0;
-    public float tendSpeedMultiplier = 1f;
-
     private void Start()
     {
         timer = hatchTime;
@@ -35,10 +40,9 @@ public class Egg : MonoBehaviour
 
     private void Update()
     {
-        if (nursesTending > 0)
+        if (currentNurse != null)
         {
-            float speed = nursesTending * tendSpeedMultiplier;
-            timer -= Time.deltaTime * speed;
+            timer -= Time.deltaTime * tendSpeedMultiplier;
 
             if (timer <= 0f)
             {
@@ -47,26 +51,80 @@ public class Egg : MonoBehaviour
         }
     }
 
-    public void AddNurse()
+    // ---------------------------
+    // RESERVATION SYSTEM
+    // ---------------------------
+
+    public bool HasNurse()
     {
-        nursesTending++;
+        return currentNurse != null;
+    }
+
+    public bool IsReserved()
+    {
+        return reservedNurse != null;
+    }
+
+    public bool TryReserve(NurseBee nurse)
+    {
+        if (reservedNurse != null)
+            return false;
+
+        reservedNurse = nurse;
+        return true;
+    }
+
+    public void ClearReservation()
+    {
+        if (currentNurse == null)
+        {
+            reservedNurse = null;
+        }
+    }
+
+    // ---------------------------
+    // NURSE ASSIGNMENT
+    // ---------------------------
+
+    public bool TryAssignNurse(NurseBee nurse)
+    {
+        if (currentNurse != null)
+            return false;
+
+        currentNurse = nurse;
+        return true;
     }
 
     public void RemoveNurse()
     {
-        nursesTending = Mathf.Max(0, nursesTending - 1);
+        currentNurse = null;
+
+        // Only clear reservation if no nurse is present
+        if (reservedNurse != null)
+        {
+            reservedNurse = null;
+        }
     }
+
+    // ---------------------------
+    // STATE
+    // ---------------------------
 
     public bool IsHatched()
     {
         return timer <= 0f;
     }
 
+    // ---------------------------
+    // HATCH
+    // ---------------------------
+
     void Hatch()
     {
-        OnHatched?.Invoke(); // ✅ notify UI before destruction
+        OnHatched?.Invoke();
 
         Instantiate(beePrefab, transform.position, Quaternion.identity);
+
         Destroy(gameObject);
     }
 }

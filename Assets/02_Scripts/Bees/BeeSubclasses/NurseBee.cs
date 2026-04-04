@@ -3,7 +3,7 @@ using UnityEngine;
 public class NurseBee : Bee
 {
     [Header("Nurse Settings")]
-    [SerializeField] private NurseBeeZone assignedZone; // ✅ now assignable in Inspector
+    [SerializeField] private NurseBeeZone assignedZone;
 
     [Header("Work Settings")]
     public float workDistanceThreshold = 1.5f;
@@ -23,13 +23,11 @@ public class NurseBee : Bee
     {
         base.Awake();
 
-        // ✅ Only assign if NOT set in Inspector
         if (assignedZone == null)
         {
             assignedZone = FindObjectOfType<NurseBeeZone>();
         }
 
-        // Set home position
         if (assignedZone != null)
         {
             homePosition = assignedZone.transform.position;
@@ -42,30 +40,36 @@ public class NurseBee : Bee
 
     private void Start()
     {
-        // Debug check
         if (assignedZone == null)
         {
             Debug.LogError("❌ NurseBeeZone NOT assigned on " + gameObject.name);
         }
     }
 
+    // ---------------------------
+    // STATES
+    // ---------------------------
+
     protected override void IdleBehavior()
     {
-        // Keep tending existing egg
+        // 🔁 Keep tending current egg if valid
         if (assignedEgg != null && !assignedEgg.IsHatched())
         {
             MoveToEgg(assignedEgg);
             return;
         }
 
-        // Cleanup invalid egg
+        // 🧹 Clean up if egg is gone
         if (assignedEgg != null)
         {
             assignedEgg.RemoveNurse();
+            assignedEgg = null;
         }
 
-        assignedEgg = FindClosestEgg();
         isTending = false;
+
+        // 🔍 Find a free egg
+        assignedEgg = FindClosestEgg();
 
         if (assignedEgg != null)
         {
@@ -79,7 +83,7 @@ public class NurseBee : Bee
 
     protected override void WorkBehavior()
     {
-        // If egg is gone
+        // ❌ Egg invalid → reset
         if (assignedEgg == null || assignedEgg.IsHatched())
         {
             if (assignedEgg != null)
@@ -95,21 +99,32 @@ public class NurseBee : Bee
 
         float dist = Vector2.Distance(transform.position, assignedEgg.transform.position);
 
-        // Move closer if needed
+        // 🔁 Move closer if needed
         if (dist > workDistanceThreshold)
         {
             MoveToEgg(assignedEgg);
             return;
         }
 
-        // Register as nurse
+        // 🐝 Try to claim egg (ONLY ONE BEE ALLOWED)
         if (!isTending)
         {
-            assignedEgg.AddNurse();
-            isTending = true;
+            if (assignedEgg.TryAssignNurse(this))
+            {
+                isTending = true;
+                Debug.Log($"{name} started nursing {assignedEgg.name}");
+            }
+            else
+            {
+                // ❌ Someone else took it → go idle
+                assignedEgg = null;
+                isTending = false;
+                currentState = BeeState.Idle;
+                return;
+            }
         }
 
-        // Orbit egg
+        // 🔄 Orbit egg
         OrbitEgg();
     }
 
@@ -133,7 +148,7 @@ public class NurseBee : Bee
     }
 
     // ---------------------------
-    // Helpers
+    // HELPERS
     // ---------------------------
 
     private void MoveToEgg(Egg egg)
@@ -142,7 +157,11 @@ public class NurseBee : Bee
 
         Vector2 offset = Random.insideUnitCircle.normalized * 0.3f;
         targetPosition = (Vector2)egg.transform.position + offset;
-        currentState = BeeState.Moving;
+
+        if (currentState != BeeState.Moving)
+        {
+            currentState = BeeState.Moving;
+        }
     }
 
     private Egg FindClosestEgg()
@@ -150,9 +169,15 @@ public class NurseBee : Bee
         Egg closest = null;
         float closestDist = Mathf.Infinity;
 
+        if (Egg.allEggs == null) return null;
+
         foreach (Egg egg in Egg.allEggs)
         {
             if (egg == null || egg.IsHatched())
+                continue;
+
+            // 🚫 Skip eggs that already have a nurse
+            if (egg.HasNurse())
                 continue;
 
             float dist = Vector2.Distance(transform.position, egg.transform.position);
@@ -205,6 +230,10 @@ public class NurseBee : Bee
         ) * radius;
 
         targetPosition = (Vector2)assignedEgg.transform.position + offset;
-        currentState = BeeState.Moving;
+
+        if (currentState != BeeState.Moving)
+        {
+            currentState = BeeState.Moving;
+        }
     }
 }
