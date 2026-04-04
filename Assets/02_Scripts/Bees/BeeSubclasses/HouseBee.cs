@@ -2,141 +2,173 @@ using UnityEngine;
 
 public class HouseBee : Bee
 {
-    [Header("Conversion")]
-    public float workDistanceThreshold = 1.5f;
-    public int honeyPerConversion = 1;
+    [Header("Work")]
+    public float workDistance = 1.2f;
+    public float convertTime = 2f;
 
-    [Header("Idle")]
-    public float idleWanderRadius = 2f;
+    [Header("Output")]
+    public GameObject honeyPrefab;
+    public int honeyAmount = 1;
 
-    private HouseBeeZone assignedZone;
-    private Pollen targetPollen;
+    private HouseBeeZone zone;
+    private Pollen target;
 
-    private float idleTimer = 0f;
+    private float workTimer;
+    private bool isWorking = false;
 
     protected override void Awake()
     {
         base.Awake();
 
-        assignedZone = FindObjectOfType<HouseBeeZone>();
+        zone = FindObjectOfType<HouseBeeZone>();
 
-        if (assignedZone != null)
+        if (zone != null)
         {
-            homePosition = assignedZone.transform.position;
+            homePosition = zone.transform.position;
         }
     }
 
     protected override void IdleBehavior()
     {
-        // Try to find pollen
-        targetPollen = FindClosestPollen();
-
-        if (targetPollen != null)
+        // ✅ ONLY pick new target if none
+        if (target == null)
         {
-            MoveToPollen(targetPollen);
-            return;
+            target = FindAvailablePollen();
+
+            if (target != null)
+            {
+                target.isClaimed = true;
+                targetPosition = target.transform.position;
+                currentState = BeeState.Moving;
+                return;
+            }
         }
 
-        // Otherwise wander
-        NormalIdleMovement();
+        // 🐝 No pollen → stay inside zone
+        StayInZone();
     }
 
     protected override void WorkBehavior()
     {
-        // If pollen is gone
-        if (targetPollen == null)
+        if (target == null)
         {
-            currentState = BeeState.Idle;
+            ResetBee();
             return;
         }
 
-        float dist = Vector2.Distance(transform.position, targetPollen.transform.position);
+        float dist = Vector2.Distance(transform.position, target.transform.position);
 
-        if (dist > workDistanceThreshold)
+        // Move closer if needed
+        if (dist > workDistance)
         {
-            MoveToPollen(targetPollen);
+            targetPosition = target.transform.position;
+            currentState = BeeState.Moving;
             return;
         }
 
-        // CONVERT POLLEN
-        ConvertPollen();
+        // Start working
+        if (!isWorking)
+        {
+            isWorking = true;
+            workTimer = convertTime;
+        }
+
+        workTimer -= Time.deltaTime;
+
+        if (workTimer <= 0f)
+        {
+            Convert();
+        }
     }
 
-    void ConvertPollen()
+    protected override void OnReachedTarget()
     {
-        if (targetPollen == null) return;
+        if (target != null)
+        {
+            currentState = BeeState.Working;
+        }
+        else
+        {
+            currentState = BeeState.Idle;
+        }
+    }
 
-        // Convert
-        CurrencyManager.Instance.honey += honeyPerConversion;
+    void Convert()
+    {
+        if (target == null) return;
 
-        // Remove pollen object
-        Destroy(targetPollen.gameObject);
+        // Spawn honey
+        if (honeyPrefab != null)
+        {
+            Instantiate(honeyPrefab, transform.position, Quaternion.identity);
+        }
 
-        targetPollen = null;
+        Destroy(target.gameObject);
 
-        // Go back to idle
+        ResetBee();
+    }
+
+    void ResetBee()
+    {
+        isWorking = false;
+
+        if (target != null)
+        {
+            target.isClaimed = false;
+        }
+
+        target = null;
+
         currentState = BeeState.Idle;
     }
 
-    protected override void ReturnBehavior()
+    // -------------------
+    // Helpers
+    // -------------------
+
+    Pollen FindAvailablePollen()
     {
-        // Not used
-    }
+        Pollen best = null;
+        float bestDist = Mathf.Infinity;
 
-    // ---------------------------
-    // Movement Helpers
-    // ---------------------------
-
-    private void MoveToPollen(Pollen pollen)
-    {
-        if (pollen == null) return;
-
-        targetPosition = pollen.transform.position;
-        currentState = BeeState.Moving;
-    }
-
-    private void NormalIdleMovement()
-    {
-        idleTimer -= Time.deltaTime;
-
-        if (idleTimer <= 0f)
+        foreach (Pollen p in Pollen.allPollen)
         {
-            idleTimer = Random.Range(2f, 5f);
+            if (p == null || p.isClaimed) continue;
 
-            Vector2 randomPoint;
+            float dist = Vector2.Distance(transform.position, p.transform.position);
 
-            if (assignedZone != null)
+            if (dist < bestDist)
             {
-                randomPoint = assignedZone.GetDepositPoint();
+                bestDist = dist;
+                best = p;
             }
-            else
-            {
-                randomPoint = (Vector2)transform.position + Random.insideUnitCircle * idleWanderRadius;
-            }
+        }
 
-            targetPosition = randomPoint;
+        return best;
+    }
+
+    void StayInZone()
+    {
+        if (zone == null) return;
+
+        float dist = Vector2.Distance(transform.position, zone.transform.position);
+
+        // If outside → go back
+        if (dist > zone.depositRadius)
+        {
+            targetPosition = zone.transform.position;
             currentState = BeeState.Moving;
         }
-    }
-
-    private Pollen FindClosestPollen()
-    {
-        Pollen closest = null;
-        float closestDist = Mathf.Infinity;
-
-        foreach (Pollen pollen in Pollen.allPollen)
+        else
         {
-            if (pollen == null) continue;
-
-            float dist = Vector2.Distance(transform.position, pollen.transform.position);
-
-            if (dist < closestDist)
+            // Small idle movement inside zone
+            if (Random.value < 0.01f)
             {
-                closestDist = dist;
-                closest = pollen;
+                targetPosition = zone.GetDepositPoint();
+                currentState = BeeState.Moving;
             }
         }
-
-        return closest;
     }
+
+    protected override void ReturnBehavior() { }
 }

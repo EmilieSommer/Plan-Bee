@@ -5,7 +5,7 @@ public class Pollen : MonoBehaviour
 {
     public static List<Pollen> allPollen = new List<Pollen>();
 
-    public int amount = 5;
+    public bool isClaimed = false; // ✅ IMPORTANT
 
     private void OnEnable()
     {
