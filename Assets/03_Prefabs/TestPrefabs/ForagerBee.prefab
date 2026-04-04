@@ -180,3 +180,6 @@ MonoBehaviour:
   separationRadius: 0.6
   separationStrength: 2
   roamRadius: 3
+  foragingTime: 5
+  pollenPerTrip: 5
+  pollenPrefab: {fileID: 8394943868928672140, guid: 5986bb090b49d574a95f98d4049c739c, type: 3}
