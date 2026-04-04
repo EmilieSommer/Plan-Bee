@@ -19,23 +19,46 @@ public abstract class Bee : MonoBehaviour
 
     [Header("Movement")]
     public float moveSpeed = 2f;
+
+    [Header("Steering")]
+    public float acceleration = 8f;
+    public float turnSpeed = 5f;
+    public float slowRadius = 0.5f;
+
+    [Header("Avoidance")]
+    public float avoidanceLookAhead = 1f;
+    public float avoidanceRadius = 0.5f;
+    public float avoidanceStrength = 5f;
+
+    [Header("Separation")]
+    public float separationRadius = 0.6f;
+    public float separationStrength = 2f;
+
+    [Header("Roaming")]
+    public float roamRadius = 3f;
+
     protected Vector2 moveDirection;
     protected Vector2 targetPosition;
+    protected Vector2 currentVelocity;
+    protected Vector2 homePosition;
 
     protected BeeState currentState;
-
     protected Rigidbody2D rb;
 
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // Ensure correct 2D physics setup
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
 
+        // 🔥 CRITICAL: prevents physics from freezing bees
+        rb.bodyType = RigidbodyType2D.Kinematic;
+
         currentHealth = maxHealth;
         currentState = BeeState.Idle;
+
+        homePosition = transform.position;
 
         PickRandomDirection();
     }
@@ -50,14 +73,37 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
-        if (currentState == BeeState.Moving)
+        if (currentState == BeeState.Dead)
+            return;
+
+        Vector2 desiredVelocity = Vector2.zero;
+
+        if (currentState == BeeState.Moving || currentState == BeeState.Returning)
         {
-            rb.linearVelocity = moveDirection * moveSpeed;
+            Vector2 steering = moveDirection * moveSpeed;
+
+            // 🔥 Avoid bees BEFORE collision
+            steering += GetForwardAvoidance();
+
+            // 🔥 Keep spacing
+            steering += GetSeparationForce() * separationStrength;
+
+            desiredVelocity = steering;
         }
-        else
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
+
+        // Smooth acceleration
+        currentVelocity = Vector2.Lerp(
+            currentVelocity,
+            desiredVelocity,
+            acceleration * Time.fixedDeltaTime
+        );
+
+        currentVelocity = Vector2.ClampMagnitude(currentVelocity, moveSpeed);
+
+        // 🔥 MOVE USING KINEMATIC MOTION (NO FREEZE)
+        rb.MovePosition(rb.position + currentVelocity * Time.fixedDeltaTime);
+
+        RotateTowardsMovement();
     }
 
     protected virtual void StateUpdate()
@@ -77,6 +123,7 @@ public abstract class Bee : MonoBehaviour
                 break;
 
             case BeeState.Returning:
+                MoveToTarget();
                 ReturnBehavior();
                 break;
         }
@@ -84,12 +131,88 @@ public abstract class Bee : MonoBehaviour
 
     protected void MoveToTarget()
     {
-        Vector2 direction = (targetPosition - rb.position).normalized;
-        moveDirection = direction;
+        Vector2 toTarget = targetPosition - rb.position;
+        float distance = toTarget.magnitude;
 
-        if (Vector2.Distance(rb.position, targetPosition) < 0.1f)
+        if (distance < 0.05f)
         {
+            currentVelocity = Vector2.zero;
             OnReachedTarget();
+            return;
+        }
+
+        Vector2 desiredDirection = toTarget.normalized;
+
+        moveDirection = Vector2.Lerp(
+            moveDirection,
+            desiredDirection,
+            turnSpeed * Time.deltaTime
+        ).normalized;
+
+        float speedFactor = Mathf.Clamp01(distance / slowRadius);
+        float adjustedSpeed = moveSpeed * Mathf.Lerp(0.3f, 1f, speedFactor);
+
+        currentVelocity = moveDirection * adjustedSpeed;
+    }
+
+    // 🔥 Predictive avoidance (prevents collision freezing)
+    protected Vector2 GetForwardAvoidance()
+    {
+        Vector2 forward = currentVelocity;
+
+        if (forward.sqrMagnitude < 0.01f)
+            forward = moveDirection;
+
+        forward.Normalize();
+
+        Vector2 futurePosition = (Vector2)transform.position + forward * avoidanceLookAhead;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(futurePosition, avoidanceRadius);
+
+        Vector2 avoidance = Vector2.zero;
+
+        foreach (var hit in hits)
+        {
+            if (hit.gameObject == gameObject) continue;
+            if (!hit.CompareTag("Bee")) continue;
+
+            Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
+            float dist = diff.magnitude;
+
+            if (dist > 0.01f)
+                avoidance += diff.normalized / dist;
+        }
+
+        return avoidance.normalized * avoidanceStrength;
+    }
+
+    // 🔥 Keeps bees from clustering too tightly
+    protected Vector2 GetSeparationForce()
+    {
+        Collider2D[] neighbors = Physics2D.OverlapCircleAll(transform.position, separationRadius);
+        Vector2 force = Vector2.zero;
+
+        foreach (var n in neighbors)
+        {
+            if (n.gameObject == gameObject) continue;
+            if (!n.CompareTag("Bee")) continue;
+
+            Vector2 diff = (Vector2)(transform.position - n.transform.position);
+            float dist = diff.magnitude;
+
+            if (dist > 0.01f)
+                force += diff.normalized / dist;
+        }
+
+        return force;
+    }
+
+    protected void RotateTowardsMovement()
+    {
+        if (currentVelocity.sqrMagnitude > 0.01f)
+        {
+            float angle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg;
+            rb.rotation = angle;
         }
     }
 
@@ -101,23 +224,6 @@ public abstract class Bee : MonoBehaviour
     protected virtual void OnReachedTarget()
     {
         currentState = BeeState.Idle;
-    }
-
-    protected virtual void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (currentState == BeeState.Dead)
-            return;
-
-        if (collision.gameObject.CompareTag("Bee"))
-        {
-            Vector2 normal = collision.contacts[0].normal;
-
-            moveDirection = Vector2.Reflect(moveDirection, normal);
-
-            // Add small randomness so it feels organic
-            moveDirection += Random.insideUnitCircle * 0.2f;
-            moveDirection.Normalize();
-        }
     }
 
     public virtual void TakeDamage(float amount)
@@ -135,7 +241,15 @@ public abstract class Bee : MonoBehaviour
         Destroy(gameObject);
     }
 
-    protected abstract void IdleBehavior();
+    // 🐝 ROAMING BEHAVIOR
+    protected virtual void IdleBehavior()
+    {
+        Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
+        targetPosition = homePosition + randomOffset;
+
+        currentState = BeeState.Moving;
+    }
+
     protected abstract void WorkBehavior();
     protected abstract void ReturnBehavior();
 }
