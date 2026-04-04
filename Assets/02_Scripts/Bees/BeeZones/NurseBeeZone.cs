@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class NurseBeeZone : MonoBehaviour
@@ -6,21 +7,40 @@ public class NurseBeeZone : MonoBehaviour
     private BoxCollider2D box;
 
     [Header("UI")]
-    public GameObject nurseCanvas; // assign in inspector
+    public GameObject nurseCanvas;
 
     private void Awake()
     {
         box = GetComponent<BoxCollider2D>();
-
-        // IMPORTANT: collider must NOT be trigger for OnMouseDown
         box.isTrigger = false;
     }
 
-    private void OnMouseDown()
+    private void Update()
     {
-        if (nurseCanvas != null)
+        // ✅ Open when clicking the zone
+        if (Input.GetMouseButtonDown(0))
         {
-            nurseCanvas.SetActive(true);
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Collider2D hit = Physics2D.OverlapPoint(mousePos);
+
+            if (hit == box)
+            {
+                if (nurseCanvas != null)
+                {
+                    nurseCanvas.SetActive(true);
+                }
+
+                return;
+            }
+
+            // ✅ Close when clicking outside (but NOT on UI)
+            if (nurseCanvas != null && nurseCanvas.activeSelf)
+            {
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                    return;
+
+                nurseCanvas.SetActive(false);
+            }
         }
     }
 

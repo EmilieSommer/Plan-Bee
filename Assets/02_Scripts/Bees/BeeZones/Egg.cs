@@ -5,6 +5,8 @@ public class Egg : MonoBehaviour
 {
     public static List<Egg> allEggs = new List<Egg>();
 
+    public System.Action OnHatched; // ✅ event
+
     private void OnEnable()
     {
         allEggs.Add(this);
@@ -33,7 +35,6 @@ public class Egg : MonoBehaviour
 
     private void Update()
     {
-        // Egg ONLY progresses if nurses are present
         if (nursesTending > 0)
         {
             float speed = nursesTending * tendSpeedMultiplier;
@@ -63,6 +64,8 @@ public class Egg : MonoBehaviour
 
     void Hatch()
     {
+        OnHatched?.Invoke(); // ✅ notify UI before destruction
+
         Instantiate(beePrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }

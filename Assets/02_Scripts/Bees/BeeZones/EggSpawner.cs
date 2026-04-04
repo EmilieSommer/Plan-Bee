@@ -21,7 +21,6 @@ public class EggSpawner : MonoBehaviour
     {
         Instance = this;
 
-        // Initialize dictionary
         eggDictionary = new Dictionary<EggType, GameObject>
         {
             { EggType.Builder, builderEggPrefab },
@@ -32,18 +31,18 @@ public class EggSpawner : MonoBehaviour
         };
     }
 
-    public void SpawnEgg(EggType eggType)
+    public Egg SpawnEgg(EggType eggType) // ✅ now returns Egg
     {
         if (nurseZone == null)
         {
             Debug.LogWarning("NurseZone is not assigned in EggSpawner!");
-            return;
+            return null;
         }
 
         if (!eggDictionary.ContainsKey(eggType))
         {
             Debug.LogWarning("Egg type not found: " + eggType);
-            return;
+            return null;
         }
 
         GameObject prefab = eggDictionary[eggType];
@@ -51,11 +50,13 @@ public class EggSpawner : MonoBehaviour
         if (prefab == null)
         {
             Debug.LogWarning("Prefab not assigned for egg type: " + eggType);
-            return;
+            return null;
         }
 
         Vector2 spawnPosition = nurseZone.GetRandomPoint();
 
-        Instantiate(prefab, spawnPosition, Quaternion.identity);
+        GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
+
+        return obj.GetComponent<Egg>(); // ✅ return Egg component
     }
 }
