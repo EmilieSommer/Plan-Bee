@@ -65,4 +65,12 @@ public class NurseBeeZone : MonoBehaviour
     {
         return box.bounds.Contains(position);
     }
+
+    public void Open()
+    {
+        if (nurseCanvas != null)
+        {
+            nurseCanvas.SetActive(true);
+        }
+    }
 }

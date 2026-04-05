@@ -113,4 +113,13 @@ public class BuildZone : MonoBehaviour
         if (sr != null)
             sr.color = Color.white;
     }
+    public void Open()
+    {
+        if (isBuilt) return;
+
+        if (buildCanvas != null)
+        {
+            buildCanvas.SetActive(true);
+        }
+    }
 }

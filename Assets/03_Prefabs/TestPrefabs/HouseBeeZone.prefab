@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5129865451831949058}
   - component: {fileID: 6658683279110796860}
   - component: {fileID: 234394171973770956}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HouseBeeZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}

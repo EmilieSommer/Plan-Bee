@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5954980087354275548}
   - component: {fileID: 8756220851040593157}
   - component: {fileID: 5279984653362330035}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 8844275805094510114}
   - component: {fileID: 108086142524821948}
   - component: {fileID: 3572632993877536441}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: NurseZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -157,7 +157,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -10
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 0.7019608, b: 1, a: 1}
@@ -240,7 +240,7 @@ GameObject:
   - component: {fileID: 5077455400377563956}
   - component: {fileID: 2479189151512612993}
   - component: {fileID: 1232353429892663014}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Slot1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -317,7 +317,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79a3a65fbb49e5d43bccfc4ff4ef5733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
-  eggType: 0
   isFilled: 0
 --- !u!1 &4365766892331337752
 GameObject:
@@ -330,7 +329,7 @@ GameObject:
   - component: {fileID: 4506442438679441438}
   - component: {fileID: 1742105305606142558}
   - component: {fileID: 8345836781725465457}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -406,7 +405,7 @@ GameObject:
   - component: {fileID: 1414020940144153638}
   - component: {fileID: 8935605086217333682}
   - component: {fileID: 5061186087514451371}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Slot3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -483,7 +482,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79a3a65fbb49e5d43bccfc4ff4ef5733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
-  eggType: 0
   isFilled: 0
 --- !u!1 &6066991612432466545
 GameObject:
@@ -497,7 +495,7 @@ GameObject:
   - component: {fileID: 9163732385846794195}
   - component: {fileID: 6363519416112837426}
   - component: {fileID: 1294583268228095997}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Slot2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -574,7 +572,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79a3a65fbb49e5d43bccfc4ff4ef5733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
-  eggType: 0
   isFilled: 0
 --- !u!1 &6254605146207677757
 GameObject:
@@ -587,7 +584,7 @@ GameObject:
   - component: {fileID: 4522772310110894076}
   - component: {fileID: 2327396733801067470}
   - component: {fileID: 1093375476999519034}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -662,7 +659,7 @@ GameObject:
   - component: {fileID: 4040602517095038501}
   - component: {fileID: 2151606148080905369}
   - component: {fileID: 8651373834092498200}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -738,7 +735,7 @@ GameObject:
   - component: {fileID: 6997696755133312968}
   - component: {fileID: 5699002571715184682}
   - component: {fileID: 8215870557603619481}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: NurseCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -794,7 +791,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_TargetDisplay: 0
 --- !u!114 &5699002571715184682
 MonoBehaviour:
@@ -851,6 +848,10 @@ PrefabInstance:
     - target: {fileID: 3208566500910083778, guid: 1d4911c921dcd4e498176c99db031eee, type: 3}
       propertyPath: m_Name
       value: ForagerEgg
+      objectReference: {fileID: 0}
+    - target: {fileID: 3208566500910083778, guid: 1d4911c921dcd4e498176c99db031eee, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5210305331120311899, guid: 1d4911c921dcd4e498176c99db031eee, type: 3}
       propertyPath: m_Pivot.x
@@ -1034,6 +1035,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NurseEgg
       objectReference: {fileID: 0}
+    - target: {fileID: 247347237616321649, guid: 05f9fc2dadc80fb44acbcb2e2baa0d94, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7444903259170744212, guid: 05f9fc2dadc80fb44acbcb2e2baa0d94, type: 3}
       propertyPath: eggPrefab
       value: 
@@ -1059,6 +1064,10 @@ PrefabInstance:
     - target: {fileID: 4964468044365820909, guid: a4c2142296e042d4ea2409c88ea6d452, type: 3}
       propertyPath: m_Name
       value: BuilderEgg
+      objectReference: {fileID: 0}
+    - target: {fileID: 4964468044365820909, guid: a4c2142296e042d4ea2409c88ea6d452, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 5997267798695451677, guid: a4c2142296e042d4ea2409c88ea6d452, type: 3}
       propertyPath: eggPrefab
@@ -1250,6 +1259,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HouseEgg
       objectReference: {fileID: 0}
+    - target: {fileID: 5871539546133410345, guid: ce2e0dc00f67d724da27686eee27ce01, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1271,6 +1284,10 @@ PrefabInstance:
     - target: {fileID: 916185970961283982, guid: 8d75ffbd4250aab4d83751af64fc389f, type: 3}
       propertyPath: m_Name
       value: DroneEgg
+      objectReference: {fileID: 0}
+    - target: {fileID: 916185970961283982, guid: 8d75ffbd4250aab4d83751af64fc389f, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2503056827118349679, guid: 8d75ffbd4250aab4d83751af64fc389f, type: 3}
       propertyPath: m_Pivot.x
