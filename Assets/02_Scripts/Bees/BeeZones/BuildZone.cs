@@ -1,108 +1,116 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(Collider2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public class BuildZone : MonoBehaviour
 {
-    public float buildProgress = 0f;
-    public float buildRequired = 10f;
+    public GameObject buildCanvas;
 
-    public bool isSelected = false;
-    public bool isBuilt = false;
+    public GameObject nursePrefab;
+    public GameObject housePrefab;
+    public GameObject sleepPrefab;
 
-    public List<BuilderBee> beesInZone = new List<BuilderBee>();
+    private GameObject previewObject;
+    private ConstructionSite currentSite;
 
-    public SpriteRenderer spriteRenderer;
+    private bool isPlacing = false;
+    private bool isBuilt = false;
 
-    void Awake()
+    private void Update()
     {
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+        HandleClick();
 
-    void Update()
-    {
-        // Only build if:
-        // - selected
-        // - bees inside
-        // - not built
-        if (!isSelected || beesInZone.Count == 0 || isBuilt)
-            return;
-
-        float buildSpeed = 0f;
-
-        foreach (var bee in beesInZone)
+        if (isPlacing && Input.GetMouseButtonDown(0))
         {
-            buildSpeed += bee.buildPower;
-        }
-
-        buildProgress += buildSpeed * Time.deltaTime;
-
-        float progress = Mathf.Clamp01(buildProgress / buildRequired);
-
-        Color c = spriteRenderer.color;
-        c.a = Mathf.Lerp(0.2f, 1f, progress);
-        spriteRenderer.color = c;
-
-        if (buildProgress >= buildRequired)
-        {
-            CompleteBuild();
+            ConfirmBuild();
         }
     }
 
-    void CompleteBuild()
+    void HandleClick()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Collider2D hit = Physics2D.OverlapPoint(mousePos);
+
+            if (hit != null && hit.gameObject == gameObject && !isBuilt)
+            {
+                buildCanvas.SetActive(true);
+                return;
+            }
+
+            if (buildCanvas.activeSelf)
+            {
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                    return;
+
+                buildCanvas.SetActive(false);
+            }
+        }
+    }
+
+    // ------------------------
+    // UI BUTTONS
+    // ------------------------
+
+    public void BuildNurse()
+    {
+        BeginPlacement(nursePrefab);
+    }
+
+    public void BuildHouse()
+    {
+        BeginPlacement(housePrefab);
+    }
+
+    public void BuildSleep()
+    {
+        BeginPlacement(sleepPrefab);
+    }
+
+    void BeginPlacement(GameObject prefab)
+    {
+        buildCanvas.SetActive(false);
+
+        // Spawn preview
+        previewObject = Instantiate(prefab, transform.position, Quaternion.identity);
+
+        currentSite = previewObject.AddComponent<ConstructionSite>();
+
+        // 🔥 link the zone
+        currentSite.parentZone = this;
+
+        isPlacing = true;
+
+        // 🔥 disable zone while building
+        DisableZone();
+    }
+
+    void ConfirmBuild()
+    {
+        isPlacing = false;
+
+        BuilderBee.SetActiveSite(currentSite);
+
+        currentSite.StartBuild();
+
         isBuilt = true;
-
-        Color c = spriteRenderer.color;
-        c.a = 1f;
-        spriteRenderer.color = c;
-
-        Debug.Log("Build Complete!");
     }
 
-    public void AssignBee(BuilderBee bee)
+    public void EnableZone()
     {
-        if (!beesInZone.Contains(bee))
-        {
-            beesInZone.Add(bee);
-        }
+        GetComponent<Collider2D>().enabled = true;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.color = Color.white;
     }
 
-    public void RemoveBee(BuilderBee bee)
+    void DisableZone()
     {
-        if (beesInZone.Contains(bee))
-        {
-            beesInZone.Remove(bee);
-        }
-    }
+        GetComponent<Collider2D>().enabled = false;
 
-    // ---------------- TRIGGERS ----------------
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        BuilderBee bee = other.GetComponent<BuilderBee>();
-
-        if (bee != null)
-        {
-            // ONLY assign when physically inside
-            AssignBee(bee);
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        BuilderBee bee = other.GetComponent<BuilderBee>();
-
-        if (bee != null)
-        {
-            RemoveBee(bee);
-        }
-    }
-
-    public bool IsBuilt()
-    {
-        return isBuilt;
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.color = Color.gray;
     }
 }
