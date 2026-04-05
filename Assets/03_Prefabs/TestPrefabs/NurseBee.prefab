@@ -180,6 +180,9 @@ MonoBehaviour:
   separationRadius: 0.6
   separationStrength: 2
   roamRadius: 3
+  stuckCheckInterval: 0.5
+  stuckMoveThreshold: 0.05
+  beeType: 2
   assignedZone: {fileID: 3572632993877536441, guid: b85380bbb4967da4f8e3137b5d695b28, type: 3}
   workDistanceThreshold: 0.5
   idleWanderRadius: 2

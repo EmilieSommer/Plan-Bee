@@ -21,6 +21,9 @@ public class ForagerBee : Bee
     protected override void Awake()
     {
         base.Awake();
+
+        beeType = BeeType.Forager;
+
         StartForaging();
     }
 
@@ -128,4 +131,4 @@ public class ForagerBee : Bee
 
     // REQUIRED BY BASE CLASS
     protected override void WorkBehavior() { }
-}
+}   

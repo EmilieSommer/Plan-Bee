@@ -180,6 +180,12 @@ MonoBehaviour:
   separationRadius: 0.6
   separationStrength: 2
   roamRadius: 3
-  pollenToConvert: 5
-  honeyPerCycle: 1
+  stuckCheckInterval: 0.5
+  stuckMoveThreshold: 0.05
+  beeType: 1
+  workDistance: 1.2
+  convertTime: 2
+  workBuffer: 0.2
   honeyPrefab: {fileID: 251181548223704740, guid: 05a77bb90fdd12846af6728cbfc01ab6, type: 3}
+  honeyAmount: 1
+  searchInterval: 0.5

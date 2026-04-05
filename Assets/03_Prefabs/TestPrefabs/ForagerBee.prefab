@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 855451739703458334}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.57, z: 0}
+  m_LocalPosition: {x: 0, y: 4.57, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -110,7 +110,7 @@ CapsuleCollider2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
+  m_LayerOverridePriority: 1
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -180,6 +180,9 @@ MonoBehaviour:
   separationRadius: 0.6
   separationStrength: 2
   roamRadius: 3
+  stuckCheckInterval: 0.5
+  stuckMoveThreshold: 0.05
+  beeType: 0
   foragingTime: 5
   pollenPerTrip: 5
   pollenPrefab: {fileID: 8394943868928672140, guid: 5986bb090b49d574a95f98d4049c739c, type: 3}

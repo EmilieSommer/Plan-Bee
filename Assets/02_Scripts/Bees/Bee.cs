@@ -53,6 +53,20 @@ public abstract class Bee : MonoBehaviour
     private float stuckTimer;
     private Vector2 lastPosition;
 
+    private bool isLockedOnTarget = false;
+
+    public enum BeeType
+    {
+        Forager,
+        House,
+        Nurse,
+        Drone,
+        Builder,
+    }
+
+    [Header("Bee Type")]
+    public BeeType beeType;
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -84,6 +98,19 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
+       if (currentState == BeeState.Working)
+        {
+            currentVelocity = Vector2.zero;
+
+            // HARD STOP physics
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+
+            // Freeze position completely
+            rb.Sleep();
+
+            return;
+        }
         if (currentState == BeeState.Dead)
             return;
 
@@ -193,11 +220,54 @@ public abstract class Bee : MonoBehaviour
             if (hit.gameObject == gameObject) continue;
             if (!hit.CompareTag("Bee")) continue;
 
-            Vector2 diff = (Vector2)transform.position - (Vector2)hit.transform.position;
+            Bee other = hit.GetComponent<Bee>();
+            if (other == null) continue;
+
+            float strengthMultiplier = 1f;
+
+            // 🔥 DYNAMIC PRIORITY RULES
+
+            // ------------------------
+            // FORAGER BEHAVIOR
+            // ------------------------
+            if (beeType == BeeType.Forager)
+            {
+                // Check if it's a working house bee
+                HouseBee house = other as HouseBee;
+
+                if (house != null && house.IsWorking)
+                {
+                    // ✅ STRONGLY avoid working bees
+                    strengthMultiplier = 4f;
+                }
+                else
+                {
+                    // ✅ ignore non-working house bees
+                    if (other.beeType == BeeType.House)
+                        continue;
+                }
+            }
+
+            // ------------------------
+            // HOUSE BEE BEHAVIOR
+            // ------------------------
+            if (beeType == BeeType.House)
+            {
+                // If THIS bee is working → ignore everything
+                HouseBee self = this as HouseBee;
+                if (self != null && self.IsWorking)
+                    continue;
+
+                // Otherwise yield to foragers
+                if (other.beeType == BeeType.Forager)
+                    strengthMultiplier = 2.5f;
+            }
+
+            Vector2 diff = (Vector2)transform.position - (Vector2)other.transform.position;
             float dist = diff.magnitude;
 
             if (dist > 0.01f)
-                avoidance += diff.normalized / dist;
+                avoidance += (diff.normalized / dist) * strengthMultiplier;
         }
 
         if (avoidance != Vector2.zero)
@@ -216,11 +286,54 @@ public abstract class Bee : MonoBehaviour
             if (n.gameObject == gameObject) continue;
             if (!n.CompareTag("Bee")) continue;
 
-            Vector2 diff = (Vector2)(transform.position - n.transform.position);
+            Bee other = n.GetComponent<Bee>();
+            if (other == null) continue;
+
+            float strengthMultiplier = 1f;
+
+            // ------------------------
+            // FORAGER BEHAVIOR
+            // ------------------------
+            if (beeType == BeeType.Forager)
+            {
+                HouseBee house = other as HouseBee;
+
+                if (house != null && house.IsWorking)
+                {
+                    // ✅ Strongly avoid working house bees
+                    strengthMultiplier = 3.5f;
+                }
+                else
+                {
+                    // ✅ Ignore non-working house bees
+                    if (other.beeType == BeeType.House)
+                        continue;
+                }
+            }
+
+            // ------------------------
+            // HOUSE BEE BEHAVIOR
+            // ------------------------
+            if (beeType == BeeType.House)
+            {
+                HouseBee self = this as HouseBee;
+
+                // ✅ If THIS bee is working → ignore everything
+                if (self != null && self.IsWorking)
+                    continue;
+
+                // ✅ Yield to foragers
+                if (other.beeType == BeeType.Forager)
+                    strengthMultiplier = 2.5f;
+            }
+
+            Vector2 diff = (Vector2)(transform.position - other.transform.position);
             float dist = diff.magnitude;
 
             if (dist > 0.01f)
-                force += diff.normalized / dist;
+            {
+                force += (diff.normalized / dist) * strengthMultiplier;
+            }
         }
 
         return force;

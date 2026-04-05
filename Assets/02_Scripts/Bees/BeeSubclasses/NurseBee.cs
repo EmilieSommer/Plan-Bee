@@ -46,20 +46,14 @@ public class NurseBee : Bee
         }
     }
 
-    // ---------------------------
-    // STATES
-    // ---------------------------
-
     protected override void IdleBehavior()
     {
-        // 🔁 Keep tending current egg if valid
         if (assignedEgg != null && !assignedEgg.IsHatched())
         {
             MoveToEgg(assignedEgg);
             return;
         }
 
-        // 🧹 Clean up if egg is gone
         if (assignedEgg != null)
         {
             assignedEgg.RemoveNurse();
@@ -68,7 +62,6 @@ public class NurseBee : Bee
 
         isTending = false;
 
-        // 🔍 Find a free egg
         assignedEgg = FindClosestEgg();
 
         if (assignedEgg != null)
@@ -83,7 +76,6 @@ public class NurseBee : Bee
 
     protected override void WorkBehavior()
     {
-        // ❌ Egg invalid → reset
         if (assignedEgg == null || assignedEgg.IsHatched())
         {
             if (assignedEgg != null)
@@ -99,14 +91,12 @@ public class NurseBee : Bee
 
         float dist = Vector2.Distance(transform.position, assignedEgg.transform.position);
 
-        // 🔁 Move closer if needed
         if (dist > workDistanceThreshold)
         {
             MoveToEgg(assignedEgg);
             return;
         }
 
-        // 🐝 Try to claim egg (ONLY ONE BEE ALLOWED)
         if (!isTending)
         {
             if (assignedEgg.TryAssignNurse(this))
@@ -116,7 +106,6 @@ public class NurseBee : Bee
             }
             else
             {
-                // ❌ Someone else took it → go idle
                 assignedEgg = null;
                 isTending = false;
                 currentState = BeeState.Idle;
@@ -124,7 +113,6 @@ public class NurseBee : Bee
             }
         }
 
-        // 🔄 Orbit egg
         OrbitEgg();
     }
 
@@ -146,10 +134,6 @@ public class NurseBee : Bee
             currentState = BeeState.Idle;
         }
     }
-
-    // ---------------------------
-    // HELPERS
-    // ---------------------------
 
     private void MoveToEgg(Egg egg)
     {
@@ -176,7 +160,6 @@ public class NurseBee : Bee
             if (egg == null || egg.IsHatched())
                 continue;
 
-            // 🚫 Skip eggs that already have a nurse
             if (egg.HasNurse())
                 continue;
 

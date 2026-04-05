@@ -5,6 +5,7 @@ public class HouseBee : Bee
     [Header("Work")]
     public float workDistance = 1.2f;
     public float convertTime = 2f;
+    public float workBuffer = 0.2f; // ✅ small buffer to prevent jitter
 
     [Header("Output")]
     public GameObject honeyPrefab;
@@ -14,16 +15,19 @@ public class HouseBee : Bee
     private Pollen target;
 
     private float workTimer;
-    private bool isWorking = false;
     private bool hasStartedWorking = false;
 
     // Search retry
     private float searchTimer = 0f;
     public float searchInterval = 0.5f;
 
+    public bool IsWorking => hasStartedWorking;
+
     protected override void Awake()
     {
         base.Awake();
+
+        beeType = BeeType.House;
 
         zone = FindObjectOfType<HouseBeeZone>();
 
@@ -45,6 +49,10 @@ public class HouseBee : Bee
 
     protected override void IdleBehavior()
     {
+        // 🔥 PRIORITY CHECK: If already working, don't interrupt
+        if (currentState == BeeState.Working && hasStartedWorking)
+            return;
+
         searchTimer -= Time.deltaTime;
 
         if (searchTimer <= 0f)
@@ -70,6 +78,19 @@ public class HouseBee : Bee
 
     protected override void WorkBehavior()
     {
+        // ✅ ADDED (minimal): fully freeze logic while working
+        if (hasStartedWorking)
+        {
+            workTimer -= Time.deltaTime;
+
+            if (workTimer <= 0f)
+            {
+                Convert();
+            }
+
+            return;
+        }
+
         if (target == null)
         {
             ResetBee();
@@ -78,38 +99,24 @@ public class HouseBee : Bee
 
         float dist = Vector2.Distance(transform.position, target.transform.position);
 
-        // ✅ LOCK INTO WORK STATE ONCE IN RANGE
-        if (dist <= workDistance)
+        if (dist <= workDistance + workBuffer)
         {
-            if (!hasStartedWorking)
-            {
-                hasStartedWorking = true;
-                isWorking = true;
-                workTimer = convertTime;
+            hasStartedWorking = true;
+            workTimer = convertTime;
 
-                Debug.Log("Bee started working on: " + target.name);
-            }
+            if (rb != null)
+                rb.linearVelocity = Vector2.zero;
 
-            workTimer -= Time.deltaTime;
-
-            if (workTimer <= 0f)
-            {
-                Convert();
-            }
+            Debug.Log("Bee started working on: " + target.name);
         }
         else
         {
-            // Move toward pollen WITHOUT constantly flipping state
-            targetPosition = target.transform.position;
-
-            if (currentState != BeeState.Moving)
+            if (!hasStartedWorking)
             {
+                targetPosition = target.transform.position;
                 currentState = BeeState.Moving;
+                return;
             }
-
-            // Reset work progress if we leave range
-            hasStartedWorking = false;
-            isWorking = false;
         }
     }
 
@@ -145,7 +152,6 @@ public class HouseBee : Bee
 
     void ResetBee()
     {
-        isWorking = false;
         hasStartedWorking = false;
 
         if (target != null)

@@ -180,3 +180,6 @@ MonoBehaviour:
   separationRadius: 0.6
   separationStrength: 2
   roamRadius: 3
+  stuckCheckInterval: 0.5
+  stuckMoveThreshold: 0.05
+  beeType: 3
