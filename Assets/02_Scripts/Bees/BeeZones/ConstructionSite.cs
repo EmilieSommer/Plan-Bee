@@ -5,18 +5,17 @@ public class ConstructionSite : MonoBehaviour
     public float buildTime = 5f;
     private float progress = 0f;
 
-    private SpriteRenderer sr;
-
-    private bool isActive = false;
-
     public BuildZone parentZone;
 
+    private SpriteRenderer sr;
+
+    private bool isBuilding = false;
 
     private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
 
-        // Start invisible
+        // start invisible
         if (sr != null)
         {
             Color c = sr.color;
@@ -27,12 +26,12 @@ public class ConstructionSite : MonoBehaviour
 
     public void StartBuild()
     {
-        isActive = true;
+        isBuilding = true;
     }
 
     private void Update()
     {
-        if (!isActive) return;
+        if (!isBuilding) return;
 
         int builderCount = GetBuilderCount();
 
@@ -42,6 +41,7 @@ public class ConstructionSite : MonoBehaviour
 
         float t = progress / buildTime;
 
+        // fade in
         if (sr != null)
         {
             Color c = sr.color;
@@ -69,8 +69,7 @@ public class ConstructionSite : MonoBehaviour
         {
             if (hit.CompareTag("Bee"))
             {
-                BuilderBee bee = hit.GetComponent<BuilderBee>();
-                if (bee != null)
+                if (hit.GetComponent<BuilderBee>() != null)
                     count++;
             }
         }
@@ -84,10 +83,9 @@ public class ConstructionSite : MonoBehaviour
 
         BuilderBee.SetActiveSite(null);
 
-        // 🔥 Re-enable zone
         if (parentZone != null)
         {
-            parentZone.EnableZone();
+            parentZone.FinishBuild();
         }
 
         Destroy(this);

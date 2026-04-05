@@ -9,20 +9,14 @@ public class BuildZone : MonoBehaviour
     public GameObject housePrefab;
     public GameObject sleepPrefab;
 
-    private GameObject previewObject;
-    private ConstructionSite currentSite;
-
-    private bool isPlacing = false;
     private bool isBuilt = false;
+    private bool isBuilding = false;
+
+    private ConstructionSite currentSite;
 
     private void Update()
     {
         HandleClick();
-
-        if (isPlacing && Input.GetMouseButtonDown(0))
-        {
-            ConfirmBuild();
-        }
     }
 
     void HandleClick()
@@ -35,74 +29,71 @@ public class BuildZone : MonoBehaviour
             if (hit != null && hit.gameObject == gameObject && !isBuilt)
             {
                 buildCanvas.SetActive(true);
-                return;
             }
-
-            if (buildCanvas.activeSelf)
+            else
             {
-                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-                    return;
+                if (buildCanvas.activeSelf)
+                {
+                    if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                        return;
 
-                buildCanvas.SetActive(false);
+                    buildCanvas.SetActive(false);
+                }
             }
         }
     }
 
     // ------------------------
-    // UI BUTTONS
+    // BUTTONS
     // ------------------------
 
     public void BuildNurse()
     {
-        BeginPlacement(nursePrefab);
+        StartConstruction(nursePrefab);
     }
 
     public void BuildHouse()
     {
-        BeginPlacement(housePrefab);
+        StartConstruction(housePrefab);
     }
 
     public void BuildSleep()
     {
-        BeginPlacement(sleepPrefab);
+        StartConstruction(sleepPrefab);
     }
 
-    void BeginPlacement(GameObject prefab)
+    void StartConstruction(GameObject prefab)
     {
+        if (isBuilding) return;
+
         buildCanvas.SetActive(false);
 
-        // Spawn preview
-        previewObject = Instantiate(prefab, transform.position, Quaternion.identity);
+        isBuilding = true;
 
-        currentSite = previewObject.AddComponent<ConstructionSite>();
+        // Spawn the real object immediately
+        GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity);
 
-        // 🔥 link the zone
+        currentSite = obj.AddComponent<ConstructionSite>();
+
+        // 🔥 IMPORTANT: link this zone
         currentSite.parentZone = this;
 
-        isPlacing = true;
+        // 🔥 start building instantly
+        currentSite.StartBuild();
 
-        // 🔥 disable zone while building
+        // 🔥 send bees to work immediately
+        BuilderBee.SetActiveSite(currentSite);
+
+        // 🔥 lock the zone
         DisableZone();
     }
 
-    void ConfirmBuild()
+    public void FinishBuild()
     {
-        isPlacing = false;
-
-        BuilderBee.SetActiveSite(currentSite);
-
-        currentSite.StartBuild();
-
+        isBuilding = false;
         isBuilt = true;
-    }
 
-    public void EnableZone()
-    {
-        GetComponent<Collider2D>().enabled = true;
-
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-            sr.color = Color.white;
+        EnableZone();
     }
 
     void DisableZone()
@@ -112,5 +103,14 @@ public class BuildZone : MonoBehaviour
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)
             sr.color = Color.gray;
+    }
+
+    void EnableZone()
+    {
+        GetComponent<Collider2D>().enabled = true;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.color = Color.white;
     }
 }

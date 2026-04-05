@@ -15,7 +15,7 @@ public class BuilderBee : Bee
 
         if (activeSite == null) return;
 
-        // Always move toward the site
+        // Move toward construction site
         targetPosition = activeSite.transform.position;
 
         if (currentState != BeeState.Moving)
