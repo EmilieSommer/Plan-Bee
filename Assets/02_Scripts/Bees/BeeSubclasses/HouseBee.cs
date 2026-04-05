@@ -43,6 +43,13 @@ public class HouseBee : Bee
         currentState = BeeState.Idle;
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+        CheckForWorkContinuously();
+    }
+
     // -------------------
     // STATES
     // -------------------
@@ -74,6 +81,26 @@ public class HouseBee : Bee
         }
 
         StayInZone();
+    }
+
+    void CheckForWorkContinuously()
+    {
+        if (currentState == BeeState.Dead || currentState == BeeState.Working)
+            return;
+
+        if (target == null || target.isClaimed == false)
+        {
+            Pollen newTarget = FindAvailablePollen();
+
+            if (newTarget != null)
+            {
+                target = newTarget;
+                target.isClaimed = true;
+
+                targetPosition = target.transform.position;
+                currentState = BeeState.Moving;
+            }
+        }
     }
 
     protected override void WorkBehavior()

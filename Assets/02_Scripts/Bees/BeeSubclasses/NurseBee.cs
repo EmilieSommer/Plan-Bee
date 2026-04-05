@@ -46,6 +46,13 @@ public class NurseBee : Bee
         }
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+        CheckForWorkContinuously();
+    }
+
     protected override void IdleBehavior()
     {
         if (assignedEgg != null && !assignedEgg.IsHatched())
@@ -71,6 +78,23 @@ public class NurseBee : Bee
         else
         {
             NormalIdleMovement();
+        }
+    }
+
+    void CheckForWorkContinuously()
+    {
+        if (currentState == BeeState.Dead || isTending)
+            return;
+
+        if (assignedEgg == null || assignedEgg.IsHatched() || assignedEgg.HasNurse())
+        {
+            assignedEgg = FindClosestEgg();
+
+            if (assignedEgg != null)
+            {
+                targetPosition = assignedEgg.transform.position;
+                currentState = BeeState.Moving;
+            }
         }
     }
 

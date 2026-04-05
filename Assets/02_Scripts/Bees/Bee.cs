@@ -63,12 +63,20 @@ public abstract class Bee : MonoBehaviour
         Drone,
         Builder,
     }
+    
+    [Header("Combat")]
+    public float attackDamage = 2f;
+    public float attackRange = 1.2f;
+    public float attackCooldown = 1f;
+
+    protected float attackTimer;
 
     [Header("Bee Type")]
     public BeeType beeType;
 
     protected virtual void Awake()
     {
+        attackTimer = 0f;
         rb = GetComponent<Rigidbody2D>();
 
         rb.gravityScale = 0f;
@@ -422,8 +430,11 @@ public abstract class Bee : MonoBehaviour
     {
         currentHealth -= amount;
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0f)
+        {
+            currentHealth = 0f;
             Die();
+        }
     }
 
     protected virtual void Die()
