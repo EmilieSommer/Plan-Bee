@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1565691429919022628}
   - component: {fileID: 3652339801126748524}
   - component: {fileID: 8895243450560537342}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: NurseZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 4551173987900736529}
   - component: {fileID: 5566849544009171235}
   - component: {fileID: 273953292463536565}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 4807461778749003053}
   - component: {fileID: 4648677233482482601}
   - component: {fileID: 1669173142150464660}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: SleepZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -327,7 +327,7 @@ GameObject:
   - component: {fileID: 3818839831069384611}
   - component: {fileID: 2788465855270024554}
   - component: {fileID: 3344595687947918247}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: NurseZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -460,7 +460,7 @@ GameObject:
   - component: {fileID: 8419827107055094088}
   - component: {fileID: 7106738021014662386}
   - component: {fileID: 815817838934701355}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: BuildCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -567,7 +567,7 @@ GameObject:
   - component: {fileID: 5901551395452305738}
   - component: {fileID: 7736004054278120113}
   - component: {fileID: 2383579316641629883}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -705,7 +705,7 @@ GameObject:
   - component: {fileID: 7780043781128347955}
   - component: {fileID: 5425609450077587607}
   - component: {fileID: 5770755709732653430}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: HouseZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -837,7 +837,7 @@ GameObject:
   - component: {fileID: 8989393245876930393}
   - component: {fileID: 2464421158705694753}
   - component: {fileID: 7226503409855480271}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -914,7 +914,7 @@ GameObject:
   - component: {fileID: 4829339963523079310}
   - component: {fileID: 1796568623417297510}
   - component: {fileID: 2022725867286025493}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BuildZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1083,7 +1083,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4333976350409695595}
   - component: {fileID: 2755564973248917865}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Placeholder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1176,7 +1176,7 @@ GameObject:
   - component: {fileID: 8839977913522095318}
   - component: {fileID: 6793851437565170706}
   - component: {fileID: 948504061756184620}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: SleepZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1309,7 +1309,7 @@ GameObject:
   - component: {fileID: 3564105405971432280}
   - component: {fileID: 4574922888162713136}
   - component: {fileID: 4017052376328784566}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: HouseZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1397,7 +1397,7 @@ GameObject:
   - component: {fileID: 194549654528320371}
   - component: {fileID: 908039498139586720}
   - component: {fileID: 5468974619036585732}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

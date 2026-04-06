@@ -8,7 +8,6 @@ public class ConstructionSite : MonoBehaviour
     public BuildZone parentZone;
 
     private SpriteRenderer sr;
-
     private bool isBuilding = false;
 
     private void Awake()
@@ -22,6 +21,11 @@ public class ConstructionSite : MonoBehaviour
             c.a = 0f;
             sr.color = c;
         }
+
+        // 🚫 OPTIONAL: disable collider during build
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = false;
     }
 
     public void StartBuild()
@@ -34,14 +38,13 @@ public class ConstructionSite : MonoBehaviour
         if (!isBuilding) return;
 
         int builderCount = GetBuilderCount();
-
         if (builderCount <= 0) return;
 
         progress += Time.deltaTime * builderCount;
 
         float t = progress / buildTime;
 
-        // fade in
+        // 🎨 Fade in
         if (sr != null)
         {
             Color c = sr.color;
@@ -67,10 +70,9 @@ public class ConstructionSite : MonoBehaviour
 
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Bee"))
+            if (hit.CompareTag("Bee") && hit.GetComponent<BuilderBee>() != null)
             {
-                if (hit.GetComponent<BuilderBee>() != null)
-                    count++;
+                count++;
             }
         }
 
@@ -81,13 +83,23 @@ public class ConstructionSite : MonoBehaviour
     {
         Debug.Log("Build complete!");
 
+        isBuilding = false;
+
+        // ✅ Enable collider (now it's a real building)
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = true;
+
+        // 🐝 Release builders
         BuilderBee.SetActiveSite(null);
 
+        // 💀 Destroy build zone
         if (parentZone != null)
         {
             parentZone.FinishBuild();
         }
 
+        // ❌ REMOVE this script (object stays!)
         Destroy(this);
     }
 }

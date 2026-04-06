@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class NurseBeeZone : MonoBehaviour
@@ -20,35 +19,6 @@ public class NurseBeeZone : MonoBehaviour
         }
 
         box.isTrigger = false;
-    }
-
-    private void Update()
-    {
-        // ✅ Open when clicking the zone
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Collider2D hit = Physics2D.OverlapPoint(mousePos);
-
-            if (hit == box)
-            {
-                if (nurseCanvas != null)
-                {
-                    nurseCanvas.SetActive(true);
-                }
-
-                return;
-            }
-
-            // ✅ Close when clicking outside (but NOT on UI)
-            if (nurseCanvas != null && nurseCanvas.activeSelf)
-            {
-                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-                    return;
-
-                nurseCanvas.SetActive(false);
-            }
-        }
     }
 
     public Vector2 GetRandomPoint()

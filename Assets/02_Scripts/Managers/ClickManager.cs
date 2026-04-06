@@ -11,18 +11,17 @@ public class ClickManager : MonoBehaviour
 
     void Update()
     {
-        // 🖱️ Click / touch (mouse works for both in most cases)
+        // 🖱️ Click
         if (!Input.GetMouseButtonDown(0))
             return;
 
-        // 🚫 If UI is open → ONLY allow closing it
+        // 🥇 UI ALWAYS HAS PRIORITY
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        // 🔒 If UI is open → only allow closing
         if (uiOpen)
         {
-            // If clicking UI → ignore
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-                return;
-
-            // Click outside UI → close it
             if (activeCanvas != null)
             {
                 activeCanvas.SetActive(false);
@@ -32,10 +31,6 @@ public class ClickManager : MonoBehaviour
             uiOpen = false;
             return;
         }
-
-        // 🚫 Ignore clicks on UI (buttons etc.)
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
 
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 

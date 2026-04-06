@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class BuildZone : MonoBehaviour
 {
@@ -13,35 +12,6 @@ public class BuildZone : MonoBehaviour
     private bool isBuilding = false;
 
     private ConstructionSite currentSite;
-
-    private void Update()
-    {
-        HandleClick();
-    }
-
-    void HandleClick()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Collider2D hit = Physics2D.OverlapPoint(mousePos);
-
-            if (hit != null && hit.gameObject == gameObject && !isBuilt)
-            {
-                buildCanvas.SetActive(true);
-            }
-            else
-            {
-                if (buildCanvas.activeSelf)
-                {
-                    if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-                        return;
-
-                    buildCanvas.SetActive(false);
-                }
-            }
-        }
-    }
 
     // ------------------------
     // BUTTONS
@@ -66,26 +36,24 @@ public class BuildZone : MonoBehaviour
     {
         if (isBuilding) return;
 
-        buildCanvas.SetActive(false);
-
         isBuilding = true;
 
-        // Spawn the real object immediately
+        // 🔒 CLOSE UI
+        if (buildCanvas != null)
+            buildCanvas.SetActive(false);
+
+        // 🔒 DISABLE CLICKING IMMEDIATELY
+        DisableZone();
+
+        // 🏗️ SPAWN BUILDING (this will become final object)
         GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity);
 
         currentSite = obj.AddComponent<ConstructionSite>();
-
-        // 🔥 IMPORTANT: link this zone
         currentSite.parentZone = this;
 
-        // 🔥 start building instantly
         currentSite.StartBuild();
 
-        // 🔥 send bees to work immediately
         BuilderBee.SetActiveSite(currentSite);
-
-        // 🔥 lock the zone
-        DisableZone();
     }
 
     public void FinishBuild()
@@ -93,29 +61,25 @@ public class BuildZone : MonoBehaviour
         isBuilding = false;
         isBuilt = true;
 
-        EnableZone();
+        // 💀 DESTROY THIS ZONE COMPLETELY
+        Destroy(gameObject);
     }
 
     void DisableZone()
     {
-        GetComponent<Collider2D>().enabled = false;
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = false;
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)
             sr.color = Color.gray;
     }
 
-    void EnableZone()
-    {
-        GetComponent<Collider2D>().enabled = true;
-
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-            sr.color = Color.white;
-    }
     public void Open()
     {
-        if (isBuilt) return;
+        // 🚫 DO NOT OPEN if building or built
+        if (isBuilt || isBuilding) return;
 
         if (buildCanvas != null)
         {

@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 8844275805094510114}
   - component: {fileID: 108086142524821948}
   - component: {fileID: 3572632993877536441}
+  - component: {fileID: 6672336312784576611}
   m_Layer: 8
   m_Name: NurseZone
   m_TagString: Untagged
@@ -228,6 +229,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
   nurseCanvas: {fileID: 9121601987656341170}
+--- !u!114 &6672336312784576611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3746350325339473125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5eeabe90c126bd489603cdb466ccd8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstructionSite
+  buildTime: 5
+  parentZone: {fileID: 4829339963523079310, guid: 37908f8a570106540b518978bc5c023d, type: 3}
 --- !u!1 &3838159043995770629
 GameObject:
   m_ObjectHideFlags: 0
