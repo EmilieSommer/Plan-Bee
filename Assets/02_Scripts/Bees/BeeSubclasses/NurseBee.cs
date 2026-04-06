@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class NurseBee : Bee
 {
-    [Header("Nurse Settings")]
-    [SerializeField] private NurseBeeZone assignedZone;
-
     [Header("Work Settings")]
     public float workDistanceThreshold = 1.5f;
 
@@ -19,40 +16,20 @@ public class NurseBee : Bee
     private bool isTending = false;
     private float orbitAngle = 0f;
 
-    protected override void Awake()
+    protected override void Start()
     {
-        base.Awake();
-
-        if (assignedZone == null)
-        {
-            assignedZone = FindObjectOfType<NurseBeeZone>();
-        }
-
-        if (assignedZone != null)
-        {
-            homePosition = assignedZone.transform.position;
-        }
-        else
-        {
-            Debug.LogError("❌ No NurseBeeZone found in scene!");
-        }
-    }
-
-    private void Start()
-    {
-        if (assignedZone == null)
-        {
-            Debug.LogError("❌ NurseBeeZone NOT assigned on " + gameObject.name);
-        }
+        base.Start(); // this already assigns zone + home
     }
 
     protected override void Update()
     {
         base.Update();
-
         CheckForWorkContinuously();
     }
 
+    // ------------------------
+    // IDLE
+    // ------------------------
     protected override void IdleBehavior()
     {
         if (assignedEgg != null && !assignedEgg.IsHatched())
@@ -81,6 +58,9 @@ public class NurseBee : Bee
         }
     }
 
+    // ------------------------
+    // WORK CHECK
+    // ------------------------
     void CheckForWorkContinuously()
     {
         if (currentState == BeeState.Dead || isTending)
@@ -98,6 +78,9 @@ public class NurseBee : Bee
         }
     }
 
+    // ------------------------
+    // WORK
+    // ------------------------
     protected override void WorkBehavior()
     {
         if (assignedEgg == null || assignedEgg.IsHatched())
@@ -126,7 +109,6 @@ public class NurseBee : Bee
             if (assignedEgg.TryAssignNurse(this))
             {
                 isTending = true;
-                Debug.Log($"{name} started nursing {assignedEgg.name}");
             }
             else
             {
@@ -140,11 +122,16 @@ public class NurseBee : Bee
         OrbitEgg();
     }
 
+    // ------------------------
+    // RETURN (not used)
+    // ------------------------
     protected override void ReturnBehavior()
     {
-        // Not used
     }
 
+    // ------------------------
+    // TARGET REACHED
+    // ------------------------
     protected override void OnReachedTarget()
     {
         if (assignedEgg != null && !assignedEgg.IsHatched())
@@ -159,6 +146,9 @@ public class NurseBee : Bee
         }
     }
 
+    // ------------------------
+    // MOVEMENT HELPERS
+    // ------------------------
     private void MoveToEgg(Egg egg)
     {
         if (egg == null) return;
@@ -166,10 +156,7 @@ public class NurseBee : Bee
         Vector2 offset = Random.insideUnitCircle.normalized * 0.3f;
         targetPosition = (Vector2)egg.transform.position + offset;
 
-        if (currentState != BeeState.Moving)
-        {
-            currentState = BeeState.Moving;
-        }
+        currentState = BeeState.Moving;
     }
 
     private Egg FindClosestEgg()
@@ -207,11 +194,13 @@ public class NurseBee : Bee
         {
             idleMoveTimer = Random.Range(idleMoveCooldownMin, idleMoveCooldownMax);
 
-            Vector2 randomPoint;
+            Vector2 randomPoint = Vector2.zero;
 
-            if (assignedZone != null)
+            if (HasValidZone())
             {
-                randomPoint = assignedZone.GetRandomPoint();
+                // 🧠 NOW USE BASE ZONE
+                randomPoint = assignedZone.transform.position +
+                              (Vector3)Random.insideUnitCircle * idleWanderRadius;
             }
             else
             {
@@ -238,16 +227,16 @@ public class NurseBee : Bee
 
         targetPosition = (Vector2)assignedEgg.transform.position + offset;
 
-        if (currentState != BeeState.Moving)
-        {
-            currentState = BeeState.Moving;
-        }
+        currentState = BeeState.Moving;
     }
 
+    // ------------------------
+    // DEATH
+    // ------------------------
     protected override void Die()
     {
-        // custom behavior (e.g. particles)
+        // optional: particles, sound, etc.
 
-        base.Die(); // VERY IMPORTANT
+        base.Die(); // IMPORTANT: keeps Zone + Hive cleanup
     }
 }

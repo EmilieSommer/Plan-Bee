@@ -38,14 +38,11 @@ public class BuildZone : MonoBehaviour
 
         isBuilding = true;
 
-        // 🔒 CLOSE UI
         if (buildCanvas != null)
             buildCanvas.SetActive(false);
 
-        // 🔒 DISABLE CLICKING IMMEDIATELY
         DisableZone();
 
-        // 🏗️ SPAWN BUILDING (this will become final object)
         GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity);
 
         currentSite = obj.AddComponent<ConstructionSite>();
@@ -61,7 +58,8 @@ public class BuildZone : MonoBehaviour
         isBuilding = false;
         isBuilt = true;
 
-        // 💀 DESTROY THIS ZONE COMPLETELY
+        // 🔥 IMPORTANT: Do NOT keep this zone
+        // It should be replaced by the new zone (prefab)
         Destroy(gameObject);
     }
 
@@ -78,12 +76,9 @@ public class BuildZone : MonoBehaviour
 
     public void Open()
     {
-        // 🚫 DO NOT OPEN if building or built
         if (isBuilt || isBuilding) return;
 
         if (buildCanvas != null)
-        {
             buildCanvas.SetActive(true);
-        }
     }
 }

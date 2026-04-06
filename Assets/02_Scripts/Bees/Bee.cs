@@ -75,6 +75,8 @@ public abstract class Bee : MonoBehaviour
     [Header("Bee Type")]
     public BeeType beeType;
 
+    protected Zone assignedZone;
+
     protected virtual void Awake()
     {
 
@@ -99,6 +101,11 @@ public abstract class Bee : MonoBehaviour
         PickRandomDirection();
 
         lastPosition = rb.position;
+    }
+
+    protected virtual void Start()
+    {
+        AssignZone();
     }
 
     protected virtual void Update()
@@ -179,6 +186,16 @@ public abstract class Bee : MonoBehaviour
                 ReturnBehavior();
                 break;
         }
+    }
+
+    protected bool HasValidZone()
+    {
+        if (assignedZone == null)
+        {
+            AssignZone();
+        }
+
+        return assignedZone != null;
     }
 
     // ------------------------
@@ -448,13 +465,46 @@ public abstract class Bee : MonoBehaviour
     {
         currentState = BeeState.Dead;
 
+        // 🧠 Unregister from Hive
         if (HiveManager.Instance != null)
         {
             HiveManager.Instance.UnregisterBee(this);
         }
 
+        // 🧠 Unregister from Zone system
+        if (ZoneManager.Instance != null)
+        {
+            ZoneManager.Instance.UnregisterBee(this);
+        }
+
+        // 🔥 ALSO remove from its zone
+        if (assignedZone != null)
+        {
+            assignedZone.UnregisterBee(this);
+        }
+
         rb.linearVelocity = Vector2.zero;
 
         Destroy(gameObject);
+    }
+
+    protected virtual void AssignZone()
+    {
+        if (ZoneManager.Instance == null)
+            return;
+
+        assignedZone = ZoneManager.Instance.GetClosestZone(
+            beeType,
+            transform.position
+        );
+
+        if (assignedZone != null)
+        {
+            homePosition = assignedZone.transform.position;
+
+            // ✅ REGISTER BEE HERE (this is correct place)
+            assignedZone.RegisterBee(this);
+            ZoneManager.Instance.RegisterBee(this);
+        }
     }
 }

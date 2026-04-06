@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class NurseBeeZone : MonoBehaviour
+public class NurseBeeZone : Zone
 {
     private BoxCollider2D box;
 
@@ -10,15 +10,8 @@ public class NurseBeeZone : MonoBehaviour
 
     private void Awake()
     {
+        zoneType = Bee.BeeType.Nurse;
         box = GetComponent<BoxCollider2D>();
-
-        if (box == null)
-        {
-            Debug.LogError("NurseBeeZone: Missing BoxCollider2D!");
-            return;
-        }
-
-        box.isTrigger = false;
     }
 
     public Vector2 GetRandomPoint()

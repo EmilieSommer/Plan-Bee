@@ -5,7 +5,7 @@ public class HouseBee : Bee
     [Header("Work")]
     public float workDistance = 1.2f;
     public float convertTime = 2f;
-    public float workBuffer = 0.2f; // ✅ small buffer to prevent jitter
+    public float workBuffer = 0.2f; // small buffer to prevent jitter
 
     [Header("Output")]
     public GameObject honeyPrefab;
@@ -29,7 +29,8 @@ public class HouseBee : Bee
 
         beeType = BeeType.House;
 
-        zone = FindObjectOfType<HouseBeeZone>();
+        // ✅ FIX: use ZoneManager instead of FindObjectOfType
+        zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
 
         if (zone != null)
         {
@@ -47,6 +48,17 @@ public class HouseBee : Bee
     {
         base.Update();
 
+        // ✅ OPTIONAL SAFE FIX: refresh zone if missing
+        if (zone == null)
+        {
+            zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
+
+            if (zone != null)
+            {
+                homePosition = zone.transform.position;
+            }
+        }
+
         CheckForWorkContinuously();
     }
 
@@ -56,7 +68,7 @@ public class HouseBee : Bee
 
     protected override void IdleBehavior()
     {
-        // 🔥 PRIORITY CHECK: If already working, don't interrupt
+        // PRIORITY CHECK: If already working, don't interrupt
         if (currentState == BeeState.Working && hasStartedWorking)
             return;
 
@@ -105,7 +117,13 @@ public class HouseBee : Bee
 
     protected override void WorkBehavior()
     {
-        // ✅ ADDED (minimal): fully freeze logic while working
+        // ✅ SAFETY FIX
+        if (target == null)
+        {
+            ResetBee();
+            return;
+        }
+
         if (hasStartedWorking)
         {
             workTimer -= Time.deltaTime;
@@ -115,12 +133,6 @@ public class HouseBee : Bee
                 Convert();
             }
 
-            return;
-        }
-
-        if (target == null)
-        {
-            ResetBee();
             return;
         }
 

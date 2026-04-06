@@ -1,13 +1,17 @@
 using UnityEngine;
 
-public class HouseBeeZone : MonoBehaviour
+public class HouseBeeZone : Zone
 {
     [Header("Zone Settings")]
     public float depositRadius = 2f;
 
+    private void Awake()
+    {
+        zoneType = Bee.BeeType.House;
+    }
+
     public Vector2 GetDepositPoint()
     {
-        // Return a random point inside the circle
         Vector2 randomPoint = (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
         return randomPoint;
     }
