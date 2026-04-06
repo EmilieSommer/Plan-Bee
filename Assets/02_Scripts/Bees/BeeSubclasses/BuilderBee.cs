@@ -24,6 +24,13 @@ public class BuilderBee : Bee
         }
     }
 
+    protected override void Die()
+    {
+        // custom behavior (e.g. particles)
+
+        base.Die(); // VERY IMPORTANT
+    }
+
     protected override void WorkBehavior() { }
     protected override void ReturnBehavior() { }
 }

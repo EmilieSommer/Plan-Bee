@@ -62,6 +62,7 @@ public abstract class Bee : MonoBehaviour
         Nurse,
         Drone,
         Builder,
+        Queen,
     }
     
     [Header("Combat")]
@@ -76,6 +77,12 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void Awake()
     {
+
+        if (HiveManager.Instance != null)
+        {
+            HiveManager.Instance.RegisterBee(this);
+        }
+
         attackTimer = 0f;
         rb = GetComponent<Rigidbody2D>();
 
@@ -440,7 +447,14 @@ public abstract class Bee : MonoBehaviour
     protected virtual void Die()
     {
         currentState = BeeState.Dead;
+
+        if (HiveManager.Instance != null)
+        {
+            HiveManager.Instance.UnregisterBee(this);
+        }
+
         rb.linearVelocity = Vector2.zero;
+
         Destroy(gameObject);
     }
 }

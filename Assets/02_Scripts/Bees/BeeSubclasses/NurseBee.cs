@@ -243,4 +243,11 @@ public class NurseBee : Bee
             currentState = BeeState.Moving;
         }
     }
+
+    protected override void Die()
+    {
+        // custom behavior (e.g. particles)
+
+        base.Die(); // VERY IMPORTANT
+    }
 }

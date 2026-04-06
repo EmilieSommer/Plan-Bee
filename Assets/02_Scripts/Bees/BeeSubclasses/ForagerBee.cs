@@ -129,6 +129,13 @@ public class ForagerBee : Bee
         return closest;
     }
 
+    protected override void Die()
+    {
+        // custom behavior (e.g. particles)
+
+        base.Die(); // VERY IMPORTANT
+    }
+
     // REQUIRED BY BASE CLASS
     protected override void WorkBehavior() { }
 }   

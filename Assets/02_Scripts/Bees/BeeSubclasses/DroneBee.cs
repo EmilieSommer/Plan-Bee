@@ -99,4 +99,11 @@ public class DroneBee : Bee
     }
 
     protected override void ReturnBehavior() { }
+
+    protected override void Die()
+    {
+        // custom behavior (e.g. particles)
+
+        base.Die(); // VERY IMPORTANT
+    }
 }
