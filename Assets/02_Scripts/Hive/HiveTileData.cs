@@ -1,21 +1,21 @@
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public enum TileState
 {
-    Empty,       // Outside the hive — not built, not marked
-    Marked,      // Player has marked this tile for building
-    UnderConstruction,
-    Built
+    Outside,           // Not part of the hive
+    Solid,             // Unexcavated hive wall — bees cannot pass
+    Passage,           // Dug out corridor — bees can walk through
+    Room,              // Designated functional room
+    MarkedForSolid,    // Player marked outside tile to extend hive wall
+    MarkedForPassage,  // Player marked solid tile to dig a corridor
+    MarkedForRoom      // Player marked passage tile to build a room
 }
 
 public enum RoomType
 {
     None,
-    BroodChamber,
-    HoneyStorage,
-    PollenStore,
-    DronePost
+    Brood,
+    Storage
 }
 
 [System.Serializable]
@@ -30,11 +30,23 @@ public class HiveTileData
     public HiveTileData(Vector3Int pos, float maxHP = 100f)
     {
         GridPosition = pos;
-        State = TileState.Empty;
-        Room = RoomType.None;
-        MaxHP = maxHP;
-        HP = maxHP;
+        State        = TileState.Outside;
+        Room         = RoomType.None;
+        MaxHP        = maxHP;
+        HP           = maxHP;
     }
 
-    public bool IsPartOfHive => State == TileState.Built || State == TileState.UnderConstruction;
+    public bool IsMarked =>
+        State == TileState.MarkedForSolid ||
+        State == TileState.MarkedForPassage ||
+        State == TileState.MarkedForRoom;
+
+    public bool IsWalkable =>
+        State == TileState.Passage || State == TileState.Room;
+
+    public bool IsPartOfHive =>
+        State == TileState.Solid   ||
+        State == TileState.Passage ||
+        State == TileState.Room    ||
+        IsMarked;
 }

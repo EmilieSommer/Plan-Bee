@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plan Bee — Tile Reference</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #F2F0EF;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 32px;
+      gap: 48px;
+    }
+    h1 { color: #D95122; font-size: 18px; letter-spacing: 6px; }
+    .section { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 900px; }
+    .section-title { color: #896645; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; align-self: flex-start; border-bottom: 1px solid #D9C8A8; padding-bottom: 6px; width: 100%; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .tile-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .tile-name { color: #5C3A1A; font-size: 10px; letter-spacing: 2px; text-align: center; text-transform: uppercase; }
+    .tile-hex  { color: #B08050; font-size: 9px; letter-spacing: 1px; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  </style>
+</head>
+<body>
+  <h1>PLAN BEE — TILE REFERENCE</h1>
+
+  <div class="section">
+    <div class="section-title">Base Tiles</div>
+    <div class="row" id="baseTiles"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hive Solid — Edge & Corner Variants</div>
+    <div class="row" id="edgeTiles"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Room Tiles</div>
+    <div class="row" id="roomTiles"></div>
+  </div>
+
+<script>
+const PIXEL = 8;
+const S = 16;
+
+// Colours
+const C = {
+  outside:    '#A0CCF0',
+  outsideDk:  '#7AAED8',
+  outsideLt:  '#C8E4F8',
+  solid:      '#EF9E1B',
+  solidDk:    '#C47A00',
+  solidLt:    '#FFD060',
+  hive:       '#FFB53E',
+  hiveDk:     '#D48A10',
+  hiveLt:     '#FFD080',
+  brood:      '#F9D59B',
+  broodDk:    '#D4A860',
+  broodLt:    '#FFF0C8',
+  storage:    '#F78142',
+  storageDk:  '#C45010',
+  storageLt:  '#FFB080',
+};
+
+function px(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.fillRect(x, y, 1, 1);
+}
+
+function fill(ctx, col) {
+  ctx.fillStyle = col;
+  ctx.fillRect(0, 0, S, S);
+}
+
+function makeCanvas() {
+  const c = document.createElement('canvas');
+  c.width = S; c.height = S;
+  c.style.width  = S * PIXEL + 'px';
+  c.style.height = S * PIXEL + 'px';
+  return c;
+}
+
+function card(canvas, name, hex) {
+  const div = document.createElement('div');
+  div.className = 'tile-card';
+  const n = document.createElement('div'); n.className = 'tile-name'; n.textContent = name;
+  const h = document.createElement('div'); h.className = 'tile-hex';  h.textContent = hex || '';
+  div.appendChild(canvas); div.appendChild(n); if(hex) div.appendChild(h);
+  return div;
+}
+
+// ── DRAW FUNCTIONS ────────────────────────────────────────────────
+
+function drawOutside(ctx) {
+  fill(ctx, C.outside);
+  // subtle cloud puffs - light dots scattered
+  const cloudPts = [
+    [2,2],[3,2],[2,3],
+    [10,5],[11,5],[10,6],[11,6],
+    [5,10],[6,10],[5,11],
+    [13,1],[14,1],
+    [1,13],[2,13],[2,14],
+    [12,12],[13,12],[13,13],
+    [7,7],
+  ];
+  cloudPts.forEach(([x,y]) => px(ctx, x, y, C.outsideLt));
+
+  // tiny flower hints
+  const flowerCenters = [[4,4],[14,10],[8,13],[1,8]];
+  flowerCenters.forEach(([x,y]) => {
+    px(ctx, x, y,   '#FFFFFF');
+    px(ctx, x-1, y, C.outsideDk);
+    px(ctx, x+1, y, C.outsideDk);
+    px(ctx, x, y-1, C.outsideDk);
+    px(ctx, x, y+1, C.outsideDk);
+  });
+}
+
+function drawSolid(ctx) {
+  // Full solid — no exposed edges
+  fill(ctx, C.solid);
+  // top highlight strip
+  for(let x=0;x<S;x++) px(ctx,x,0,C.solidLt);
+  for(let x=0;x<S;x++) px(ctx,x,1,C.solidLt);
+  // bottom shadow strip
+  for(let x=0;x<S;x++) px(ctx,x,S-1,C.solidDk);
+  for(let x=0;x<S;x++) px(ctx,x,S-2,C.solidDk);
+  // subtle inner texture noise
+  const noise = [[3,5],[7,4],[12,6],[2,10],[9,11],[14,8],[5,13],[11,3],[6,8],[13,13],[4,7],[10,9]];
+  noise.forEach(([x,y]) => px(ctx,x,y,C.solidDk));
+  const noise2= [[4,6],[8,5],[11,7],[3,11],[8,12],[13,9],[6,14],[10,4]];
+  noise2.forEach(([x,y]) => px(ctx,x,y,C.solidLt));
+}
+
+// Solid with one exposed side — draws the "cut" face
+function drawSolidEdge(ctx, side) {
+  // base
+  drawSolid(ctx);
+  // exposed face — darker edge + outside color bleeding in
+  if (side === 'top') {
+    for(let x=0;x<S;x++) { px(ctx,x,0,C.outside); px(ctx,x,1,C.outside); px(ctx,x,2,C.solidDk); px(ctx,x,3,C.solidDk); }
+  }
+  if (side === 'bottom') {
+    for(let x=0;x<S;x++) { px(ctx,x,S-1,C.outside); px(ctx,x,S-2,C.outside); px(ctx,x,S-3,C.solidDk); px(ctx,x,S-4,C.solidDk); }
+  }
+  if (side === 'left') {
+    for(let y=0;y<S;y++) { px(ctx,0,y,C.outside); px(ctx,1,y,C.outside); px(ctx,2,y,C.solidDk); px(ctx,3,y,C.solidDk); }
+  }
+  if (side === 'right') {
+    for(let y=0;y<S;y++) { px(ctx,S-1,y,C.outside); px(ctx,S-2,y,C.outside); px(ctx,S-3,y,C.solidDk); px(ctx,S-4,y,C.solidDk); }
+  }
+}
+
+function drawSolidCorner(ctx, h, v) {
+  drawSolid(ctx);
+  if(v==='top') {
+    for(let x=0;x<S;x++) { px(ctx,x,0,C.outside); px(ctx,x,1,C.outside); px(ctx,x,2,C.solidDk); px(ctx,x,3,C.solidDk); }
+  }
+  if(v==='bottom') {
+    for(let x=0;x<S;x++) { px(ctx,x,S-1,C.outside); px(ctx,x,S-2,C.outside); px(ctx,x,S-3,C.solidDk); px(ctx,x,S-4,C.solidDk); }
+  }
+  if(h==='left') {
+    for(let y=0;y<S;y++) { px(ctx,0,y,C.outside); px(ctx,1,y,C.outside); px(ctx,2,y,C.solidDk); px(ctx,3,y,C.solidDk); }
+  }
+  if(h==='right') {
+    for(let y=0;y<S;y++) { px(ctx,S-1,y,C.outside); px(ctx,S-2,y,C.outside); px(ctx,S-3,y,C.solidDk); px(ctx,S-4,y,C.solidDk); }
+  }
+}
+
+function drawHive(ctx) {
+  fill(ctx, C.hive);
+  // top highlight
+  for(let x=0;x<S;x++) px(ctx,x,0,C.hiveLt);
+  // bottom shadow
+  for(let x=0;x<S;x++) px(ctx,x,S-1,C.hiveDk);
+  // left shadow
+  for(let y=0;y<S;y++) px(ctx,0,y,C.hiveDk);
+}
+
+function drawBrood(ctx) {
+  fill(ctx, C.brood);
+  // subtle inner border
+  for(let x=2;x<S-2;x++) { px(ctx,x,2,C.broodLt); px(ctx,x,S-3,C.broodDk); }
+  for(let y=2;y<S-2;y++) { px(ctx,2,y,C.broodLt); px(ctx,S-3,y,C.broodDk); }
+  // egg in center
+  const cx=8,cy=8;
+  [[0,-3],[0,-2],[0,-1],[0,0],[0,1],[0,2],[0,3],
+   [-1,-2],[-1,-1],[-1,0],[-1,1],[-1,2],
+   [1,-2],[1,-1],[1,0],[1,1],[1,2]].forEach(([dx,dy])=>{
+    px(ctx,cx+dx,cy+dy,'#FFFAEE');
+  });
+  // egg highlight
+  px(ctx,cx-1,cy-2,'#FFFFFF');
+  px(ctx,cx,cy-2,'#FFFFFF');
+}
+
+function drawStorage(ctx) {
+  fill(ctx, C.storage);
+  for(let x=0;x<S;x++) px(ctx,x,0,C.storageLt);
+  for(let x=0;x<S;x++) px(ctx,x,S-1,C.storageDk);
+  for(let y=0;y<S;y++) px(ctx,0,y,C.storageDk);
+  // honey pile
+  const pile = [
+    [5,11],[6,11],[7,11],[8,11],[9,11],[10,11],
+    [4,10],[5,10],[6,10],[7,10],[8,10],[9,10],[10,10],[11,10],
+    [5,9],[6,9],[7,9],[8,9],[9,9],[10,9],
+    [6,8],[7,8],[8,8],[9,8],
+    [7,7],[8,7],
+  ];
+  pile.forEach(([x,y])=>px(ctx,x,y,'#F5C030'));
+  // honey highlight
+  [[6,9],[7,9],[6,10]].forEach(([x,y])=>px(ctx,x,y,'#FFE878'));
+  // honey shadow
+  [[9,10],[10,10],[9,11],[10,11]].forEach(([x,y])=>px(ctx,x,y,'#C88A00'));
+}
+
+// ── RENDER ───────────────────────────────────────────────────────
+
+function renderTo(id, tiles) {
+  const row = document.getElementById(id);
+  tiles.forEach(({name, hex, draw}) => {
+    const c = makeCanvas();
+    draw(c.getContext('2d'));
+    row.appendChild(card(c, name, hex));
+  });
+}
+
+renderTo('baseTiles', [
+  { name: 'Outside',    hex: '#A0CCF0', draw: drawOutside },
+  { name: 'Hive Solid', hex: '#EF9E1B', draw: drawSolid },
+  { name: 'Hive',       hex: '#FFB53E', draw: drawHive },
+]);
+
+renderTo('edgeTiles', [
+  { name: 'Top',         draw: ctx=>drawSolidEdge(ctx,'top') },
+  { name: 'Bottom',      draw: ctx=>drawSolidEdge(ctx,'bottom') },
+  { name: 'Left',        draw: ctx=>drawSolidEdge(ctx,'left') },
+  { name: 'Right',       draw: ctx=>drawSolidEdge(ctx,'right') },
+  { name: 'Top-Left',    draw: ctx=>drawSolidCorner(ctx,'left','top') },
+  { name: 'Top-Right',   draw: ctx=>drawSolidCorner(ctx,'right','top') },
+  { name: 'Bot-Left',    draw: ctx=>drawSolidCorner(ctx,'left','bottom') },
+  { name: 'Bot-Right',   draw: ctx=>drawSolidCorner(ctx,'right','bottom') },
+]);
+
+renderTo('roomTiles', [
+  { name: 'Brood',   hex: '#F9D59B', draw: drawBrood },
+  { name: 'Storage', hex: '#F78142', draw: drawStorage },
+]);
+</script>
+</body>
+</html>
