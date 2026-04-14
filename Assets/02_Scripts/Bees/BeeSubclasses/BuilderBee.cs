@@ -2,20 +2,15 @@ using UnityEngine;
 
 public class BuilderBee : Bee
 {
-    private static ConstructionSite activeSite;
-
-    public static void SetActiveSite(ConstructionSite site)
-    {
-        activeSite = site;
-    }
-
     protected override void Update()
     {
         base.Update();
 
+        if (BuildManager.Instance == null) return;
+
+        ConstructionSite activeSite = BuildManager.Instance.activeSite;
         if (activeSite == null) return;
 
-        // Move toward construction site
         targetPosition = activeSite.transform.position;
 
         if (currentState != BeeState.Moving)
@@ -26,8 +21,6 @@ public class BuilderBee : Bee
 
     protected override void Die()
     {
-        // custom behavior (e.g. particles)
-
         base.Die(); // VERY IMPORTANT
     }
 

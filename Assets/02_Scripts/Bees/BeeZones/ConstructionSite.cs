@@ -85,21 +85,18 @@ public class ConstructionSite : MonoBehaviour
 
         isBuilding = false;
 
-        // ✅ Enable collider (now it's a real building)
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
             col.enabled = true;
 
-        // 🐝 Release builders
-        BuilderBee.SetActiveSite(null);
-
-        // 💀 Destroy build zone
         if (parentZone != null)
         {
             parentZone.FinishBuild();
         }
 
-        // ❌ REMOVE this script (object stays!)
+        // IMPORTANT: advance queue AFTER this site is done
+        BuildManager.Instance.FinishCurrent();
+
         Destroy(this);
     }
 }

@@ -50,7 +50,7 @@ public class BuildZone : MonoBehaviour
 
         currentSite.StartBuild();
 
-        BuilderBee.SetActiveSite(currentSite);
+        BuildManager.Instance.AddToQueue(currentSite);
     }
 
     public void FinishBuild()
