@@ -117,6 +117,10 @@ public class ForagerBee : Bee
 
         foreach (var zone in zones)
         {
+            // ❗ IMPORTANT: skip unfinished zones
+            if (!zone.IsActive)
+                continue;
+
             float dist = Vector2.Distance(transform.position, zone.transform.position);
 
             if (dist < closestDist)

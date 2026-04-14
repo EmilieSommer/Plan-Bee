@@ -14,7 +14,6 @@ public class ConstructionSite : MonoBehaviour
     {
         sr = GetComponent<SpriteRenderer>();
 
-        // start invisible
         if (sr != null)
         {
             Color c = sr.color;
@@ -22,15 +21,9 @@ public class ConstructionSite : MonoBehaviour
             sr.color = c;
         }
 
-        // 🚫 OPTIONAL: disable collider during build
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
             col.enabled = false;
-    }
-
-    public void StartBuild()
-    {
-        isBuilding = true;
     }
 
     private void Update()
@@ -44,7 +37,6 @@ public class ConstructionSite : MonoBehaviour
 
         float t = progress / buildTime;
 
-        // 🎨 Fade in
         if (sr != null)
         {
             Color c = sr.color;
@@ -78,7 +70,6 @@ public class ConstructionSite : MonoBehaviour
 
         return count;
     }
-
     void FinishBuild()
     {
         Debug.Log("Build complete!");
@@ -89,14 +80,33 @@ public class ConstructionSite : MonoBehaviour
         if (col != null)
             col.enabled = true;
 
+        // 🔥 ACTIVATE THE FINAL ZONE
         if (parentZone != null)
         {
+            HouseBeeZone zone = GetComponent<HouseBeeZone>();
+            if (zone != null)
+            {
+                zone.enabled = true;
+                zone.ActivateZone();
+            }
+
             parentZone.FinishBuild();
         }
 
-        // IMPORTANT: advance queue AFTER this site is done
+        // advance queue AFTER this site is done
         BuildManager.Instance.FinishCurrent();
 
         Destroy(this);
+    }
+
+    public void StartBuild()
+    {
+        isBuilding = true;
+
+        HouseBeeZone zone = GetComponent<HouseBeeZone>();
+        if (zone != null)
+        {
+            zone.SetInactive();   // 🔥 ONLY construction zones become inactive
+        }
     }
 }
