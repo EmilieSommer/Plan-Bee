@@ -2789,7 +2789,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.6627451, g: 0.83795315, b: 1, a: 0.7137255}
+  m_Color: {r: 0.6627451, g: 0.83795315, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -3770,7 +3770,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bd584f5c68b656479b4b1196366dcf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
-  zoneType: 0
+  zoneType: 2
   capacity: 3
   nurseCanvas: {fileID: 3027767201610163936}
 --- !u!114 &7353842837370964322

@@ -228,6 +228,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bd584f5c68b656479b4b1196366dcf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
+  zoneType: 2
+  capacity: 3
   nurseCanvas: {fileID: 9121601987656341170}
 --- !u!114 &6672336312784576611
 MonoBehaviour:
