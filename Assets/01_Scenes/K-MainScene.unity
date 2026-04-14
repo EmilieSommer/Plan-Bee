@@ -763,7 +763,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d2093d6f24365408ed60bfb8abace6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EggSpawner
-  nurseZone: {fileID: 7279558968159280875}
+  nurseZone: {fileID: 3572632993877536441, guid: b85380bbb4967da4f8e3137b5d695b28, type: 3}
   builderEggPrefab: {fileID: 8407810846007725484, guid: 5cad12e3b547d0a40b07887b3750f6c8, type: 3}
   nurseEggPrefab: {fileID: 2629186338001806570, guid: 3b993fd1ab971d4429a6d6795dd04282, type: 3}
   houseEggPrefab: {fileID: 3902200596265567435, guid: b9c6e4377a0a9a746a5d46546b2eabc5, type: 3}
@@ -2987,7 +2987,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.98
+      value: -5.24
       objectReference: {fileID: 0}
     - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
       propertyPath: m_LocalPosition.y

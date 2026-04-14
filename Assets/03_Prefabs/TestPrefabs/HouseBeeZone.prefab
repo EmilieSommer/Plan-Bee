@@ -152,6 +152,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fb49a3697745dd408d7a33b5c4a9409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBeeZone
+  zoneType: 0
+  capacity: 3
   depositRadius: 2
 --- !u!114 &-3257511840042143829
 MonoBehaviour:

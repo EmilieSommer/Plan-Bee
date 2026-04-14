@@ -5,9 +5,6 @@ public class EggSpawner : MonoBehaviour
 {
     public static EggSpawner Instance;
 
-    [Header("Zone")]
-    public NurseBeeZone nurseZone;
-
     [Header("Egg Prefabs")]
     public GameObject builderEggPrefab;
     public GameObject nurseEggPrefab;
@@ -16,7 +13,7 @@ public class EggSpawner : MonoBehaviour
     public GameObject droneEggPrefab;
 
     private Dictionary<EggType, GameObject> eggDictionary;
-    
+
     private void Awake()
     {
         Instance = this;
@@ -31,11 +28,12 @@ public class EggSpawner : MonoBehaviour
         };
     }
 
-    public Egg SpawnEgg(EggType eggType) // ✅ now returns Egg
+    // ✅ Now requires a zone
+    public Egg SpawnEgg(EggType eggType, NurseBeeZone zone)
     {
-        if (nurseZone == null)
+        if (zone == null)
         {
-            Debug.LogWarning("NurseZone is not assigned in EggSpawner!");
+            Debug.LogError("SpawnEgg called with NULL zone!");
             return null;
         }
 
@@ -53,10 +51,12 @@ public class EggSpawner : MonoBehaviour
             return null;
         }
 
-        Vector2 spawnPosition = nurseZone.GetRandomPoint();
+        Vector2 spawnPosition = zone.GetRandomPoint();
+
+        Debug.Log("Spawning in zone: " + zone.name);
 
         GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
 
-        return obj.GetComponent<Egg>(); // ✅ return Egg component
+        return obj.GetComponent<Egg>();
     }
 }

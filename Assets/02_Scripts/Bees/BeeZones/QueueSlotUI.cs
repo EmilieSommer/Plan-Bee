@@ -16,15 +16,27 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
         if (egg != null)
         {
+            // ✅ Make sure a zone is selected
+            if (NurseBeeZone.currentZone == null)
+            {
+                Debug.LogWarning("No Nurse Zone selected!");
+                return;
+            }
+
             egg.SnapToSlot(transform);
 
             currentEgg = egg;
             isFilled = true;
 
-            Egg worldEgg = EggSpawner.Instance.SpawnEgg(egg.eggType);
+            // ✅ FIX: pass the selected zone
+            Egg worldEgg = EggSpawner.Instance.SpawnEgg(
+                egg.eggType,
+                NurseBeeZone.currentZone
+            );
+
             currentWorldEgg = worldEgg;
 
-            // ✅ subscribe to hatch event
+            // subscribe to hatch event
             if (currentWorldEgg != null)
             {
                 currentWorldEgg.OnHatched += ClearSlot;
@@ -34,7 +46,6 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
     private void Update()
     {
-        // Optional safety check (kept from your original logic)
         if (isFilled && (currentEgg == null || !currentEgg.gameObject.activeInHierarchy))
         {
             ClearSlot();
@@ -43,17 +54,15 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
     public void ClearSlot()
     {
-        // unsubscribe from world egg
         if (currentWorldEgg != null)
         {
             currentWorldEgg.OnHatched -= ClearSlot;
             currentWorldEgg = null;
         }
 
-        // ✅ remove the UI egg visually
         if (currentEgg != null)
         {
-            Destroy(currentEgg.gameObject); // or SetActive(false)
+            Destroy(currentEgg.gameObject);
         }
 
         isFilled = false;

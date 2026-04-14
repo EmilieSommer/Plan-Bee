@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 /// Manages the hive tile grid. Handles marking tiles for construction
 /// and tracks the state of every hive cell.
 /// </summary>
-public class HiveGrid : MonoBehaviour
+/*public class HiveGrid : MonoBehaviour
 {
     public static HiveGrid Instance { get; private set; }
 
@@ -159,4 +159,4 @@ public class HiveGrid : MonoBehaviour
                 return true;
         return false;
     }
-}
+}*/
