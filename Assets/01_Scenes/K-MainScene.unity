@@ -763,7 +763,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6d2093d6f24365408ed60bfb8abace6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EggSpawner
-  nurseZone: {fileID: 3572632993877536441, guid: b85380bbb4967da4f8e3137b5d695b28, type: 3}
   builderEggPrefab: {fileID: 8407810846007725484, guid: 5cad12e3b547d0a40b07887b3750f6c8, type: 3}
   nurseEggPrefab: {fileID: 2629186338001806570, guid: 3b993fd1ab971d4429a6d6795dd04282, type: 3}
   houseEggPrefab: {fileID: 3902200596265567435, guid: b9c6e4377a0a9a746a5d46546b2eabc5, type: 3}
@@ -1675,6 +1674,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1612497660
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.13792
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.25744
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4316448782599403861, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5076726635901290395, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
+      propertyPath: m_Name
+      value: HouseBee
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2b55d43cd0e9a634ab97c9ea40ff19d5, type: 3}
 --- !u!1 &1662901374
 GameObject:
   m_ObjectHideFlags: 0
@@ -4340,3 +4396,4 @@ SceneRoots:
   - {fileID: 1662901378}
   - {fileID: 858931771}
   - {fileID: 2053461854}
+  - {fileID: 1612497660}

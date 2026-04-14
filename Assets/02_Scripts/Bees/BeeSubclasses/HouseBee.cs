@@ -5,7 +5,7 @@ public class HouseBee : Bee
     [Header("Work")]
     public float workDistance = 1.2f;
     public float convertTime = 2f;
-    public float workBuffer = 0.2f; // small buffer to prevent jitter
+    public float workBuffer = 0.2f;
 
     [Header("Output")]
     public GameObject honeyPrefab;
@@ -17,58 +17,73 @@ public class HouseBee : Bee
     private float workTimer;
     private bool hasStartedWorking = false;
 
-    // Search retry
     private float searchTimer = 0f;
     public float searchInterval = 0.5f;
 
     public bool IsWorking => hasStartedWorking;
 
+    // -------------------
+    // INIT (FIXED ORDER)
+    // -------------------
     protected override void Awake()
     {
         base.Awake();
-
         beeType = BeeType.House;
-
-        // ✅ FIX: use ZoneManager instead of FindObjectOfType
-        zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
-
-        if (zone != null)
-        {
-            homePosition = zone.transform.position;
-        }
     }
 
     private System.Collections.IEnumerator Start()
     {
-        yield return null; // allow pollen to register first
+        yield return null; // wait 1 frame so managers + pollen exist
+
+        zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
+
+        if (zone != null)
+            homePosition = zone.transform.position;
+
         currentState = BeeState.Idle;
+
+        // 🔥 IMPORTANT: force initial target acquisition
+        TryAcquireInitialTarget();
     }
 
+    // -------------------
+    // UPDATE
+    // -------------------
     protected override void Update()
     {
         base.Update();
 
-        // ✅ OPTIONAL SAFE FIX: refresh zone if missing
         if (zone == null)
         {
             zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
 
             if (zone != null)
-            {
                 homePosition = zone.transform.position;
-            }
         }
 
         CheckForWorkContinuously();
     }
 
     // -------------------
+    // INITIAL TARGET FIX
+    // -------------------
+    void TryAcquireInitialTarget()
+    {
+        target = FindAvailablePollen();
+
+        if (target != null)
+        {
+            target.isClaimed = true;
+            targetPosition = target.transform.position;
+            currentState = BeeState.Moving;
+        }
+    }
+
+    // -------------------
     // STATES
     // -------------------
-
     protected override void IdleBehavior()
     {
-        // PRIORITY CHECK: If already working, don't interrupt
         if (currentState == BeeState.Working && hasStartedWorking)
             return;
 
@@ -117,7 +132,6 @@ public class HouseBee : Bee
 
     protected override void WorkBehavior()
     {
-        // ✅ SAFETY FIX
         if (target == null)
         {
             ResetBee();
@@ -150,12 +164,8 @@ public class HouseBee : Bee
         }
         else
         {
-            if (!hasStartedWorking)
-            {
-                targetPosition = target.transform.position;
-                currentState = BeeState.Moving;
-                return;
-            }
+            targetPosition = target.transform.position;
+            currentState = BeeState.Moving;
         }
     }
 
@@ -174,7 +184,6 @@ public class HouseBee : Bee
     // -------------------
     // ACTIONS
     // -------------------
-
     void Convert()
     {
         if (target == null) return;
@@ -194,9 +203,7 @@ public class HouseBee : Bee
         hasStartedWorking = false;
 
         if (target != null)
-        {
             target.isClaimed = false;
-        }
 
         target = null;
 
@@ -206,7 +213,6 @@ public class HouseBee : Bee
     // -------------------
     // HELPERS
     // -------------------
-
     Pollen FindAvailablePollen()
     {
         Pollen best = null;
@@ -233,7 +239,11 @@ public class HouseBee : Bee
 
     void StayInZone()
     {
-        if (zone == null) return;
+        if (zone == null)
+        {
+            zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
+            if (zone == null) return;
+        }
 
         float dist = Vector2.Distance(transform.position, zone.transform.position);
 
@@ -252,12 +262,10 @@ public class HouseBee : Bee
         }
     }
 
+    protected override void ReturnBehavior() { }
+
     protected override void Die()
     {
-        // custom behavior (e.g. particles)
-
-        base.Die(); // VERY IMPORTANT
+        base.Die();
     }
-
-    protected override void ReturnBehavior() { }
 }
