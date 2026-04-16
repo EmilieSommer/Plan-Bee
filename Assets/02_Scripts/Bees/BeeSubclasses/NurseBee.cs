@@ -5,13 +5,6 @@ public class NurseBee : Bee
     [Header("Work Settings")]
     public float workDistanceThreshold = 1.5f;
 
-    [Header("Idle Settings")]
-    public float idleWanderRadius = 2f;
-    public float idleMoveCooldownMin = 2f;
-    public float idleMoveCooldownMax = 5f;
-
-    private float idleMoveTimer = 0f;
-
     private Egg assignedEgg;
     private bool isTending = false;
 
@@ -26,8 +19,8 @@ public class NurseBee : Bee
     {
         base.Update();
 
-        // 🧠 HARD SAFETY RESET (fixes ALL stuck cases)
-        if (!IsEggValid(assignedEgg))
+        // ✅ FIX: only clear if there WAS an egg
+        if (assignedEgg != null && !IsEggValid(assignedEgg))
         {
             ClearAssignment();
         }
@@ -47,7 +40,8 @@ public class NurseBee : Bee
     {
         if (assignedEgg != null)
         {
-            assignedEgg.RemoveNurse();
+            assignedEgg.RemoveNurse(this);
+            assignedEgg.ClearReservation(this);
         }
 
         assignedEgg = null;
@@ -74,7 +68,7 @@ public class NurseBee : Bee
         }
         else
         {
-            NormalIdleMovement();
+            base.IdleBehavior(); // ✅ roam like normal bees
         }
     }
 
@@ -122,6 +116,7 @@ public class NurseBee : Bee
             }
             else
             {
+                assignedEgg.ClearReservation(this); // ✅ release reservation
                 ClearAssignment();
                 return;
             }
@@ -168,14 +163,17 @@ public class NurseBee : Bee
         foreach (Egg egg in Egg.allEggs)
         {
             if (!IsEggValid(egg)) continue;
-            if (egg.HasNurse()) continue;
+            if (egg.HasNurse() || egg.IsReserved()) continue;
 
             float dist = Vector2.Distance(transform.position, egg.transform.position);
 
-            if (dist < closestDist)
+           if (dist < closestDist)
             {
-                closestDist = dist;
-                closest = egg;
+                if (egg.TryReserve(this)) // ✅ reserve immediately
+                {
+                    closestDist = dist;
+                    closest = egg;
+                }
             }
         }
 
@@ -183,39 +181,12 @@ public class NurseBee : Bee
     }
 
     // ------------------------
-    // IDLE MOVEMENT
-    // ------------------------
-    private void NormalIdleMovement()
-    {
-        idleMoveTimer -= Time.deltaTime;
-
-        if (idleMoveTimer <= 0f)
-        {
-            idleMoveTimer = Random.Range(idleMoveCooldownMin, idleMoveCooldownMax);
-
-            Vector2 randomPoint;
-
-            if (HasValidZone())
-            {
-                randomPoint = assignedZone.transform.position +
-                              (Vector3)Random.insideUnitCircle * idleWanderRadius;
-            }
-            else
-            {
-                randomPoint = (Vector2)transform.position + Random.insideUnitCircle * idleWanderRadius;
-            }
-
-            targetPosition = randomPoint;
-            currentState = BeeState.Moving;
-        }
-    }
-
-    // ------------------------
     // ORBIT
     // ------------------------
     private void OrbitEgg()
     {
-        if (!IsEggValid(assignedEgg))
+        // ✅ safe check
+        if (assignedEgg != null && !IsEggValid(assignedEgg))
         {
             ClearAssignment();
             return;

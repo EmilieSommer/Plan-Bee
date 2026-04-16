@@ -17,10 +17,10 @@ public class Egg : MonoBehaviour
     [Header("Tending")]
     public float tendSpeedMultiplier = 1f;
 
-    // 🐝 Only ONE nurse allowed
+    // 🐝 Only ONE nurse working
     private NurseBee currentNurse = null;
 
-    // 🔒 Reservation system (prevents multiple bees targeting same egg)
+    // 🔒 Only ONE nurse targeting
     private NurseBee reservedNurse = null;
 
     private void OnEnable()
@@ -74,9 +74,9 @@ public class Egg : MonoBehaviour
         return true;
     }
 
-    public void ClearReservation()
+    public void ClearReservation(NurseBee nurse)
     {
-        if (currentNurse == null)
+        if (reservedNurse == nurse)
         {
             reservedNurse = null;
         }
@@ -91,16 +91,27 @@ public class Egg : MonoBehaviour
         if (currentNurse != null)
             return false;
 
+        // ✅ Only the reserving nurse can assign
+        if (reservedNurse != nurse)
+            return false;
+
         currentNurse = nurse;
+
+        // reservation no longer needed
+        reservedNurse = null;
+
         return true;
     }
 
-    public void RemoveNurse()
+    public void RemoveNurse(NurseBee nurse)
     {
-        currentNurse = null;
+        if (currentNurse == nurse)
+        {
+            currentNurse = null;
+        }
 
-        // Only clear reservation if no nurse is present
-        if (reservedNurse != null)
+        // also clear reservation if same nurse
+        if (reservedNurse == nurse)
         {
             reservedNurse = null;
         }
