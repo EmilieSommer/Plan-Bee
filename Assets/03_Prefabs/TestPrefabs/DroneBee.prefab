@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7335569167905412226}
   - component: {fileID: 2228859787402720469}
   - component: {fileID: 7413333641828155569}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: DroneBee
   m_TagString: Bee
   m_Icon: {fileID: 0}
@@ -186,7 +186,3 @@ MonoBehaviour:
   attackRange: 1.2
   attackCooldown: 1
   beeType: 3
-  detectionRadius: 5
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 128

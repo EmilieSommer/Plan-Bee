@@ -13,35 +13,38 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         if (isFilled) return;
 
         DraggableEggUI egg = eventData.pointerDrag.GetComponent<DraggableEggUI>();
+        if (egg == null) return;
 
-        if (egg != null)
+        if (NurseBeeZone.currentZone == null)
         {
-            // ✅ Make sure a zone is selected
-            if (NurseBeeZone.currentZone == null)
-            {
-                Debug.LogWarning("No Nurse Zone selected!");
-                return;
-            }
-
-            egg.SnapToSlot(transform);
-
-            currentEgg = egg;
-            isFilled = true;
-
-            // ✅ FIX: pass the selected zone
-            Egg worldEgg = EggSpawner.Instance.SpawnEgg(
-                egg.eggType,
-                NurseBeeZone.currentZone
-            );
-
-            currentWorldEgg = worldEgg;
-
-            // subscribe to hatch event
-            if (currentWorldEgg != null)
-            {
-                currentWorldEgg.OnHatched += ClearSlot;
-            }
+            Debug.LogWarning("No Nurse Zone selected!");
+            return;
         }
+
+        int cost = egg.honeyCost;
+
+        // ❌ CHECK FIRST
+        if (!CurrencyManager.Instance.UseHoney(cost))
+        {
+            Debug.Log("Not enough honey!");
+            return;
+        }
+
+        // ✅ ONLY NOW accept the egg
+        egg.SnapToSlot(transform);
+
+        currentEgg = egg;
+        isFilled = true;
+
+        Egg worldEgg = EggSpawner.Instance.SpawnEgg(
+            egg.eggType,
+            NurseBeeZone.currentZone
+        );
+
+        currentWorldEgg = worldEgg;
+
+        if (currentWorldEgg != null)
+            currentWorldEgg.OnHatched += ClearSlot;
     }
 
     private void Update()

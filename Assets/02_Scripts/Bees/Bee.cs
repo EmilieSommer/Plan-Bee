@@ -77,6 +77,8 @@ public abstract class Bee : MonoBehaviour
 
     protected Zone assignedZone;
 
+    protected bool isBeingDragged = false;
+
     protected virtual void Awake()
     {
 
@@ -120,21 +122,25 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
-       if (currentState == BeeState.Working)
-        {
-            currentVelocity = Vector2.zero;
+            if (isBeingDragged)
+    {
+        currentVelocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+        return;
+    }
 
-            // HARD STOP physics
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
+    if (currentState == BeeState.Working)
+    {
+        currentVelocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+        rb.Sleep();
+        return;
+    }
 
-            // Freeze position completely
-            rb.Sleep();
-
-            return;
-        }
-        if (currentState == BeeState.Dead)
-            return;
+    if (currentState == BeeState.Dead)
+        return;
+ 
 
         Vector2 desiredVelocity = Vector2.zero;
 
@@ -506,5 +512,35 @@ public abstract class Bee : MonoBehaviour
             assignedZone.RegisterBee(this);
             ZoneManager.Instance.RegisterBee(this);
         }
+    }
+
+    public void AssignZoneDirect(Zone newZone)
+    {
+        if (assignedZone == newZone) return;
+
+        if (assignedZone != null)
+            assignedZone.UnregisterBee(this);
+
+        assignedZone = newZone;
+
+        if (assignedZone != null)
+            assignedZone.RegisterBee(this);
+
+        homePosition = assignedZone.transform.position;
+        currentState = BeeState.Idle;
+}
+
+    public void StartDragging()
+    {
+        isBeingDragged = true;
+        currentVelocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
+    }
+
+    public void StopDragging()
+    {
+        isBeingDragged = false;
+        PickRandomDirection();
+        currentState = BeeState.Idle;
     }
 }

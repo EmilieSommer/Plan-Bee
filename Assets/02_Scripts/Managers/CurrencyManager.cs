@@ -26,6 +26,15 @@ public class CurrencyManager : MonoBehaviour
         UpdateUI();
     }
 
+    public bool UseHoney(int amount)
+    {
+        if (honey < amount) return false;
+
+        honey -= amount;
+        UpdateUI();
+        return true;
+    }
+
     // -------------------
     // ADD METHODS
     // -------------------

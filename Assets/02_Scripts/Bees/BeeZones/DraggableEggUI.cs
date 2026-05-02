@@ -17,6 +17,9 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     public EggType eggType;
 
+    [Header("Cost")]
+    public int honeyCost;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();

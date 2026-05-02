@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2982678732783271966}
   - component: {fileID: 1065706072546453575}
   - component: {fileID: 6676182341358064589}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: NurseBee
   m_TagString: Bee
   m_Icon: {fileID: 0}
@@ -182,9 +182,8 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
+  attackDamage: 2
+  attackRange: 1.2
+  attackCooldown: 1
   beeType: 2
-  assignedZone: {fileID: 3572632993877536441, guid: b85380bbb4967da4f8e3137b5d695b28, type: 3}
   workDistanceThreshold: 0.5
-  idleWanderRadius: 2
-  idleMoveCooldownMin: 2
-  idleMoveCooldownMax: 5

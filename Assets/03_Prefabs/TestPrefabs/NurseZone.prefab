@@ -229,7 +229,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
   zoneType: 2
-  capacity: 3
+  limits:
+  - type: 2
+    capacity: 3
+    current: 0
   nurseCanvas: {fileID: 9121601987656341170}
 --- !u!114 &6672336312784576611
 MonoBehaviour:

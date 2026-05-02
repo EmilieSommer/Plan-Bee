@@ -797,7 +797,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 780838936}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Bees
   m_TagString: Bee
   m_Icon: {fileID: 0}
@@ -1531,6 +1531,9 @@ MonoBehaviour:
   zoneLayer:
     serializedVersion: 2
     m_Bits: 256
+  beeLayer:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!4 &1561719851
 Transform:
   m_ObjectHideFlags: 0
@@ -1826,6 +1829,8 @@ GameObject:
   - component: {fileID: 1809135439}
   - component: {fileID: 1809135438}
   - component: {fileID: 1809135437}
+  - component: {fileID: 1809135440}
+  - component: {fileID: 1809135441}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1907,6 +1912,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1809135440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809135436}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 420801675e6ec6b4eaba75f71d349437, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraZoom
+  zoomSpeed: 5
+  minZoom: 2
+  maxZoom: 10
+--- !u!114 &1809135441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809135436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6b89ecba9ad5df40bee9ea7d5aee95c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController2D
+  zoomSpeed: 5
+  minZoom: 2
+  maxZoom: 10
+  zoomSmoothTime: 0.15
+  dragSpeed: 1
+  dragSmoothTime: 0.1
+  maxDragDistance: 10
 --- !u!4 &1823473694 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 689649877741464986, guid: b7638a07e12a44a4a894053c6deb6f14, type: 3}
@@ -2554,6 +2593,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 1
+  honeyCost: 0
 --- !u!4 &1086116995796911968
 Transform:
   m_ObjectHideFlags: 0
@@ -3468,7 +3508,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBeeZone
   zoneType: 0
-  capacity: 3
+  limits: []
   depositRadius: 2
 --- !u!61 &6191681279853339118
 BoxCollider2D:
@@ -3529,6 +3569,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 3
+  honeyCost: 0
 --- !u!114 &6610943007139056488
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3619,6 +3660,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 4
+  honeyCost: 0
 --- !u!1001 &7274740604388438151
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3689,7 +3731,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
   zoneType: 2
-  capacity: 3
+  limits: []
   nurseCanvas: {fileID: 3027767201610163936}
 --- !u!114 &7353842837370964322
 MonoBehaviour:
@@ -3704,6 +3746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 0
+  honeyCost: 0
 --- !u!1 &7453192753322325175
 GameObject:
   m_ObjectHideFlags: 0
@@ -4053,6 +4096,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 2
+  honeyCost: 0
 --- !u!222 &8255186977294479484
 CanvasRenderer:
   m_ObjectHideFlags: 0

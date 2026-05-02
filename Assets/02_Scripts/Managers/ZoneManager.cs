@@ -44,7 +44,7 @@ public class ZoneManager : MonoBehaviour
 
     public void UnregisterBee(Bee bee)
     {
-        beeCounts[bee.beeType]--;
+        beeCounts[bee.beeType] = Mathf.Max(0, beeCounts[bee.beeType] - 1);
     }
 
     public int GetBeeCount(Bee.BeeType type)
@@ -53,14 +53,8 @@ public class ZoneManager : MonoBehaviour
     }
 
     // ------------------------
-    // LIMIT CHECK
+    // CAPACITY ACROSS ALL ZONES
     // ------------------------
-
-    public bool CanSpawnBee(Bee.BeeType type)
-    {
-        int max = GetZoneCapacity(type);
-        return beeCounts[type] < max;
-    }
 
     public int GetZoneCapacity(Bee.BeeType type)
     {
@@ -68,11 +62,28 @@ public class ZoneManager : MonoBehaviour
 
         foreach (var zone in zonesByType[type])
         {
-            capacity += zone.capacity;
+            if (zone == null) continue;
+
+            foreach (var limit in zone.limits)
+            {
+                if (limit.type == type)
+                {
+                    capacity += limit.capacity;
+                }
+            }
         }
 
         return capacity;
     }
+
+    public bool CanSpawnBee(Bee.BeeType type)
+    {
+        return beeCounts[type] < GetZoneCapacity(type);
+    }
+
+    // ------------------------
+    // ZONE SELECTION
+    // ------------------------
 
     public Zone GetClosestZone(Bee.BeeType type, Vector2 position)
     {
@@ -86,15 +97,14 @@ public class ZoneManager : MonoBehaviour
         {
             if (zone == null) continue;
 
-            // ❌ Skip full zones
-            if (zone.IsFull()) continue;
+            // ❌ must have space for this bee type
+            if (!zone.CanAccept(type)) continue;
 
             float distance = Vector2.Distance(position, zone.transform.position);
 
-            // 🔥 IMPORTANT: include how full the zone is
-            float fillPenalty = zone.GetFillRatio() * 10f;
+            // prefer less crowded zones
+            float fillPenalty = zone.GetFillRatio(type) * 10f;
 
-            // 🔥 FINAL SCORE
             float score = distance + fillPenalty;
 
             if (score < bestScore)
@@ -106,4 +116,32 @@ public class ZoneManager : MonoBehaviour
 
         return bestZone;
     }
-}
+
+    public Zone GetAlternativeZone(Bee.BeeType type, Vector2 position, Zone excludeZone)
+    {
+        Zone bestZone = null;
+        float bestScore = Mathf.Infinity;
+
+        foreach (Zone zone in zonesByType[type])
+        {
+            if (zone == null) continue;
+            if (zone == excludeZone) continue;
+
+            if (!zone.CanAccept(type)) continue;
+
+            float distance = Vector2.Distance(position, zone.transform.position);
+
+            float fillPenalty = zone.GetFillRatio(type) * 10f;
+
+            float score = distance + fillPenalty;
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestZone = zone;
+            }
+        }
+
+        return bestZone;
+    }
+    }

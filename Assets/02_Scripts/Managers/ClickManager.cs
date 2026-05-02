@@ -5,40 +5,56 @@ public class ClickManager : MonoBehaviour
 {
     public LayerMask honeyLayer;
     public LayerMask zoneLayer;
+    public LayerMask beeLayer;
 
     private GameObject activeCanvas;
     private bool uiOpen = false;
 
+    private GameObject draggedBee;
+    private bool isDraggingBee = false;
+
     void Update()
     {
-        // 🖱️ Click
+        HandleBeeDrag();
+
         if (!Input.GetMouseButtonDown(0))
             return;
 
-        // 🥇 UI ALWAYS HAS PRIORITY
+        // UI has priority
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
 
-        // 🔒 If UI is open → only allow closing
-        if (uiOpen)
-        {
-            if (activeCanvas != null)
-            {
-                activeCanvas.SetActive(false);
-                activeCanvas = null;
-            }
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-            uiOpen = false;
+        // 🐝 Bee drag
+        RaycastHit2D beeHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, beeLayer);
+
+        if (beeHit.collider != null)
+        {
+            draggedBee = beeHit.collider.gameObject;
+            isDraggingBee = true;
+
+            Bee bee = draggedBee.GetComponent<Bee>();
+            if (bee != null)
+                bee.StartDragging();
+
             return;
         }
 
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        // Close open UI
+        if (uiOpen)
+        {
+            CloseUI();
+            return;
+        }
 
-        // 🥇 HONEY
+        // 🍯 Honey
         RaycastHit2D honeyHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, honeyLayer);
+
         if (honeyHit.collider != null)
         {
             Honey honey = honeyHit.collider.GetComponent<Honey>();
+
             if (honey != null)
             {
                 honey.Collect();
@@ -46,12 +62,13 @@ public class ClickManager : MonoBehaviour
             }
         }
 
-        // 🧱 ZONES
+        // 🧱 Zones
         RaycastHit2D zoneHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, zoneLayer);
+
         if (zoneHit.collider != null)
         {
-            // Build Zone
             BuildZone buildZone = zoneHit.collider.GetComponent<BuildZone>();
+
             if (buildZone != null)
             {
                 buildZone.Open();
@@ -60,8 +77,8 @@ public class ClickManager : MonoBehaviour
                 return;
             }
 
-            // Nurse Zone
             NurseBeeZone nurseZone = zoneHit.collider.GetComponent<NurseBeeZone>();
+
             if (nurseZone != null)
             {
                 nurseZone.Open();
@@ -70,5 +87,43 @@ public class ClickManager : MonoBehaviour
                 return;
             }
         }
+    }
+
+    void HandleBeeDrag()
+    {
+        if (!isDraggingBee || draggedBee == null)
+            return;
+
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = draggedBee.transform.position.z;
+
+        Rigidbody2D rb = draggedBee.GetComponent<Rigidbody2D>();
+
+        if (rb != null)
+            rb.MovePosition(mousePos);
+        else
+            draggedBee.transform.position = mousePos;
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            Bee bee = draggedBee.GetComponent<Bee>();
+
+            if (bee != null)
+                bee.StopDragging();
+
+            isDraggingBee = false;
+            draggedBee = null;
+        }
+    }
+
+    void CloseUI()
+    {
+        if (activeCanvas != null)
+        {
+            activeCanvas.SetActive(false);
+            activeCanvas = null;
+        }
+
+        uiOpen = false;
     }
 }
