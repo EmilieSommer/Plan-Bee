@@ -1013,6 +1013,9 @@ MonoBehaviour:
   nursePrefab: {fileID: 3746350325339473125, guid: b85380bbb4967da4f8e3137b5d695b28, type: 3}
   housePrefab: {fileID: 5712890796905272594, guid: 2f3c098d5586808499cc730400ad2e83, type: 3}
   sleepPrefab: {fileID: 0}
+  nurseCost: 1
+  houseCost: 1
+  sleepCost: 15
 --- !u!61 &1796568623417297510
 BoxCollider2D:
   m_ObjectHideFlags: 0

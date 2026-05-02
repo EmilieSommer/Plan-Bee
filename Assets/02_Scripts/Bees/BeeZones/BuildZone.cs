@@ -8,10 +8,18 @@ public class BuildZone : MonoBehaviour
     public GameObject housePrefab;
     public GameObject sleepPrefab;
 
+    [Header("Costs")]
+    public int nurseCost = 10;
+    public int houseCost = 20;
+    public int sleepCost = 15;
+
     private bool isBuilt = false;
     private bool isBuilding = false;
 
     private ConstructionSite currentSite;
+
+    private float buildTimeout = 10f;
+    private float buildTimer;
 
     // ------------------------
     // BUTTONS
@@ -19,24 +27,45 @@ public class BuildZone : MonoBehaviour
 
     public void BuildNurse()
     {
-        StartConstruction(nursePrefab);
+        TryStartConstruction(nursePrefab, nurseCost);
     }
 
     public void BuildHouse()
     {
-        StartConstruction(housePrefab);
+        TryStartConstruction(housePrefab, houseCost);
     }
 
     public void BuildSleep()
     {
-        StartConstruction(sleepPrefab);
+        TryStartConstruction(sleepPrefab, sleepCost);
     }
 
-    void StartConstruction(GameObject prefab)
+    // ------------------------
+    // BUILD LOGIC (FIXED)
+    // ------------------------
+
+    void TryStartConstruction(GameObject prefab, int cost)
     {
+        if (isBuilt) return;
         if (isBuilding) return;
 
+        if (CurrencyManager.Instance == null)
+        {
+            Debug.LogError("CurrencyManager is NULL");
+            return;
+        }
+
+        // 🔥 safe check BEFORE spending
+        if (CurrencyManager.Instance.honey < cost)
+        {
+            Debug.Log("Not enough honey!");
+            return;
+        }
+
+        CurrencyManager.Instance.UseHoney(cost);
+
         isBuilding = true;
+        buildTimer = 0f;
 
         if (buildCanvas != null)
             buildCanvas.SetActive(false);
@@ -53,15 +82,40 @@ public class BuildZone : MonoBehaviour
         BuildManager.Instance.AddToQueue(currentSite);
     }
 
+    // ------------------------
+    // FINISH BUILD
+    // ------------------------
+
     public void FinishBuild()
     {
         isBuilding = false;
         isBuilt = true;
 
-        // 🔥 IMPORTANT: Do NOT keep this zone
-        // It should be replaced by the new zone (prefab)
         Destroy(gameObject);
     }
+
+    // ------------------------
+    // SAFETY TIMEOUT (prevents soft-lock)
+    // ------------------------
+
+    private void Update()
+    {
+        if (!isBuilding) return;
+
+        buildTimer += Time.deltaTime;
+
+        if (buildTimer > buildTimeout)
+        {
+            Debug.LogWarning("Build timeout reset (FinishBuild not called)");
+
+            isBuilding = false;
+            buildTimer = 0f;
+        }
+    }
+
+    // ------------------------
+    // VISUAL DISABLE
+    // ------------------------
 
     void DisableZone()
     {
@@ -73,6 +127,10 @@ public class BuildZone : MonoBehaviour
         if (sr != null)
             sr.color = Color.gray;
     }
+
+    // ------------------------
+    // UI OPEN
+    // ------------------------
 
     public void Open()
     {

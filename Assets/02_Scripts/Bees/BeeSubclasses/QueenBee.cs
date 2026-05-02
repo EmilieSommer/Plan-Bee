@@ -1,8 +1,18 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class QueenBee : Bee
 {
     public GameObject gameOverCanvas;
+
+    [Header("UI")]
+    public Slider healthSlider;
+
+    [Header("Regeneration")]
+    public float regenRate = 0.5f;
+    public float regenDelay = 3f;
+
+    private float regenTimer = 0f;
 
     protected override void Awake()
     {
@@ -13,6 +23,56 @@ public class QueenBee : Bee
     protected override void Start()
     {
         AssignZone();
+
+        // 🔥 initialize slider
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
+        }
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+
+        HandleRegeneration();
+        UpdateHealthUI();
+    }
+
+    // -------------------------
+    // HEALTH UI
+    // -------------------------
+    void UpdateHealthUI()
+    {
+        if (healthSlider == null)
+            return;
+
+        healthSlider.value = currentHealth;
+    }
+
+    // -------------------------
+    // REGENERATION
+    // -------------------------
+    void HandleRegeneration()
+    {
+        if (currentState == BeeState.Dead)
+            return;
+
+        if (currentHealth < maxHealth)
+        {
+            regenTimer += Time.deltaTime;
+
+            if (regenTimer >= regenDelay)
+            {
+                currentHealth += regenRate * Time.deltaTime;
+                currentHealth = Mathf.Min(currentHealth, maxHealth);
+            }
+        }
+        else
+        {
+            regenTimer = 0f;
+        }
     }
 
     protected override void WorkBehavior()
@@ -50,7 +110,6 @@ public class QueenBee : Bee
 
         queenZone.RegisterBee(this);
 
-        // OPTIONAL (recommended if your system uses it)
         if (ZoneManager.Instance != null)
         {
             ZoneManager.Instance.RegisterBee(this);
