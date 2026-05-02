@@ -7,6 +7,7 @@ public class ZoneManager : MonoBehaviour
 
     private Dictionary<Bee.BeeType, List<Zone>> zonesByType = new();
     private Dictionary<Bee.BeeType, int> beeCounts = new();
+    private Dictionary<Bee.BeeType, Dictionary<Zone, int>> zoneAssignments = new();
 
     private void Awake()
     {
@@ -16,6 +17,7 @@ public class ZoneManager : MonoBehaviour
         {
             zonesByType[type] = new List<Zone>();
             beeCounts[type] = 0;
+            zoneAssignments[type] = new Dictionary<Zone, int>();
         }
     }
 
@@ -26,11 +28,17 @@ public class ZoneManager : MonoBehaviour
     public void RegisterZone(Zone zone)
     {
         zonesByType[zone.zoneType].Add(zone);
+
+        if (!zoneAssignments[zone.zoneType].ContainsKey(zone))
+            zoneAssignments[zone.zoneType][zone] = 0;
     }
 
     public void UnregisterZone(Zone zone)
     {
         zonesByType[zone.zoneType].Remove(zone);
+
+        if (zoneAssignments[zone.zoneType].ContainsKey(zone))
+            zoneAssignments[zone.zoneType].Remove(zone);
     }
 
     // ------------------------
@@ -53,7 +61,19 @@ public class ZoneManager : MonoBehaviour
     }
 
     // ------------------------
-    // CAPACITY ACROSS ALL ZONES
+    // ASSIGNMENT TRACKING
+    // ------------------------
+
+    public void RegisterZoneAssignment(Bee.BeeType type, Zone zone)
+    {
+        if (!zoneAssignments[type].ContainsKey(zone))
+            zoneAssignments[type][zone] = 0;
+
+        zoneAssignments[type][zone]++;
+    }
+
+    // ------------------------
+    // CAPACITY
     // ------------------------
 
     public int GetZoneCapacity(Bee.BeeType type)
@@ -67,9 +87,7 @@ public class ZoneManager : MonoBehaviour
             foreach (var limit in zone.limits)
             {
                 if (limit.type == type)
-                {
                     capacity += limit.capacity;
-                }
             }
         }
 
@@ -82,7 +100,7 @@ public class ZoneManager : MonoBehaviour
     }
 
     // ------------------------
-    // ZONE SELECTION
+    // SMART ZONE SELECTION
     // ------------------------
 
     public Zone GetClosestZone(Bee.BeeType type, Vector2 position)
@@ -96,16 +114,18 @@ public class ZoneManager : MonoBehaviour
         foreach (Zone zone in zonesByType[type])
         {
             if (zone == null) continue;
-
-            // ❌ must have space for this bee type
             if (!zone.CanAccept(type)) continue;
 
             float distance = Vector2.Distance(position, zone.transform.position);
+            float fillPenalty = zone.GetFillRatio(type) * 15f;
 
-            // prefer less crowded zones
-            float fillPenalty = zone.GetFillRatio(type) * 10f;
+            int assigned = zoneAssignments[type].ContainsKey(zone)
+                ? zoneAssignments[type][zone]
+                : 0;
 
-            float score = distance + fillPenalty;
+            float spreadPenalty = assigned * 2f;
+
+            float score = distance + fillPenalty + spreadPenalty;
 
             if (score < bestScore)
             {
@@ -113,6 +133,9 @@ public class ZoneManager : MonoBehaviour
                 bestZone = zone;
             }
         }
+
+        if (bestZone != null)
+            RegisterZoneAssignment(type, bestZone);
 
         return bestZone;
     }
@@ -126,22 +149,18 @@ public class ZoneManager : MonoBehaviour
         {
             if (zone == null) continue;
             if (zone == excludeZone) continue;
-
             if (!zone.CanAccept(type)) continue;
 
             float distance = Vector2.Distance(position, zone.transform.position);
+            float fillPenalty = zone.GetFillRatio(type) * 15f;
 
-            float fillPenalty = zone.GetFillRatio(type) * 10f;
-
-            float score = distance + fillPenalty;
-
-            if (score < bestScore)
+            if (distance + fillPenalty < bestScore)
             {
-                bestScore = score;
+                bestScore = distance + fillPenalty;
                 bestZone = zone;
             }
         }
 
         return bestZone;
     }
-    }
+}

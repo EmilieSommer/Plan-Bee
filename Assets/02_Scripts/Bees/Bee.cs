@@ -496,6 +496,9 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void AssignZone()
     {
+        if (assignedZone != null)
+            return;
+
         if (ZoneManager.Instance == null)
             return;
 
@@ -507,8 +510,6 @@ public abstract class Bee : MonoBehaviour
         if (assignedZone != null)
         {
             homePosition = assignedZone.transform.position;
-
-            // ✅ REGISTER BEE HERE (this is correct place)
             assignedZone.RegisterBee(this);
             ZoneManager.Instance.RegisterBee(this);
         }
@@ -524,11 +525,13 @@ public abstract class Bee : MonoBehaviour
         assignedZone = newZone;
 
         if (assignedZone != null)
+        {
             assignedZone.RegisterBee(this);
+            homePosition = assignedZone.transform.position;
+        }
 
-        homePosition = assignedZone.transform.position;
         currentState = BeeState.Idle;
-}
+    }
 
     public void StartDragging()
     {
@@ -537,7 +540,7 @@ public abstract class Bee : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
     }
 
-    public void StopDragging()
+    public virtual void StopDragging()
     {
         isBeingDragged = false;
         PickRandomDirection();

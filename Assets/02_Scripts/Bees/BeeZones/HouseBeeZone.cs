@@ -12,10 +12,45 @@ public class HouseBeeZone : Zone
     {
         zoneType = Bee.BeeType.House;
 
-        // IMPORTANT:
-        // If the zone already exists in the scene, it's a "default zone"
-        // so it should already be active
+        // Ensure this zone accepts BOTH House + Forager bees
+        SetupCapacities();
+
         isActive = true;
+    }
+
+    void SetupCapacities()
+    {
+        bool hasHouse = false;
+        bool hasForager = false;
+
+        foreach (var limit in limits)
+        {
+            if (limit.type == Bee.BeeType.House)
+                hasHouse = true;
+
+            if (limit.type == Bee.BeeType.Forager)
+                hasForager = true;
+        }
+
+        if (!hasHouse)
+        {
+            limits.Add(new BeeTypeLimit
+            {
+                type = Bee.BeeType.House,
+                capacity = 5,
+                current = 0
+            });
+        }
+
+        if (!hasForager)
+        {
+            limits.Add(new BeeTypeLimit
+            {
+                type = Bee.BeeType.Forager,
+                capacity = 5,
+                current = 0
+            });
+        }
     }
 
     public void SetInactive()
@@ -30,8 +65,7 @@ public class HouseBeeZone : Zone
 
     public Vector2 GetDepositPoint()
     {
-        Vector2 randomPoint = (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
-        return randomPoint;
+        return (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
     }
 
     private void OnDrawGizmos()

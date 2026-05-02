@@ -5,7 +5,7 @@ public class NurseBeeZone : Zone
 {
     private BoxCollider2D box;
 
-    public static NurseBeeZone currentZone; // ✅ active zone
+    public static NurseBeeZone currentZone;
 
     [Header("UI")]
     public GameObject nurseCanvas;
@@ -14,6 +14,21 @@ public class NurseBeeZone : Zone
     {
         zoneType = Bee.BeeType.Nurse;
         box = GetComponent<BoxCollider2D>();
+
+        SetupCapacity();
+    }
+
+    void SetupCapacity()
+    {
+        if (limits.Count == 0)
+        {
+            limits.Add(new BeeTypeLimit
+            {
+                type = Bee.BeeType.Nurse,
+                capacity = 5,
+                current = 0
+            });
+        }
     }
 
     public Vector2 GetRandomPoint()
@@ -22,8 +37,6 @@ public class NurseBeeZone : Zone
 
         float x = Random.Range(bounds.min.x, bounds.max.x);
         float y = Random.Range(bounds.min.y, bounds.max.y);
-
-        Debug.Log("Using zone: " + gameObject.name);
 
         return new Vector2(x, y);
     }
@@ -36,11 +49,9 @@ public class NurseBeeZone : Zone
     public void Open()
     {
         if (nurseCanvas != null)
-        {
             nurseCanvas.SetActive(true);
-        }
 
-        currentZone = this; // ✅ set active zone
+        currentZone = this;
     }
 
     public void SpawnEgg(EggType type)

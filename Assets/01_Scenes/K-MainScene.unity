@@ -3482,7 +3482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraZoom
   zoomSpeed: 5
   minZoom: 2
-  maxZoom: 10
+  maxZoom: 12
 --- !u!114 &1809135441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3497,7 +3497,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraController2D
   zoomSpeed: 5
   minZoom: 2
-  maxZoom: 10
+  maxZoom: 12
   zoomSmoothTime: 0.15
   dragSpeed: 1
   dragSmoothTime: 0.1
@@ -5697,7 +5697,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBeeZone
   zoneType: 0
-  limits: []
+  limits:
+  - type: 1
+    capacity: 1
+    current: 0
+  - type: 0
+    capacity: 1
+    current: 0
   depositRadius: 2
 --- !u!61 &6191681279853339118
 BoxCollider2D:
@@ -5920,7 +5926,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBeeZone
   zoneType: 2
-  limits: []
+  limits:
+  - type: 2
+    capacity: 1
+    current: 0
   nurseCanvas: {fileID: 3027767201610163936}
 --- !u!114 &7353842837370964322
 MonoBehaviour:
