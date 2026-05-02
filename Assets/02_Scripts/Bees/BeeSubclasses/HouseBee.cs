@@ -23,7 +23,7 @@ public class HouseBee : Bee
     public bool IsWorking => hasStartedWorking;
 
     // -------------------
-    // INIT (FIXED ORDER)
+    // INIT
     // -------------------
     protected override void Awake()
     {
@@ -33,7 +33,7 @@ public class HouseBee : Bee
 
     private System.Collections.IEnumerator Start()
     {
-        yield return null; // wait 1 frame so managers + pollen exist
+        yield return null;
 
         zone = ZoneManager.Instance.GetClosestZone(BeeType.House, transform.position) as HouseBeeZone;
 
@@ -42,7 +42,6 @@ public class HouseBee : Bee
 
         currentState = BeeState.Idle;
 
-        // 🔥 IMPORTANT: force initial target acquisition
         TryAcquireInitialTarget();
     }
 
@@ -80,35 +79,49 @@ public class HouseBee : Bee
     }
 
     // -------------------
-    // STATES
+    // STATES (FIXED IDLE BEHAVIOR)
     // -------------------
     protected override void IdleBehavior()
+{
+    if (currentState == BeeState.Working && hasStartedWorking)
+        return;
+
+    searchTimer -= Time.deltaTime;
+
+    if (searchTimer <= 0f)
     {
-        if (currentState == BeeState.Working && hasStartedWorking)
-            return;
+        searchTimer = searchInterval;
 
-        searchTimer -= Time.deltaTime;
-
-        if (searchTimer <= 0f)
+        if (target == null)
         {
-            searchTimer = searchInterval;
+            target = FindAvailablePollen();
 
-            if (target == null)
+            if (target != null)
             {
-                target = FindAvailablePollen();
-
-                if (target != null)
-                {
-                    target.isClaimed = true;
-                    targetPosition = target.transform.position;
-                    currentState = BeeState.Moving;
-                    return;
-                }
+                target.isClaimed = true;
+                targetPosition = target.transform.position;
+                currentState = BeeState.Moving; // ✅ REQUIRED (you already had this)
+                return;
             }
         }
-
-        StayInZone();
     }
+
+    StayInZone();
+
+    // 🔥 CRITICAL FIX:
+    // If we have a movement target but are NOT moving → force moving state
+    if (currentState == BeeState.Idle)
+    {
+        Vector2 toZone = zone != null
+            ? (Vector2)zone.transform.position - (Vector2)transform.position
+            : Vector2.zero;
+
+        if (toZone.sqrMagnitude > 0.01f)
+        {
+            currentState = BeeState.Moving;
+        }
+    }
+}
 
     void CheckForWorkContinuously()
     {
@@ -159,8 +172,6 @@ public class HouseBee : Bee
 
             if (rb != null)
                 rb.linearVelocity = Vector2.zero;
-
-            Debug.Log("Bee started working on: " + target.name);
         }
         else
         {
@@ -172,26 +183,20 @@ public class HouseBee : Bee
     protected override void OnReachedTarget()
     {
         if (target != null)
-        {
             currentState = BeeState.Working;
-        }
         else
-        {
             currentState = BeeState.Idle;
-        }
     }
 
     // -------------------
-    // ACTIONS
+    // ACTIONS (UNCHANGED)
     // -------------------
     void Convert()
     {
         if (target == null) return;
 
         if (honeyPrefab != null)
-        {
             Instantiate(honeyPrefab, transform.position, Quaternion.identity);
-        }
 
         Destroy(target.gameObject);
 
@@ -211,7 +216,7 @@ public class HouseBee : Bee
     }
 
     // -------------------
-    // HELPERS
+    // HELPERS (UNCHANGED)
     // -------------------
     Pollen FindAvailablePollen()
     {
