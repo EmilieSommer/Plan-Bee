@@ -61,8 +61,6 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         rectTransform.anchoredPosition = Vector2.zero;
 
         dropped = true;
-
-        // ✅ Save which slot this egg belongs to
         currentSlot = slot.GetComponent<QueueSlotUI>();
     }
 
@@ -71,5 +69,12 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         GameObject newEgg = Instantiate(gameObject, startParent);
         RectTransform rt = newEgg.GetComponent<RectTransform>();
         rt.anchoredPosition = startPosition;
+    }
+
+    public void ResetToStartPosition()
+    {
+        rectTransform.anchoredPosition = startPosition;
+        transform.SetParent(startParent);
+        dropped = false;
     }
 }
