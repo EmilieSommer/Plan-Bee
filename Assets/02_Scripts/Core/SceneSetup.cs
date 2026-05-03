@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 /// <summary>
 /// Simple scene setup to spawn test bees and display the hive visually.
 /// </summary>
-public class SceneSetup : MonoBehaviour
+/*public class SceneSetup : MonoBehaviour
 {
     [SerializeField] private int foragerCount = 3;
     [SerializeField] private int nurseCount = 2;
@@ -180,4 +180,4 @@ public class SceneSetup : MonoBehaviour
 
         Debug.Log("✓ HiveGrid tilemap created. Assign HiveTileLibrary in the Inspector or via Tools → Plan Bee → Populate Tile Library.");
     }
-}
+}*/
