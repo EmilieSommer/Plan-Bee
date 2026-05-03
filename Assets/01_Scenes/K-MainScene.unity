@@ -870,8 +870,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RainSystem
   rainPrefab: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
   isRaining: 0
-  fadeDuration: 2
-  maxEmission: 500
 --- !u!4 &295340799
 Transform:
   m_ObjectHideFlags: 0
