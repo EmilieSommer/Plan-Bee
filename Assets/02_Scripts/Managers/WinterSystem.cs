@@ -4,7 +4,10 @@ public class WinterSystem : MonoBehaviour
 {
     public static WinterSystem Instance;
 
-    public GameObject snowParticles;
+    [Header("Prefab (NOT scene object)")]
+    public GameObject snowPrefab;
+
+    private GameObject activeSnow;
 
     public bool isSnowing;
 
@@ -18,7 +21,13 @@ public class WinterSystem : MonoBehaviour
         if (isSnowing) return;
 
         isSnowing = true;
-        snowParticles?.SetActive(true);
+
+        if (activeSnow == null)
+        {
+            activeSnow = Instantiate(snowPrefab);
+        }
+
+        activeSnow.SetActive(true);
     }
 
     public void StopWinter()
@@ -26,6 +35,10 @@ public class WinterSystem : MonoBehaviour
         if (!isSnowing) return;
 
         isSnowing = false;
-        snowParticles?.SetActive(false);
+
+        if (activeSnow != null)
+        {
+            activeSnow.SetActive(false);
+        }
     }
 }

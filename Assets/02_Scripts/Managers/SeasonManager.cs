@@ -25,10 +25,23 @@ public class SeasonManager : MonoBehaviour
     public SeasonProfile autumn;
     public SeasonProfile winter;
 
+    [Header("Weather Settings Per Season")]
+    public WeatherSettings springWeather;
+    public WeatherSettings summerWeather;
+    public WeatherSettings autumnWeather;
+    public WeatherSettings winterWeather;
+
     public Season currentSeason = Season.Spring;
     private Season previousSeason;
 
-    private GameObject activeWeather;
+    private enum WeatherState
+    {
+        Dry,
+        Rain
+    }
+
+    private WeatherState weatherState;
+    private float weatherTimer;
 
     private void Awake()
     {
@@ -43,8 +56,12 @@ public class SeasonManager : MonoBehaviour
     private void Update()
     {
         UpdateSeason();
+        UpdateWeatherLoop();
     }
 
+    // -----------------------------
+    // SEASON LOGIC
+    // -----------------------------
     void UpdateSeason(bool force = false)
     {
         int day = DayCycleManager.Instance.currentDay;
@@ -69,38 +86,120 @@ public class SeasonManager : MonoBehaviour
         StartCoroutine(ShowSeasonPopup());
 
         ApplyWeather();
-        UpdateSeasonWeather(); // IMPORTANT
+        InitializeWeather();
     }
 
-    void UpdateSeasonWeather()
+    void InitializeWeather()
     {
-        // reset weather first
+        weatherState = WeatherState.Dry;
+        weatherTimer = 0f;
+
+        RainSystem.Instance?.StopRain();
+        WinterSystem.Instance?.StopWinter();
+
+        SetNextWeatherState();
+    }
+
+    // -----------------------------
+    // WEATHER LOOP
+    // -----------------------------
+    void UpdateWeatherLoop()
+    {
+        weatherTimer -= Time.deltaTime;
+
+        if (weatherTimer <= 0f)
+        {
+            SetNextWeatherState();
+        }
+    }
+
+    void SetNextWeatherState()
+    {
+        WeatherSettings settings = GetWeatherSettings(currentSeason);
+
+        // ❄️ WINTER OVERRIDE
+        if (currentSeason == Season.Winter)
+        {
+            WinterSystem.Instance?.StartWinter();
+            RainSystem.Instance?.StopRain();
+
+            weatherTimer = Random.Range(
+                settings.rainMinTime,
+                settings.rainMaxTime
+            );
+
+            return;
+        }
+
+        // 🌧️ RAIN STATE
+        if (weatherState == WeatherState.Dry)
+        {
+            bool shouldRain = Random.value < settings.rainChance;
+
+            if (shouldRain)
+            {
+                weatherState = WeatherState.Rain;
+                RainSystem.Instance?.StartRain();
+
+                weatherTimer = Random.Range(
+                    settings.rainMinTime,
+                    settings.rainMaxTime
+                );
+            }
+            else
+            {
+                weatherState = WeatherState.Dry;
+                RainSystem.Instance?.StopRain();
+
+                weatherTimer = Random.Range(
+                    settings.dryMinTime,
+                    settings.dryMaxTime
+                );
+            }
+        }
+        else
+        {
+            weatherState = WeatherState.Dry;
+            RainSystem.Instance?.StopRain();
+
+            weatherTimer = Random.Range(
+                settings.dryMinTime,
+                settings.dryMaxTime
+            );
+        }
+    }
+
+    WeatherSettings GetWeatherSettings(Season season)
+    {
+        return season switch
+        {
+            Season.Spring => springWeather,
+            Season.Summer => summerWeather,
+            Season.Autumn => autumnWeather,
+            Season.Winter => winterWeather,
+            _ => springWeather
+        };
+    }
+
+    // -----------------------------
+    // WEATHER APPLICATION (visual preset)
+    // -----------------------------
+    void ApplyWeather()
+    {
         RainSystem.Instance?.StopRain();
         WinterSystem.Instance?.StopWinter();
 
         switch (currentSeason)
         {
-            case Season.Spring:
-                if (Random.value < 0.3f)
-                    RainSystem.Instance?.StartRain();
-                break;
-
-            case Season.Summer:
-                if (Random.value < 0.15f)
-                    RainSystem.Instance?.StartRain();
-                break;
-
-            case Season.Autumn:
-                if (Random.value < 0.5f)
-                    RainSystem.Instance?.StartRain();
-                break;
-
             case Season.Winter:
                 WinterSystem.Instance?.StartWinter();
                 break;
         }
     }
 
+    // -----------------------------
+    // POPUPS
+    // -----------------------------
     IEnumerator ShowSeasonPopup()
     {
         GameObject popup = GetPopup(currentSeason);
@@ -112,19 +211,6 @@ public class SeasonManager : MonoBehaviour
 
         if (popup != null)
             popup.SetActive(false);
-    }
-
-    void ApplyWeather()
-    {
-        if (activeWeather != null)
-            Destroy(activeWeather);
-
-        SeasonProfile profile = GetCurrentProfile();
-
-        if (profile != null && profile.weatherParticles != null)
-        {
-            activeWeather = Instantiate(profile.weatherParticles);
-        }
     }
 
     GameObject GetPopup(Season season)
@@ -139,6 +225,9 @@ public class SeasonManager : MonoBehaviour
         };
     }
 
+    // -----------------------------
+    // UI
+    // -----------------------------
     void UpdateUI()
     {
         if (seasonText != null)

@@ -497,17 +497,41 @@ MonoBehaviour:
     - type: 5
       weight: 50
     spawnMultiplier: 1
-    weatherParticles: {fileID: 3918204676237700746, guid: bca9a4a687de14a4f8b3ef6aff63eebb, type: 3}
+    weatherParticles: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
   autumn:
-    season: 0
+    season: 2
     enemies: []
     spawnMultiplier: 1
-    weatherParticles: {fileID: 0}
+    weatherParticles: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
   winter:
-    season: 0
+    season: 3
     enemies: []
     spawnMultiplier: 1
-    weatherParticles: {fileID: 0}
+    weatherParticles: {fileID: 3918204676237700746, guid: bca9a4a687de14a4f8b3ef6aff63eebb, type: 3}
+  springWeather:
+    rainChance: 0.584
+    rainMinTime: 5
+    rainMaxTime: 12
+    dryMinTime: 8
+    dryMaxTime: 20
+  summerWeather:
+    rainChance: 0.086
+    rainMinTime: 5
+    rainMaxTime: 12
+    dryMinTime: 8
+    dryMaxTime: 20
+  autumnWeather:
+    rainChance: 0.847
+    rainMinTime: 5
+    rainMaxTime: 12
+    dryMinTime: 8
+    dryMaxTime: 20
+  winterWeather:
+    rainChance: 0.858
+    rainMinTime: 5
+    rainMaxTime: 12
+    dryMinTime: 8
+    dryMaxTime: 20
   currentSeason: 0
 --- !u!4 &128392998
 Transform:
@@ -830,7 +854,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c347c0fd55175d54c985c56ee59fa92a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinterSystem
-  snowParticles: {fileID: 3918204676237700746, guid: bca9a4a687de14a4f8b3ef6aff63eebb, type: 3}
+  snowPrefab: {fileID: 3918204676237700746, guid: bca9a4a687de14a4f8b3ef6aff63eebb, type: 3}
   isSnowing: 0
 --- !u!114 &295340798
 MonoBehaviour:
@@ -844,10 +868,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98c98a041c50db4ba688c6a38122dbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RainSystem
-  rainParticles: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
+  rainPrefab: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
   isRaining: 0
-  foragerSpeedMultiplier: 0.5
-  pollenMultiplier: 0.6
+  fadeDuration: 2
+  maxEmission: 500
 --- !u!4 &295340799
 Transform:
   m_ObjectHideFlags: 0

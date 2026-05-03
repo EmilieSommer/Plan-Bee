@@ -4,13 +4,12 @@ public class RainSystem : MonoBehaviour
 {
     public static RainSystem Instance;
 
-    public GameObject rainParticles;
+    [Header("Prefab (NOT scene object)")]
+    public GameObject rainPrefab;
+
+    private GameObject activeRain;
 
     public bool isRaining;
-
-    [Header("Effects")]
-    public float foragerSpeedMultiplier = 0.5f;
-    public float pollenMultiplier = 0.6f;
 
     private void Awake()
     {
@@ -22,7 +21,13 @@ public class RainSystem : MonoBehaviour
         if (isRaining) return;
 
         isRaining = true;
-        rainParticles?.SetActive(true);
+
+        if (activeRain == null)
+        {
+            activeRain = Instantiate(rainPrefab);
+        }
+
+        activeRain.SetActive(true);
     }
 
     public void StopRain()
@@ -30,6 +35,10 @@ public class RainSystem : MonoBehaviour
         if (!isRaining) return;
 
         isRaining = false;
-        rainParticles?.SetActive(false);
+
+        if (activeRain != null)
+        {
+            activeRain.SetActive(false);
+        }
     }
 }
