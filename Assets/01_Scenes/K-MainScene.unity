@@ -469,7 +469,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c497f0d34f6274e8bf5dddbb806024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeasonManager
-  daysPerSeason: 1
+  daysPerSeason: 5
   seasonText: {fileID: 840744604}
   seasonDescriptionText: {fileID: 0}
   springPopup: {fileID: 1627274708}
@@ -869,7 +869,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RainSystem
   rainPrefab: {fileID: 4137320208382595127, guid: 01f7f8af7228dbd479e37120ab589e6f, type: 3}
-  isRaining: 0
+  maxEmission: 400
+  fadeDuration: 5
 --- !u!4 &295340799
 Transform:
   m_ObjectHideFlags: 0

@@ -120,45 +120,45 @@ public class SeasonManager : MonoBehaviour
     // WEATHER STATE MACHINE
     // -----------------------------
     void SetNextWeatherState()
+{
+    WeatherSettings settings = GetWeatherSettings(currentSeason);
+
+    // ❄️ WINTER OVERRIDE
+    if (currentSeason == Season.Winter)
     {
-        WeatherSettings settings = GetWeatherSettings(currentSeason);
+        WinterSystem.Instance?.StartWinter();
+        RainSystem.Instance?.StopRain();
 
-        // ❄️ WINTER OVERRIDE
-        if (currentSeason == Season.Winter)
+        stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
+        return;
+    }
+
+    if (weatherState == WeatherState.Dry)
+    {
+        bool shouldRain = Random.value < settings.rainChance;
+
+        if (shouldRain)
         {
-            WinterSystem.Instance?.StartWinter();
-            RainSystem.Instance?.StopRain();
+            weatherState = WeatherState.Rain;
+            RainSystem.Instance?.StartRain();
 
-            stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
-            return;
-        }
-
-        if (weatherState == WeatherState.Dry)
-        {
-            bool shouldRain = Random.value < settings.rainChance;
-
-            if (shouldRain)
-            {
-                weatherState = WeatherState.Rain;
-                RainSystem.Instance?.StartRain();
-
-                // 🌧️ LONG RAIN DURATION (FIXED PROBLEM)
-                stateTimer = Random.Range(20f, 60f);
-            }
-            else
-            {
-                RainSystem.Instance?.StopRain();
-                stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
-            }
+            // 🌧️ FIXED: now uses per-season settings
+            stateTimer = Random.Range(settings.rainMinTime, settings.rainMaxTime);
         }
         else
         {
-            weatherState = WeatherState.Dry;
             RainSystem.Instance?.StopRain();
-
             stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
         }
     }
+    else
+    {
+        weatherState = WeatherState.Dry;
+        RainSystem.Instance?.StopRain();
+
+        stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
+    }
+}
 
     // -----------------------------
     // WEATHER SETTINGS
@@ -252,4 +252,6 @@ public class SeasonManager : MonoBehaviour
             _ => spring
         };
     }
+
+    
 }

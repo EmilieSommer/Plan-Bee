@@ -1,44 +1,81 @@
 using UnityEngine;
+using System.Collections;
 
 public class RainSystem : MonoBehaviour
 {
     public static RainSystem Instance;
 
-    [Header("Prefab (NOT scene object)")]
+    [Header("Prefab")]
     public GameObject rainPrefab;
 
     private GameObject activeRain;
+    private ParticleSystem ps;
+    private ParticleSystem.EmissionModule emission;
 
-    public bool isRaining;
+    [Header("Settings")]
+    public float maxEmission = 1200f;
+    public float fadeDuration = 2f;
+
+    private Coroutine fadeRoutine;
 
     private void Awake()
     {
         Instance = this;
     }
 
-    public void StartRain()
+    private void Start()
     {
-        if (isRaining) return;
+        activeRain = Instantiate(rainPrefab, new Vector3(0, 15, 0), Quaternion.identity);
 
-        isRaining = true;
+        ps = activeRain.GetComponentInChildren<ParticleSystem>();
+        emission = ps.emission;
 
-        if (activeRain == null)
-        {
-            activeRain = Instantiate(rainPrefab);
-        }
-
-        activeRain.SetActive(true);
+        ps.Play();
+        emission.rateOverTime = 0f;
     }
 
+    // -----------------------------
+    // START RAIN (FADE IN)
+    // -----------------------------
+    public void StartRain()
+    {
+        FadeTo(maxEmission);
+    }
+
+    // -----------------------------
+    // STOP RAIN (FADE OUT)
+    // -----------------------------
     public void StopRain()
     {
-        if (!isRaining) return;
+        FadeTo(0f);
+    }
 
-        isRaining = false;
+    // -----------------------------
+    // SMOOTH FADE
+    // -----------------------------
+    void FadeTo(float target)
+    {
+        if (fadeRoutine != null)
+            StopCoroutine(fadeRoutine);
 
-        if (activeRain != null)
+        fadeRoutine = StartCoroutine(FadeEmission(target));
+    }
+
+    IEnumerator FadeEmission(float target)
+    {
+        float start = emission.rateOverTime.constant;
+        float t = 0f;
+
+        while (t < fadeDuration)
         {
-            activeRain.SetActive(false);
+            t += Time.deltaTime;
+            float lerp = t / fadeDuration;
+
+            emission.rateOverTime = Mathf.Lerp(start, target, lerp);
+
+            yield return null;
         }
+
+        emission.rateOverTime = target;
     }
 }
