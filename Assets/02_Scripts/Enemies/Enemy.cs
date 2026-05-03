@@ -6,38 +6,63 @@ public class Enemy : MonoBehaviour
     public float maxHealth = 10f;
     public float moveSpeed = 2f;
 
-    private float currentHealth;
+    protected float currentHealth;
 
     [Header("Combat")]
     public float attackRange = 1.2f;
     public float attackCooldown = 1f;
 
-    private float attackTimer;
-    private Bee targetBee;
+    protected float attackTimer;
+    protected Bee targetBee;
 
-    private void Awake()
+    // -------------------------
+    // INIT
+    // -------------------------
+    protected virtual void Awake()
     {
         currentHealth = maxHealth;
     }
 
-    private void Update()
+    protected virtual void Start()
+    {
+        currentHealth = maxHealth; // ensures prefab overrides work correctly
+    }
+
+    // -------------------------
+    // UPDATE LOOP
+    // -------------------------
+    protected virtual void Update()
     {
         FindNearestBee();
         MoveTowardsBee();
         HandleAttack();
     }
 
-    public void TakeDamage(float amount)
+    // -------------------------
+    // DAMAGE
+    // -------------------------
+    public virtual void TakeDamage(float amount)
     {
         currentHealth -= amount;
 
         if (currentHealth <= 0f)
         {
-            Destroy(gameObject);
+            Die();
         }
     }
 
-    void FindNearestBee()
+    // -------------------------
+    // DEATH (override per enemy type)
+    // -------------------------
+    protected virtual void Die()
+    {
+        Destroy(gameObject);
+    }
+
+    // -------------------------
+    // TARGETING
+    // -------------------------
+    protected virtual void FindNearestBee()
     {
         Bee[] bees = FindObjectsOfType<Bee>();
 
@@ -46,6 +71,8 @@ public class Enemy : MonoBehaviour
 
         foreach (Bee bee in bees)
         {
+            if (bee == null) continue;
+
             float dist = Vector2.Distance(transform.position, bee.transform.position);
 
             if (dist < closestDist)
@@ -58,7 +85,10 @@ public class Enemy : MonoBehaviour
         targetBee = closest;
     }
 
-    void MoveTowardsBee()
+    // -------------------------
+    // MOVEMENT
+    // -------------------------
+    protected virtual void MoveTowardsBee()
     {
         if (targetBee == null) return;
 
@@ -66,19 +96,21 @@ public class Enemy : MonoBehaviour
 
         if (dist <= attackRange) return;
 
-        Vector2 direction = (targetBee.transform.position - transform.position).normalized;
+        Vector2 dir = (targetBee.transform.position - transform.position).normalized;
 
-        transform.position += (Vector3)(direction * moveSpeed * Time.deltaTime);
+        transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
     }
 
-    void HandleAttack()
+    // -------------------------
+    // ATTACK
+    // -------------------------
+    protected virtual void HandleAttack()
     {
         if (targetBee == null) return;
 
         float dist = Vector2.Distance(transform.position, targetBee.transform.position);
 
-        if (dist > attackRange)
-            return;
+        if (dist > attackRange) return;
 
         attackTimer -= Time.deltaTime;
 
@@ -89,7 +121,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void Attack()
+    protected virtual void Attack()
     {
         if (targetBee == null) return;
 

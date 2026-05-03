@@ -2,7 +2,16 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public GameObject enemyPrefab;
+    [Header("Enemy Prefabs")]
+    public GameObject varroaPrefab;
+    public GameObject hiveBeetlePrefab;
+    public GameObject waxMothPrefab;
+    public GameObject mousePrefab;
+    public GameObject antPrefab;
+    public GameObject waspPrefab;
+    public GameObject robberBeePrefab;
+    public GameObject bearPrefab;
+    public GameObject skunkPrefab;
 
     [Header("Base Spawn")]
     public float baseSpawnInterval = 3f;
@@ -10,7 +19,6 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Scaling")]
     public float minInterval = 0.5f;
-    public float spawnIncreasePerDay = 0.15f;
 
     private float timer;
 
@@ -18,10 +26,10 @@ public class EnemySpawner : MonoBehaviour
     {
         float difficulty = DayCycleManager.Instance.DifficultyMultiplier;
 
-        float interval = Mathf.Max(
-            minInterval,
-            baseSpawnInterval / difficulty
-        );
+        if (SeasonManager.Instance.currentSeason == Season.Winter)
+            difficulty *= 1.3f;
+
+        float interval = Mathf.Max(minInterval, baseSpawnInterval / difficulty);
 
         timer -= Time.deltaTime;
 
@@ -34,10 +42,39 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
+        EnemyType[] allowed = SeasonManager.Instance.GetAllowedEnemies();
+
+        if (allowed == null || allowed.Length == 0)
+            return;
+
+        EnemyType type = allowed[Random.Range(0, allowed.Length)];
+
+        GameObject prefab = GetPrefab(type);
+
+        if (prefab == null) return;
+
         Vector2 spawnPos =
             (Vector2)transform.position +
             Random.insideUnitCircle * spawnRadius;
 
-        Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        Instantiate(prefab, spawnPos, Quaternion.identity);
+    }
+
+    GameObject GetPrefab(EnemyType type)
+    {
+        switch (type)
+        {
+            case EnemyType.VarroaMite: return varroaPrefab;
+            case EnemyType.HiveBeetle: return hiveBeetlePrefab;
+            case EnemyType.WaxMoth: return waxMothPrefab;
+            case EnemyType.Mouse: return mousePrefab;
+            case EnemyType.Ant: return antPrefab;
+            case EnemyType.Wasp: return waspPrefab;
+            case EnemyType.RobberBee: return robberBeePrefab;
+            case EnemyType.Bear: return bearPrefab;
+            case EnemyType.Skunk: return skunkPrefab;
+        }
+
+        return null;
     }
 }
