@@ -3,160 +3,170 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Manages the hive tile grid. Handles marking tiles for construction
-/// and tracks the state of every hive cell.
+/// Manages the hive tile grid.
+/// Handles placement, autotiling (same-type merging), and build-queue handoff.
 /// </summary>
-/*public class HiveGrid : MonoBehaviour
+public class HiveGrid : MonoBehaviour
 {
     public static HiveGrid Instance { get; private set; }
 
     [Header("Tilemaps")]
-    [SerializeField] private Tilemap hiveTilemap;       // Visually shows built hive tiles
-    [SerializeField] private Tilemap markedTilemap;     // Overlay showing tiles marked for building
+    [SerializeField] private Tilemap builtTilemap;
+    [SerializeField] private Tilemap markedTilemap;
 
-    [Header("Tiles")]
-    [SerializeField] private TileBase builtTile;
-    [SerializeField] private TileBase markedTile;
-    [SerializeField] private TileBase underConstructionTile;
+    [Header("Library")]
+    [SerializeField] private HiveTileLibrary library;
 
     [Header("Starting Hive")]
-    [SerializeField] private Vector3Int startingCenter = Vector3Int.zero;
-    [SerializeField] private int startingRadius = 1; // 1 = 3x3 grid
+    [SerializeField] private Vector3Int startCenter = Vector3Int.zero;
+    [SerializeField] private int startRadius = 1;
+    [SerializeField] private HiveTileType startType = HiveTileType.InsideHive;
 
-    // All known tile data, keyed by grid position
-    private Dictionary<Vector3Int, HiveTileData> tiles = new();
+    // ── State ─────────────────────────────────────────────────────────────────
 
-    // Tiles waiting to be built (ordered queue for builders)
-    private Queue<Vector3Int> buildQueue = new();
+    // tile type for every grid cell that exists
+    private readonly Dictionary<Vector3Int, HiveTileType> types  = new();
+    // construction status
+    private readonly Dictionary<Vector3Int, bool>         marked = new();
+
+    // build queue consumed by builder bees
+    private readonly Queue<Vector3Int> buildQueue = new();
 
     public event System.Action<Vector3Int> OnTileBuilt;
     public event System.Action<Vector3Int> OnTileMarked;
 
-    private static readonly Vector3Int[] Neighbours =
-    {
-        Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right
-    };
+    static readonly Vector3Int[] Dirs =
+        { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right };
 
-    private void Awake()
+    // ── Unity ─────────────────────────────────────────────────────────────────
+
+    void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        library.Init();
     }
 
-    private void Start()
+    void Start()
     {
         BuildStartingHive();
     }
 
-    // ── Starting hive ──────────────────────────────────────────────
+    // ── Starting hive ─────────────────────────────────────────────────────────
 
-    private void BuildStartingHive()
+    void BuildStartingHive()
     {
-        for (int x = -startingRadius; x <= startingRadius; x++)
-        for (int y = -startingRadius; y <= startingRadius; y++)
-        {
-            Vector3Int pos = startingCenter + new Vector3Int(x, y, 0);
-            var data = new HiveTileData(pos);
-            data.State = TileState.Built;
-            data.Room = RoomType.BroodChamber;
-            tiles[pos] = data;
-            hiveTilemap.SetTile(pos, builtTile);
-        }
+        for (int x = -startRadius; x <= startRadius; x++)
+        for (int y = -startRadius; y <= startRadius; y++)
+            Place(startCenter + new Vector3Int(x, y, 0), startType);
     }
 
-    // ── Marking tiles ──────────────────────────────────────────────
+    // ── Public API ────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Marks a tile for building. Must be adjacent to an existing hive tile.
-    /// Returns false if the tile is invalid or already part of the hive.
+    /// Called by BuildPanel when the player clicks a grid cell.
+    /// Returns true if the tile was accepted (adjacent to any existing tile).
     /// </summary>
-    public bool MarkTile(Vector3Int pos)
+    public bool TryMark(Vector3Int pos, HiveTileType type)
     {
-        if (tiles.TryGetValue(pos, out var existing) && existing.IsPartOfHive)
-            return false; // already hive
+        if (types.ContainsKey(pos))           return false;   // already placed
+        if (!IsAdjacentToAny(pos))            return false;   // not connected
 
-        if (!IsAdjacentToHive(pos))
-            return false; // not connected
+        types[pos]  = type;
+        marked[pos] = true;
 
-        var data = tiles.ContainsKey(pos) ? tiles[pos] : new HiveTileData(pos);
-        data.State = TileState.Marked;
-        tiles[pos] = data;
+        var sprite = library.GetMarkedSprite(type);
+        SetSprite(markedTilemap, pos, sprite);
 
-        markedTilemap.SetTile(pos, markedTile);
         buildQueue.Enqueue(pos);
         OnTileMarked?.Invoke(pos);
         return true;
     }
 
     /// <summary>
-    /// Called by a Builder bee when it finishes constructing a tile.
-    /// </summary>
-    public void CompleteTile(Vector3Int pos, RoomType room = RoomType.BroodChamber)
-    {
-        if (!tiles.TryGetValue(pos, out var data)) return;
-
-        data.State = TileState.Built;
-        data.Room = room;
-        tiles[pos] = data;
-
-        markedTilemap.SetTile(pos, null);
-        hiveTilemap.SetTile(pos, builtTile);
-        OnTileBuilt?.Invoke(pos);
-    }
-
-    /// <summary>
-    /// Called by a Builder to claim the next tile in the build queue.
-    /// Returns false if nothing is queued.
+    /// Builder bees call this to claim the next job.
     /// </summary>
     public bool TryDequeueBuildJob(out Vector3Int pos)
     {
         while (buildQueue.Count > 0)
         {
             pos = buildQueue.Dequeue();
-            if (tiles.TryGetValue(pos, out var d) && d.State == TileState.Marked)
-            {
-                d.State = TileState.UnderConstruction;
-                tiles[pos] = d;
-                markedTilemap.SetTile(pos, underConstructionTile);
+            if (marked.ContainsKey(pos) && marked[pos])
                 return true;
-            }
         }
         pos = default;
         return false;
     }
 
-    // ── Queries ────────────────────────────────────────────────────
-
-    public bool IsHiveTile(Vector3Int pos) =>
-        tiles.TryGetValue(pos, out var d) && d.State == TileState.Built;
-
-    public bool TryGetTile(Vector3Int pos, out HiveTileData data) =>
-        tiles.TryGetValue(pos, out data);
-
-    public RoomType GetRoomAt(Vector3Int pos) =>
-        tiles.TryGetValue(pos, out var d) ? d.Room : RoomType.None;
-
-    /// <summary>Returns world-space center of a grid cell.</summary>
-    public Vector3 GetWorldPosition(Vector3Int pos) =>
-        hiveTilemap.GetCellCenterWorld(pos);
-
-    /// <summary>Returns all built tiles of a given room type.</summary>
-    public List<Vector3Int> GetTilesOfType(RoomType room)
+    /// <summary>
+    /// Called when a builder bee finishes constructing a tile.
+    /// </summary>
+    public void CompleteBuild(Vector3Int pos)
     {
-        var result = new List<Vector3Int>();
-        foreach (var kv in tiles)
-            if (kv.Value.State == TileState.Built && kv.Value.Room == room)
-                result.Add(kv.Key);
-        return result;
+        if (!types.ContainsKey(pos)) return;
+
+        marked[pos] = false;
+        markedTilemap.SetTile(pos, null);
+        Place(pos, types[pos]);
+        OnTileBuilt?.Invoke(pos);
     }
 
-    // ── Helpers ────────────────────────────────────────────────────
+    public bool HasTile(Vector3Int pos)  => types.ContainsKey(pos);
+    public bool IsMarked(Vector3Int pos) => marked.TryGetValue(pos, out var m) && m;
 
-    private bool IsAdjacentToHive(Vector3Int pos)
+    public HiveTileType GetType(Vector3Int pos) =>
+        types.TryGetValue(pos, out var t) ? t : HiveTileType.None;
+
+    public Vector3Int WorldToCell(Vector3 world) =>
+        builtTilemap.WorldToCell(world);
+
+    public Vector3 CellToWorld(Vector3Int cell) =>
+        builtTilemap.GetCellCenterWorld(cell);
+
+    // ── Internals ─────────────────────────────────────────────────────────────
+
+    void Place(Vector3Int pos, HiveTileType type)
     {
-        foreach (var offset in Neighbours)
-            if (IsHiveTile(pos + offset))
-                return true;
+        if (!types.ContainsKey(pos)) types[pos] = type;
+        if (!marked.ContainsKey(pos)) marked[pos] = false;
+
+        RefreshSprite(pos);
+        foreach (var d in Dirs) RefreshSprite(pos + d);
+    }
+
+    void RefreshSprite(Vector3Int pos)
+    {
+        if (!types.TryGetValue(pos, out var type)) return;
+        if (marked.TryGetValue(pos, out var isMarked) && isMarked) return;
+
+        int mask = 0;
+        // T=8  B=4  L=2  R=1  — matches the sprite naming convention
+        if (SameBuilt(pos + Vector3Int.up,    type)) mask |= 8;
+        if (SameBuilt(pos + Vector3Int.down,  type)) mask |= 4;
+        if (SameBuilt(pos + Vector3Int.left,  type)) mask |= 2;
+        if (SameBuilt(pos + Vector3Int.right, type)) mask |= 1;
+
+        SetSprite(builtTilemap, pos, library.GetSprite(type, mask));
+    }
+
+    bool SameBuilt(Vector3Int pos, HiveTileType type) =>
+        types.TryGetValue(pos, out var t) && t == type &&
+        (!marked.TryGetValue(pos, out var m) || !m);
+
+    bool IsAdjacentToAny(Vector3Int pos)
+    {
+        if (types.Count == 0) return true;   // first tile always allowed
+        foreach (var d in Dirs)
+            if (types.ContainsKey(pos + d)) return true;
         return false;
     }
-}*/
+
+    void SetSprite(Tilemap tilemap, Vector3Int pos, Sprite sprite)
+    {
+        if (sprite == null) { tilemap.SetTile(pos, null); return; }
+        var tile = ScriptableObject.CreateInstance<Tile>();
+        tile.sprite = sprite;
+        tile.colliderType = Tile.ColliderType.None;
+        tilemap.SetTile(pos, tile);
+    }
+}
