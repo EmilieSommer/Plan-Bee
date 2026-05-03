@@ -13,68 +13,92 @@ public class EnemySpawner : MonoBehaviour
     public GameObject bearPrefab;
     public GameObject skunkPrefab;
 
+    [Header("Spawn Points")]
+    public Transform[] spawnPoints;
+
     [Header("Base Spawn")]
     public float baseSpawnInterval = 3f;
-    public float spawnRadius = 1f;
 
-    [Header("Scaling")]
+    [Header("Limits")]
     public float minInterval = 0.5f;
 
     private float timer;
 
     private void Update()
     {
+        SeasonProfile profile = SeasonManager.Instance.GetCurrentProfile();
+
         float difficulty = DayCycleManager.Instance.DifficultyMultiplier;
+        float seasonMultiplier = profile != null ? profile.spawnMultiplier : 1f;
 
-        if (SeasonManager.Instance.currentSeason == Season.Winter)
-            difficulty *= 1.3f;
-
-        float interval = Mathf.Max(minInterval, baseSpawnInterval / difficulty);
+        float interval = Mathf.Max(minInterval, baseSpawnInterval / (difficulty * seasonMultiplier));
 
         timer -= Time.deltaTime;
 
         if (timer <= 0f)
         {
-            SpawnEnemy();
+            SpawnEnemy(profile);
             timer = interval;
         }
     }
 
-    void SpawnEnemy()
+    void SpawnEnemy(SeasonProfile profile)
     {
-        EnemyType[] allowed = SeasonManager.Instance.GetAllowedEnemies();
-
-        if (allowed == null || allowed.Length == 0)
+        if (profile == null || profile.enemies == null || profile.enemies.Length == 0)
             return;
 
-        EnemyType type = allowed[Random.Range(0, allowed.Length)];
+        EnemyType type = GetWeightedEnemy(profile);
 
         GameObject prefab = GetPrefab(type);
-
         if (prefab == null) return;
 
-        Vector2 spawnPos =
-            (Vector2)transform.position +
-            Random.insideUnitCircle * spawnRadius;
+        Vector2 spawnPos = GetRandomSpawnPosition();
 
         Instantiate(prefab, spawnPos, Quaternion.identity);
     }
 
-    GameObject GetPrefab(EnemyType type)
+    Vector2 GetRandomSpawnPosition()
     {
-        switch (type)
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return transform.position;
+
+        return spawnPoints[Random.Range(0, spawnPoints.Length)].position;
+    }
+
+    EnemyType GetWeightedEnemy(SeasonProfile profile)
+    {
+        float total = 0f;
+
+        foreach (var e in profile.enemies)
+            total += e.weight;
+
+        float r = Random.Range(0, total);
+        float current = 0f;
+
+        foreach (var e in profile.enemies)
         {
-            case EnemyType.VarroaMite: return varroaPrefab;
-            case EnemyType.HiveBeetle: return hiveBeetlePrefab;
-            case EnemyType.WaxMoth: return waxMothPrefab;
-            case EnemyType.Mouse: return mousePrefab;
-            case EnemyType.Ant: return antPrefab;
-            case EnemyType.Wasp: return waspPrefab;
-            case EnemyType.RobberBee: return robberBeePrefab;
-            case EnemyType.Bear: return bearPrefab;
-            case EnemyType.Skunk: return skunkPrefab;
+            current += e.weight;
+            if (r <= current)
+                return e.type;
         }
 
-        return null;
+        return profile.enemies[0].type;
+    }
+
+    GameObject GetPrefab(EnemyType type)
+    {
+        return type switch
+        {
+            EnemyType.VarroaMite => varroaPrefab,
+            EnemyType.HiveBeetle => hiveBeetlePrefab,
+            EnemyType.WaxMoth => waxMothPrefab,
+            EnemyType.Mouse => mousePrefab,
+            EnemyType.Ant => antPrefab,
+            EnemyType.Wasp => waspPrefab,
+            EnemyType.RobberBee => robberBeePrefab,
+            EnemyType.Bear => bearPrefab,
+            EnemyType.Skunk => skunkPrefab,
+            _ => null
+        };
     }
 }

@@ -19,10 +19,16 @@ public class SeasonManager : MonoBehaviour
     public GameObject autumnPopup;
     public GameObject winterPopup;
 
+    [Header("Season Profiles")]
+    public SeasonProfile spring;
+    public SeasonProfile summer;
+    public SeasonProfile autumn;
+    public SeasonProfile winter;
+
     public Season currentSeason = Season.Spring;
     private Season previousSeason;
 
-    private bool showingPopup = false;
+    private GameObject activeWeather;
 
     private void Awake()
     {
@@ -31,7 +37,7 @@ public class SeasonManager : MonoBehaviour
 
     private void Start()
     {
-        UpdateSeason(force: true);
+        UpdateSeason(true);
     }
 
     private void Update()
@@ -39,9 +45,6 @@ public class SeasonManager : MonoBehaviour
         UpdateSeason();
     }
 
-    // -----------------------------
-    // SEASON LOGIC
-    // -----------------------------
     void UpdateSeason(bool force = false)
     {
         int day = DayCycleManager.Instance.currentDay;
@@ -60,51 +63,82 @@ public class SeasonManager : MonoBehaviour
         UpdateUI();
     }
 
-    // -----------------------------
-    // SEASON CHANGE EVENT
-    // -----------------------------
     void OnSeasonChanged()
     {
         StopAllCoroutines();
         StartCoroutine(ShowSeasonPopup());
+
+        ApplyWeather();
+        UpdateSeasonWeather(); // IMPORTANT
+    }
+
+    void UpdateSeasonWeather()
+    {
+        // reset weather first
+        RainSystem.Instance?.StopRain();
+        WinterSystem.Instance?.StopWinter();
+
+        switch (currentSeason)
+        {
+            case Season.Spring:
+                if (Random.value < 0.3f)
+                    RainSystem.Instance?.StartRain();
+                break;
+
+            case Season.Summer:
+                if (Random.value < 0.15f)
+                    RainSystem.Instance?.StartRain();
+                break;
+
+            case Season.Autumn:
+                if (Random.value < 0.5f)
+                    RainSystem.Instance?.StartRain();
+                break;
+
+            case Season.Winter:
+                WinterSystem.Instance?.StartWinter();
+                break;
+        }
     }
 
     IEnumerator ShowSeasonPopup()
     {
-        showingPopup = true;
-
-        HideAllPopups();
-
         GameObject popup = GetPopup(currentSeason);
 
         if (popup != null)
             popup.SetActive(true);
 
-        // show for 3 seconds (no freezing gameplay!)
         yield return new WaitForSeconds(3f);
 
         if (popup != null)
             popup.SetActive(false);
+    }
 
-        showingPopup = false;
+    void ApplyWeather()
+    {
+        if (activeWeather != null)
+            Destroy(activeWeather);
+
+        SeasonProfile profile = GetCurrentProfile();
+
+        if (profile != null && profile.weatherParticles != null)
+        {
+            activeWeather = Instantiate(profile.weatherParticles);
+        }
     }
 
     GameObject GetPopup(Season season)
     {
-        switch (season)
+        return season switch
         {
-            case Season.Spring: return springPopup;
-            case Season.Summer: return summerPopup;
-            case Season.Autumn: return autumnPopup;
-            case Season.Winter: return winterPopup;
-        }
-
-        return null;
+            Season.Spring => springPopup,
+            Season.Summer => summerPopup,
+            Season.Autumn => autumnPopup,
+            Season.Winter => winterPopup,
+            _ => null
+        };
     }
 
-    // -----------------------------
-    // UI
-    // -----------------------------
     void UpdateUI()
     {
         if (seasonText != null)
@@ -116,75 +150,25 @@ public class SeasonManager : MonoBehaviour
 
     string GetSeasonDescription(Season season)
     {
-        switch (season)
+        return season switch
         {
-            case Season.Spring:
-                return "A calm season. Bees are active and flowers bloom.";
-
-            case Season.Summer:
-                return "High activity season. More enemies appear.";
-
-            case Season.Autumn:
-                return "Resources are abundant but weather becomes unstable.";
-
-            case Season.Winter:
-                return "Harsh conditions. Snowstorms and reduced visibility.";
-        }
-
-        return "";
+            Season.Spring => "A calm season. Bees expand and flowers bloom.",
+            Season.Summer => "High activity season. Heavy enemy pressure.",
+            Season.Autumn => "Resources fluctuate. Prepare for collapse.",
+            Season.Winter => "Survival mode. Snow and starvation risk.",
+            _ => ""
+        };
     }
 
-    // -----------------------------
-    // ENEMIES (FIXED FOR YOUR SPAWNER)
-    // -----------------------------
-    public EnemyType[] GetAllowedEnemies()
+    public SeasonProfile GetCurrentProfile()
     {
-        switch (currentSeason)
+        return currentSeason switch
         {
-            case Season.Spring:
-                return new EnemyType[]
-                {
-                    EnemyType.VarroaMite,
-                    EnemyType.RobberBee,
-                    EnemyType.Skunk
-                };
-
-            case Season.Summer:
-                return new EnemyType[]
-                {
-                    EnemyType.VarroaMite,
-                    EnemyType.HiveBeetle,
-                    EnemyType.Ant,
-                    EnemyType.Wasp,
-                    EnemyType.RobberBee
-                };
-
-            case Season.Autumn:
-                return new EnemyType[]
-                {
-                    EnemyType.VarroaMite,
-                    EnemyType.WaxMoth,
-                    EnemyType.Bear,
-                    EnemyType.RobberBee
-                };
-
-            case Season.Winter:
-                return new EnemyType[]
-                {
-                    EnemyType.VarroaMite,
-                    EnemyType.Mouse,
-                    EnemyType.RobberBee
-                };
-        }
-
-        return new EnemyType[] { EnemyType.VarroaMite };
-    }
-
-    void HideAllPopups()
-    {
-        if (springPopup) springPopup.SetActive(false);
-        if (summerPopup) summerPopup.SetActive(false);
-        if (autumnPopup) autumnPopup.SetActive(false);
-        if (winterPopup) winterPopup.SetActive(false);
+            Season.Spring => spring,
+            Season.Summer => summer,
+            Season.Autumn => autumn,
+            Season.Winter => winter,
+            _ => spring
+        };
     }
 }
