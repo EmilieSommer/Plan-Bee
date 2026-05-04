@@ -25,7 +25,7 @@ public class RainSystem : MonoBehaviour
 
     private void Start()
     {
-        activeRain = Instantiate(rainPrefab, new Vector3(0, 15, 0), Quaternion.identity);
+        activeRain = Instantiate(rainPrefab, new Vector3(0, 22, 0), Quaternion.identity);
 
         ps = activeRain.GetComponentInChildren<ParticleSystem>();
         emission = ps.emission;
