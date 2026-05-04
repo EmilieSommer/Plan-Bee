@@ -92,6 +92,8 @@ public class RobberBee : Enemy
 
         carryingHoney = true;
 
+        targetHoney.SetCarried(true); // ✅ mark as stolen
+
         escapeDirection = ((Vector2)transform.position).normalized;
 
         if (escapeDirection == Vector2.zero)
@@ -124,7 +126,10 @@ public class RobberBee : Enemy
         if (IsOutsideWorld())
         {
             if (targetHoney != null)
+            {
+                targetHoney.SetCarried(false); // just in case
                 Destroy(targetHoney.gameObject);
+            }
 
             Destroy(gameObject);
         }
@@ -161,6 +166,8 @@ public class RobberBee : Enemy
             return;
 
         targetHoney.transform.SetParent(null);
+
+        targetHoney.SetCarried(false); // ✅ now collectible again
 
         carryingHoney = false;
         targetHoney = null;

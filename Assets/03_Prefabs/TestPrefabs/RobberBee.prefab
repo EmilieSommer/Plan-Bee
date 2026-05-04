@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d46ae9df1d58f554ebb04001902276d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobberBee
-  maxHealth: 10
+  maxHealth: 5
   moveSpeed: 2
   attackRange: 1.2
   attackCooldown: 1
