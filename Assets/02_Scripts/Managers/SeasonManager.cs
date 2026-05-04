@@ -87,6 +87,7 @@ public class SeasonManager : MonoBehaviour
         StartCoroutine(ShowSeasonPopup());
 
         ApplyWeather();
+        ApplyScenery(); // Add this
         InitializeWeather();
     }
 
@@ -253,5 +254,63 @@ public class SeasonManager : MonoBehaviour
         };
     }
 
+    void ApplyScenery()
+    {
+        StopCoroutine(nameof(FadeScenery));
+        StartCoroutine(FadeScenery());
+    }
+
+    IEnumerator FadeScenery()
+    {
+        SeasonProfile[] profiles = { spring, summer, autumn, winter };
+        SeasonProfile current = GetCurrentProfile();
+
+        float duration = 2f;
+        float timer = 0f;
+
+        // Get all renderers
+        SpriteRenderer[] currentRenderers = current.scenery.GetComponentsInChildren<SpriteRenderer>(true);
+
+        // Enable current scenery + make transparent
+        current.scenery.SetActive(true);
+
+        foreach (var sr in currentRenderers)
+        {
+            Color c = sr.color;
+            c.a = 0f;
+            sr.color = c;
+        }
+
+        // Fade out all others instantly
+        foreach (var profile in profiles)
+        {
+            if (profile != current && profile.scenery != null)
+                profile.scenery.SetActive(false);
+        }
+
+        // Fade in
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float alpha = timer / duration;
+
+            foreach (var sr in currentRenderers)
+            {
+                Color c = sr.color;
+                c.a = alpha;
+                sr.color = c;
+            }
+
+            yield return null;
+        }
+
+        // Ensure fully visible
+        foreach (var sr in currentRenderers)
+        {
+            Color c = sr.color;
+            c.a = 1f;
+            sr.color = c;
+        }
+    }
     
 }

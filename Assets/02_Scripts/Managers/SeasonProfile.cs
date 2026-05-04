@@ -1,4 +1,5 @@
 using UnityEngine;
+
 [System.Serializable]
 public class SeasonProfile
 {
@@ -9,4 +10,6 @@ public class SeasonProfile
     public float spawnMultiplier = 1f;
 
     public GameObject weatherParticles;
+
+    public GameObject scenery; // Add this
 }
