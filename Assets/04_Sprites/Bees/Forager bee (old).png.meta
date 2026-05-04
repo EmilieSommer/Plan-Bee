@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f599e5344b784486ea1b4ec137ee5af7
+guid: fff19cc4136204f33be9d8a219319f52
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7743219462894043961
-    second: Forager bee 1_0
+      213: -3101189886920951990
+    second: Forager bee_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Forager bee 1_0
+      name: Forager bee_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 933c0bf7311757b60800000000000000
-      internalID: 7743219462894043961
+      spriteID: a47fa098a3c56f4d0800000000000000
+      internalID: -3101189886920951990
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Forager bee 1_0: 7743219462894043961
+      Forager bee_0: -3101189886920951990
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
