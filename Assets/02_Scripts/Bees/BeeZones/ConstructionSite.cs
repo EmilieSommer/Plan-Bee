@@ -35,13 +35,20 @@ public class ConstructionSite : MonoBehaviour
 
         progress += Time.deltaTime * builderCount;
 
-        float t = progress / buildTime;
+        float t = Mathf.Clamp01(progress / buildTime);
 
+        // Fade IN building
         if (sr != null)
         {
             Color c = sr.color;
-            c.a = Mathf.Clamp01(t);
+            c.a = t;
             sr.color = c;
+        }
+
+        // Fade OUT build zone
+        if (parentZone != null)
+        {
+            parentZone.SetTransparency(1f - t);
         }
 
         if (progress >= buildTime)
@@ -70,6 +77,7 @@ public class ConstructionSite : MonoBehaviour
 
         return count;
     }
+
     void FinishBuild()
     {
         Debug.Log("Build complete!");
@@ -80,7 +88,6 @@ public class ConstructionSite : MonoBehaviour
         if (col != null)
             col.enabled = true;
 
-        // 🔥 ACTIVATE THE FINAL ZONE
         if (parentZone != null)
         {
             HouseBeeZone zone = GetComponent<HouseBeeZone>();
@@ -93,7 +100,6 @@ public class ConstructionSite : MonoBehaviour
             parentZone.FinishBuild();
         }
 
-        // advance queue AFTER this site is done
         BuildManager.Instance.FinishCurrent();
 
         Destroy(this);
@@ -106,7 +112,7 @@ public class ConstructionSite : MonoBehaviour
         HouseBeeZone zone = GetComponent<HouseBeeZone>();
         if (zone != null)
         {
-            zone.SetInactive();   // 🔥 ONLY construction zones become inactive
+            zone.SetInactive();
         }
     }
 }

@@ -21,9 +21,12 @@ public class BuildZone : MonoBehaviour
     private float buildTimeout = 10f;
     private float buildTimer;
 
-    // ------------------------
-    // BUTTONS
-    // ------------------------
+    private SpriteRenderer sr;
+
+    private void Start()
+    {
+        sr = GetComponent<SpriteRenderer>();
+    }
 
     public void BuildNurse()
     {
@@ -40,14 +43,9 @@ public class BuildZone : MonoBehaviour
         TryStartConstruction(sleepPrefab, sleepCost);
     }
 
-    // ------------------------
-    // BUILD LOGIC (FIXED)
-    // ------------------------
-
     void TryStartConstruction(GameObject prefab, int cost)
     {
-        if (isBuilt) return;
-        if (isBuilding) return;
+        if (isBuilt || isBuilding) return;
 
         if (CurrencyManager.Instance == null)
         {
@@ -55,7 +53,6 @@ public class BuildZone : MonoBehaviour
             return;
         }
 
-        // 🔥 safe check BEFORE spending
         if (CurrencyManager.Instance.honey < cost)
         {
             Debug.Log("Not enough honey!");
@@ -82,9 +79,14 @@ public class BuildZone : MonoBehaviour
         BuildManager.Instance.AddToQueue(currentSite);
     }
 
-    // ------------------------
-    // FINISH BUILD
-    // ------------------------
+    public void SetTransparency(float alpha)
+    {
+        if (sr == null) return;
+
+        Color c = sr.color;
+        c.a = alpha;
+        sr.color = c;
+    }
 
     public void FinishBuild()
     {
@@ -94,10 +96,6 @@ public class BuildZone : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // ------------------------
-    // SAFETY TIMEOUT (prevents soft-lock)
-    // ------------------------
-
     private void Update()
     {
         if (!isBuilding) return;
@@ -106,31 +104,19 @@ public class BuildZone : MonoBehaviour
 
         if (buildTimer > buildTimeout)
         {
-            Debug.LogWarning("Build timeout reset (FinishBuild not called)");
+            Debug.LogWarning("Build timeout reset");
 
             isBuilding = false;
             buildTimer = 0f;
         }
     }
 
-    // ------------------------
-    // VISUAL DISABLE
-    // ------------------------
-
     void DisableZone()
     {
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
             col.enabled = false;
-
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-            sr.color = Color.gray;
     }
-
-    // ------------------------
-    // UI OPEN
-    // ------------------------
 
     public void Open()
     {
