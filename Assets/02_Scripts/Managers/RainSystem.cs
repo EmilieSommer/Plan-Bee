@@ -78,4 +78,9 @@ public class RainSystem : MonoBehaviour
 
         emission.rateOverTime = target;
     }
+
+    public float GetCurrentEmission()
+    {
+        return emission.rateOverTime.constant;
+    }
 }

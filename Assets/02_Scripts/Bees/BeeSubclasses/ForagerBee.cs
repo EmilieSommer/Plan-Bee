@@ -9,12 +9,14 @@ public class ForagerBee : Bee
     [Header("Prefabs")]
     public GameObject pollenPrefab;
 
+    [Header("Weather Effects")]
+    public float rainSlowMultiplier = 2f;
+
     private float timer;
+    private float baseMoveSpeed;
 
     private bool isOutForaging = false;
-    private bool isReturning = false;
-
-    private Vector2 offscreenTarget;
+    private bool shelteringFromSnow = false;
 
     private HouseBeeZone currentZone;
 
@@ -23,6 +25,7 @@ public class ForagerBee : Bee
         base.Awake();
 
         beeType = BeeType.Forager;
+        baseMoveSpeed = moveSpeed;
 
         StartForaging();
     }
@@ -30,17 +33,14 @@ public class ForagerBee : Bee
     void StartForaging()
     {
         isOutForaging = true;
-        isReturning = false;
+        shelteringFromSnow = false;
 
         currentState = BeeState.Moving;
 
         timer = foragingTime;
 
-        // Pick a random direction to leave the screen
         Vector2 randomDir = Random.insideUnitCircle.normalized;
-        offscreenTarget = (Vector2)transform.position + randomDir * 20f;
-
-        targetPosition = offscreenTarget;
+        targetPosition = (Vector2)transform.position + randomDir * 20f;
     }
 
     protected override void Update()
@@ -48,9 +48,39 @@ public class ForagerBee : Bee
         if (currentState == BeeState.Dead)
             return;
 
+        // ❄ SNOW BEHAVIOR
+        if (WinterSystem.Instance != null && WinterSystem.Instance.isSnowing)
+        {
+            HandleSnow();
+
+            // IMPORTANT: only move until they reach shelter
+            if (currentState != BeeState.Working)
+            {
+                base.Update();
+            }
+
+            return;
+        }
+
+        // Resume after snow
+        if (shelteringFromSnow)
+        {
+            StartForaging();
+        }
+
+        // ☔ RAIN SLOWDOWN
+        float weatherSlow = 1f;
+
+        if (RainSystem.Instance != null && IsRaining())
+        {
+            weatherSlow = rainSlowMultiplier;
+        }
+
+        moveSpeed = baseMoveSpeed / weatherSlow;
+
         if (isOutForaging)
         {
-            timer -= Time.deltaTime;
+            timer -= Time.deltaTime / weatherSlow;
 
             if (timer <= 0f)
             {
@@ -63,10 +93,40 @@ public class ForagerBee : Bee
         base.Update();
     }
 
+    bool IsRaining()
+    {
+        return RainSystem.Instance != null &&
+               RainSystem.Instance.GetCurrentEmission() > 0f;
+    }
+
+    // ❄ Snow: go to house and stop there
+    void HandleSnow()
+    {
+        if (!shelteringFromSnow)
+        {
+            shelteringFromSnow = true;
+            isOutForaging = false;
+
+            currentZone = FindNearestHouseZone();
+
+            if (currentZone != null)
+            {
+                targetPosition = currentZone.transform.position;
+                currentState = BeeState.Returning;
+            }
+        }
+
+        float dist = Vector2.Distance(transform.position, targetPosition);
+
+        if (dist < 0.2f)
+        {
+            currentState = BeeState.Working; // fully stop here
+        }
+    }
+
     void StartReturning()
     {
         isOutForaging = false;
-        isReturning = true;
 
         currentState = BeeState.Returning;
 
@@ -88,6 +148,12 @@ public class ForagerBee : Bee
 
         if (dist < 0.2f)
         {
+            if (WinterSystem.Instance != null && WinterSystem.Instance.isSnowing)
+            {
+                currentState = BeeState.Working;
+                return;
+            }
+
             DepositPollen();
         }
     }
@@ -117,7 +183,6 @@ public class ForagerBee : Bee
 
         foreach (var zone in zones)
         {
-            // ❗ IMPORTANT: skip unfinished zones
             if (!zone.IsActive)
                 continue;
 
@@ -135,11 +200,8 @@ public class ForagerBee : Bee
 
     protected override void Die()
     {
-        // custom behavior (e.g. particles)
-
-        base.Die(); // VERY IMPORTANT
+        base.Die();
     }
 
-    // REQUIRED BY BASE CLASS
     protected override void WorkBehavior() { }
-}   
+}

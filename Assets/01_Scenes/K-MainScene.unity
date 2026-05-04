@@ -469,7 +469,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c497f0d34f6274e8bf5dddbb806024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeasonManager
-  daysPerSeason: 5
+  daysPerSeason: 1
   seasonText: {fileID: 840744604}
   seasonDescriptionText: {fileID: 0}
   springPopup: {fileID: 1627274708}
