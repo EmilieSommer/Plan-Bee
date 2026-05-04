@@ -28,8 +28,8 @@ public class VarroaMites : Enemy
                 return;
             }
 
-            // 🔥 LOCKED POSITION ON TOP OF BEE
-            transform.localPosition = new Vector3(0, 0.4f, 0);
+            // Keep locked on bee
+            transform.localPosition = Vector3.zero;
             return;
         }
 
@@ -78,9 +78,13 @@ public class VarroaMites : Enemy
         originalSpeed = bee.moveSpeed;
         bee.moveSpeed *= slowMultiplier;
 
-        // 🔥 IMPORTANT: parent FIRST, then snap position
-        transform.SetParent(bee.transform);
-        transform.localPosition = new Vector3(0, 0.4f, 0);
+        // -----------------------
+        // FIX: attach to visual point instead of transform pivot
+        // -----------------------
+        Transform attachPoint = bee.transform.Find("MiteAttachPoint");
+
+        transform.SetParent(attachPoint != null ? attachPoint : bee.transform);
+        transform.localPosition = Vector3.zero;
     }
 
     // -----------------------
