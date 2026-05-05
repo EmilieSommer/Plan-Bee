@@ -7,11 +7,17 @@ public class ClickManager : MonoBehaviour
     public LayerMask zoneLayer;
     public LayerMask beeLayer;
 
+    [Header("Bee Drag")]
+    public float maxDragDistance = 1.5f;
+    public float maxDragTime = 1.2f;
+
     private GameObject activeCanvas;
     private bool uiOpen = false;
 
     private GameObject draggedBee;
     private bool isDraggingBee = false;
+    private Vector3 dragStartPosition;
+    private float dragTimer;
 
     void Update()
     {
@@ -33,6 +39,8 @@ public class ClickManager : MonoBehaviour
         {
             draggedBee = beeHit.collider.gameObject;
             isDraggingBee = true;
+            dragStartPosition = draggedBee.transform.position;
+            dragTimer = 0f;
 
             Bee bee = draggedBee.GetComponent<Bee>();
             if (bee != null)
@@ -94,26 +102,52 @@ public class ClickManager : MonoBehaviour
         if (!isDraggingBee || draggedBee == null)
             return;
 
+        dragTimer += Time.deltaTime;
+
+        // Bee escapes if held too long
+        if (dragTimer >= maxDragTime)
+        {
+            ReleaseBee();
+            return;
+        }
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = draggedBee.transform.position.z;
+
+        Vector3 offset = mousePos - dragStartPosition;
+
+        if (offset.magnitude > maxDragDistance)
+        {
+            offset = offset.normalized * maxDragDistance;
+        }
+
+        Vector3 targetPos = dragStartPosition + offset;
 
         Rigidbody2D rb = draggedBee.GetComponent<Rigidbody2D>();
 
         if (rb != null)
-            rb.MovePosition(mousePos);
+            rb.MovePosition(targetPos);
         else
-            draggedBee.transform.position = mousePos;
+            draggedBee.transform.position = targetPos;
 
         if (Input.GetMouseButtonUp(0))
+        {
+            ReleaseBee();
+        }
+    }
+
+    void ReleaseBee()
+    {
+        if (draggedBee != null)
         {
             Bee bee = draggedBee.GetComponent<Bee>();
 
             if (bee != null)
                 bee.StopDragging();
-
-            isDraggingBee = false;
-            draggedBee = null;
         }
+
+        isDraggingBee = false;
+        draggedBee = null;
     }
 
     void CloseUI()
