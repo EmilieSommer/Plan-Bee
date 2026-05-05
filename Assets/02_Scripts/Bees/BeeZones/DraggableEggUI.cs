@@ -2,7 +2,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DraggableEggUI : MonoBehaviour,
+    IBeginDragHandler,
+    IDragHandler,
+    IEndDragHandler,
+    IPointerEnterHandler,
+    IPointerExitHandler
 {
     private RectTransform rectTransform;
     private Canvas canvas;
@@ -20,11 +25,17 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     [Header("Cost")]
     public int honeyCost;
 
+    [Header("Hover Popup")]
+    public GameObject hoverPopup;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
         canvas = GetComponentInParent<Canvas>();
         canvasGroup = GetComponent<CanvasGroup>();
+
+        if (hoverPopup != null)
+            hoverPopup.SetActive(false);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -34,6 +45,9 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         dropped = false;
         canvasGroup.blocksRaycasts = false;
+
+        if (hoverPopup != null)
+            hoverPopup.SetActive(false);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -51,10 +65,10 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         }
         else
         {
-            // spawn new egg in UI
             SpawnNewEgg();
         }
     }
+
     public void SnapToSlot(Transform slot)
     {
         transform.SetParent(slot);
@@ -76,5 +90,20 @@ public class DraggableEggUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
         rectTransform.anchoredPosition = startPosition;
         transform.SetParent(startParent);
         dropped = false;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (hoverPopup != null)
+        {
+            hoverPopup.SetActive(true);
+            hoverPopup.transform.SetAsLastSibling();
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (hoverPopup != null)
+            hoverPopup.SetActive(false);
     }
 }
