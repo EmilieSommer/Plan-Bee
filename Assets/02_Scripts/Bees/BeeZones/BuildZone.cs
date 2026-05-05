@@ -53,13 +53,8 @@ public class BuildZone : MonoBehaviour
             return;
         }
 
-        if (CurrencyManager.Instance.honey < cost)
-        {
-            Debug.Log("Not enough honey!");
+        if (!CurrencyManager.Instance.UseHoney(cost))
             return;
-        }
-
-        CurrencyManager.Instance.UseHoney(cost);
 
         isBuilding = true;
         buildTimer = 0f;
