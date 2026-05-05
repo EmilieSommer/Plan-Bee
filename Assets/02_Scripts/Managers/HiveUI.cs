@@ -15,14 +15,14 @@ public class HiveUI : MonoBehaviour
     {
         if (HiveManager.Instance == null) return;
 
-        totalText.text = "Total Bees: " + HiveManager.Instance.GetTotalBees();
+        totalText.text = HiveManager.Instance.GetTotalBees().ToString();
 
-        queenText.text = "Queen: " + GetCount(Bee.BeeType.Queen);
-        houseText.text = "House: " + GetCount(Bee.BeeType.House);
-        nurseText.text = "Nurse: " + GetCount(Bee.BeeType.Nurse);
-        foragerText.text = "Forager: " + GetCount(Bee.BeeType.Forager);
-        droneText.text = "Drone: " + GetCount(Bee.BeeType.Drone);
-        builderText.text = "Builder: " + GetCount(Bee.BeeType.Builder);
+        queenText.text = GetCount(Bee.BeeType.Queen).ToString();
+        houseText.text = GetCount(Bee.BeeType.House).ToString();
+        nurseText.text = GetCount(Bee.BeeType.Nurse).ToString();
+        foragerText.text = GetCount(Bee.BeeType.Forager).ToString();
+        droneText.text = GetCount(Bee.BeeType.Drone).ToString();
+        builderText.text = GetCount(Bee.BeeType.Builder).ToString();
     }
 
     int GetCount(Bee.BeeType type)
