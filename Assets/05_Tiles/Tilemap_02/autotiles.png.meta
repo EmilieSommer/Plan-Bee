@@ -1,58 +1,55 @@
 fileFormatVersion: 2
-guid: 7dcac0de1da7c434388d7de1f8bd8924
+guid: c45ffb61c67b0e6d6f7a02c28187fb79
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8716765016589067494
-    second: 32x32 Tilemap Recreation_0
+      213: 1409115704203562813
+    second: autotiles_0
   - first:
-      213: -6758860182346373854
-    second: 32x32 Tilemap Recreation_1
+      213: 6768856252536753741
+    second: autotiles_1
   - first:
-      213: 7533558163160207980
-    second: 32x32 Tilemap Recreation_2
+      213: 3300455963643147707
+    second: autotiles_2
   - first:
-      213: -6291796707314901687
-    second: 32x32 Tilemap Recreation_3
+      213: 1478286139908450484
+    second: autotiles_3
   - first:
-      213: -7842934813433220808
-    second: 32x32 Tilemap Recreation_4
+      213: 4351953492627492727
+    second: autotiles_4
   - first:
-      213: 7892119067682607394
-    second: 32x32 Tilemap Recreation_5
+      213: 1668923843958968367
+    second: autotiles_5
   - first:
-      213: 1596430473993326977
-    second: 32x32 Tilemap Recreation_6
+      213: 5943511215920642412
+    second: autotiles_6
   - first:
-      213: -5252046008947597647
-    second: 32x32 Tilemap Recreation_7
+      213: 6346844571497233583
+    second: autotiles_7
   - first:
-      213: -6007167260621320827
-    second: 32x32 Tilemap Recreation_8
+      213: 2839240516816027723
+    second: autotiles_8
   - first:
-      213: 4549413649504817751
-    second: 32x32 Tilemap Recreation_9
+      213: 3939910794548036902
+    second: autotiles_9
   - first:
-      213: -4596418923564653192
-    second: 32x32 Tilemap Recreation_10
+      213: 2566026665088712996
+    second: autotiles_10
   - first:
-      213: -2210794919635973114
-    second: 32x32 Tilemap Recreation_11
+      213: 4075982640127354845
+    second: autotiles_11
   - first:
-      213: 2586458093690221636
-    second: 32x32 Tilemap Recreation_12
+      213: 2705440644630309344
+    second: autotiles_12
   - first:
-      213: 6538000053101489787
-    second: 32x32 Tilemap Recreation_13
+      213: 4740501964099009607
+    second: autotiles_13
   - first:
-      213: 7365510150599988129
-    second: 32x32 Tilemap Recreation_14
+      213: 1464004479001748222
+    second: autotiles_14
   - first:
-      213: -4181557508022076384
-    second: 32x32 Tilemap Recreation_15
-  - first:
-      213: 166539873095543215
-    second: 32x32 Tilemap Recreation_16
+      213: 6603343130020838077
+    second: autotiles_15
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -174,375 +171,353 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_0
+      name: autotiles_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 65
-        width: 50
-        height: 47
+        y: 96
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a1b18ab9664d70780800000000000000
-      internalID: -8716765016589067494
+      spriteID: aaf825a6194c75be2a9e74894df15e39
+      internalID: 1409115704203562813
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_1
+      name: autotiles_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db3617631afe186370574cdd7279cb67
+      internalID: 6768856252536753741
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: autotiles_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d6257dbe69a1cede8322cd4a8180efc
+      internalID: 3300455963643147707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: autotiles_3
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 512907aac9e8a22595144478afe8719b
+      internalID: 1478286139908450484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: autotiles_4
       rect:
         serializedVersion: 2
         x: 0
-        y: 103
-        width: 5
-        height: 9
+        y: 64
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 22566b06974b332a0800000000000000
-      internalID: -6758860182346373854
+      spriteID: 469281a414c81e64bb46fb41b0407b4d
+      internalID: 4351953492627492727
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_2
+      name: autotiles_5
       rect:
         serializedVersion: 2
-        x: 43
-        y: 105
-        width: 12
-        height: 7
+        x: 32
+        y: 64
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c6298e12c339c8860800000000000000
-      internalID: 7533558163160207980
+      spriteID: 185895f5e1aa7f38900c797388c6a58b
+      internalID: 1668923843958968367
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_3
+      name: autotiles_6
       rect:
         serializedVersion: 2
-        x: 49
-        y: 63
-        width: 14
-        height: 49
+        x: 64
+        y: 64
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 94dd585ea3c0fa8a0800000000000000
-      internalID: -6291796707314901687
+      spriteID: 715801787a8fb073182597caf5714ab2
+      internalID: 5943511215920642412
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_4
+      name: autotiles_7
       rect:
         serializedVersion: 2
-        x: 61
-        y: 103
-        width: 6
-        height: 7
+        x: 96
+        y: 64
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 831b4c0475c482390800000000000000
-      internalID: -7842934813433220808
+      spriteID: 346b54d6418def4440794f6cb958b09d
+      internalID: 6346844571497233583
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_5
-      rect:
-        serializedVersion: 2
-        x: 62
-        y: 48
-        width: 66
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2211f425a70768d60800000000000000
-      internalID: 7892119067682607394
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_6
-      rect:
-        serializedVersion: 2
-        x: 126
-        y: 26
-        width: 50
-        height: 86
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1811bfece09a72610800000000000000
-      internalID: 1596430473993326977
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_7
+      name: autotiles_8
       rect:
         serializedVersion: 2
         x: 0
-        y: 62
-        width: 5
-        height: 7
+        y: 32
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1be9bac3bfbfc17b0800000000000000
-      internalID: -5252046008947597647
+      spriteID: 6a1dfc356d8e427ad5cc7033e6fd694b
+      internalID: 2839240516816027723
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_8
+      name: autotiles_9
       rect:
         serializedVersion: 2
-        x: 0
-        y: 49
-        width: 49
-        height: 17
+        x: 32
+        y: 32
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 58d4f4c243142aca0800000000000000
-      internalID: -6007167260621320827
+      spriteID: 9ffa8862517ac93b972c0532f47973a1
+      internalID: 3939910794548036902
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_9
+      name: autotiles_10
       rect:
         serializedVersion: 2
-        x: 43
-        y: 62
-        width: 6
-        height: 7
+        x: 64
+        y: 32
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7525c034c93c22f30800000000000000
-      internalID: 4549413649504817751
+      spriteID: d999503fe6daeb80614f2a4139d6403d
+      internalID: 2566026665088712996
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_10
+      name: autotiles_11
       rect:
         serializedVersion: 2
-        x: 48
-        y: 48
-        width: 16
-        height: 17
+        x: 96
+        y: 32
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 875ab06875d3630c0800000000000000
-      internalID: -4596418923564653192
+      spriteID: 68623a5d559fed0ae2b94b1a94053967
+      internalID: 4075982640127354845
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_11
+      name: autotiles_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 131
-        height: 50
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 60c0cdfdbbda151e0800000000000000
-      internalID: -2210794919635973114
+      spriteID: 7b6164b1a3f59f05181fb4d12c02c3aa
+      internalID: 2705440644630309344
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_12
+      name: autotiles_13
       rect:
         serializedVersion: 2
-        x: 120
+        x: 32
         y: 0
-        width: 18
-        height: 25
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 444f6dcbee1f4e320800000000000000
-      internalID: 2586458093690221636
+      spriteID: c31ede3fd0628f15a8ff064533e1c49e
+      internalID: 4740501964099009607
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_13
+      name: autotiles_14
       rect:
         serializedVersion: 2
-        x: 133
-        y: 21
-        width: 8
-        height: 6
+        x: 64
+        y: 0
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b7e69929864abba50800000000000000
-      internalID: 6538000053101489787
+      spriteID: 68c5322bc823da7fbb3c36ac54f7caee
+      internalID: 1464004479001748222
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_14
+      name: autotiles_15
       rect:
         serializedVersion: 2
-        x: 136
-        y: 9
-        width: 25
-        height: 17
+        x: 96
+        y: 0
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1a3db04357c873660800000000000000
-      internalID: 7365510150599988129
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_15
-      rect:
-        serializedVersion: 2
-        x: 144
-        y: 20
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 02cf97ee99f18f5c0800000000000000
-      internalID: -4181557508022076384
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 32x32 Tilemap Recreation_16
-      rect:
-        serializedVersion: 2
-        x: 154
-        y: 20
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: fa96cc8d12baf4200800000000000000
-      internalID: 166539873095543215
+      spriteID: 2ee9309b74da3ca4fe8281b3e45ec59a
+      internalID: 6603343130020838077
       vertices: []
       indices: 
       edges: []
@@ -561,23 +536,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      32x32 Tilemap Recreation_0: -8716765016589067494
-      32x32 Tilemap Recreation_1: -6758860182346373854
-      32x32 Tilemap Recreation_10: -4596418923564653192
-      32x32 Tilemap Recreation_11: -2210794919635973114
-      32x32 Tilemap Recreation_12: 2586458093690221636
-      32x32 Tilemap Recreation_13: 6538000053101489787
-      32x32 Tilemap Recreation_14: 7365510150599988129
-      32x32 Tilemap Recreation_15: -4181557508022076384
-      32x32 Tilemap Recreation_16: 166539873095543215
-      32x32 Tilemap Recreation_2: 7533558163160207980
-      32x32 Tilemap Recreation_3: -6291796707314901687
-      32x32 Tilemap Recreation_4: -7842934813433220808
-      32x32 Tilemap Recreation_5: 7892119067682607394
-      32x32 Tilemap Recreation_6: 1596430473993326977
-      32x32 Tilemap Recreation_7: -5252046008947597647
-      32x32 Tilemap Recreation_8: -6007167260621320827
-      32x32 Tilemap Recreation_9: 4549413649504817751
+      autotiles_0: 1409115704203562813
+      autotiles_1: 6768856252536753741
+      autotiles_2: 3300455963643147707
+      autotiles_3: 1478286139908450484
+      autotiles_4: 4351953492627492727
+      autotiles_5: 1668923843958968367
+      autotiles_6: 5943511215920642412
+      autotiles_7: 6346844571497233583
+      autotiles_8: 2839240516816027723
+      autotiles_9: 3939910794548036902
+      autotiles_10: 2566026665088712996
+      autotiles_11: 4075982640127354845
+      autotiles_12: 2705440644630309344
+      autotiles_13: 4740501964099009607
+      autotiles_14: 1464004479001748222
+      autotiles_15: 6603343130020838077
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
