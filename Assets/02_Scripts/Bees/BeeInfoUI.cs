@@ -8,13 +8,16 @@ public class BeeInfoUI : MonoBehaviour
 
     [Header("UI")]
     public GameObject panel;
-    public Slider healthSlider;
 
     public TMP_Text typeText;
     public TMP_Text nameText;
     public TMP_Text speedText;
 
+    [Header("Hearts (assign in Inspector)")]
+    public Image[] hearts;
+
     private Bee currentBee;
+    private int lastHealth = -1;
 
     void Awake()
     {
@@ -24,10 +27,15 @@ public class BeeInfoUI : MonoBehaviour
 
     void Update()
     {
-        // 🔥 live update health slider
-        if (currentBee != null && panel.activeSelf)
+        if (currentBee == null || !panel.activeSelf)
+            return;
+
+        int health = Mathf.RoundToInt(currentBee.CurrentHealth);
+
+        if (health != lastHealth)
         {
-            healthSlider.value = currentBee.CurrentHealth;
+            lastHealth = health;
+            UpdateHearts(health);
         }
     }
 
@@ -36,23 +44,26 @@ public class BeeInfoUI : MonoBehaviour
         currentBee = bee;
         panel.SetActive(true);
 
-        // 🐝 type
         typeText.text = $"Type: {bee.beeType}";
-
-        // 🏷️ custom name (NEW)
         nameText.text = $"Name: {bee.beeName}";
-
-        // 🚀 speed
         speedText.text = $"Speed: {bee.moveSpeed}";
 
-        // ❤️ health slider setup
-        healthSlider.maxValue = bee.maxHealth;
-        healthSlider.value = bee.CurrentHealth;
+        lastHealth = -1;
+
+        UpdateHearts(Mathf.RoundToInt(bee.CurrentHealth));
     }
 
     public void Hide()
     {
         panel.SetActive(false);
         currentBee = null;
+    }
+
+    void UpdateHearts(int currentHealth)
+    {
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].enabled = i < currentHealth;
+        }
     }
 }

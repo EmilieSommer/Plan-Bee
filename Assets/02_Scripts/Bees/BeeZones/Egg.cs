@@ -25,9 +25,13 @@ public class Egg : MonoBehaviour
 
     public string eggName;
 
+    private bool hasName = false;
+
     public void SetName(string newName)
     {
         eggName = newName;
+        hasName = true;
+
         Debug.Log("Egg named: " + eggName);
     }
 
@@ -48,6 +52,10 @@ public class Egg : MonoBehaviour
 
     private void Update()
     {
+        // ❌ cannot hatch if not named
+        if (!hasName)
+            return;
+
         if (currentNurse != null)
         {
             timer -= Time.deltaTime * tendSpeedMultiplier;
@@ -140,11 +148,13 @@ public class Egg : MonoBehaviour
 
     void Hatch()
     {
+        if (!hasName)
+            return;
+
         OnHatched?.Invoke();
 
         GameObject beeObj = Instantiate(beePrefab, transform.position, Quaternion.identity);
 
-        // 🧠 PASS NAME INTO BEE
         Bee bee = beeObj.GetComponent<Bee>();
         if (bee != null)
         {
