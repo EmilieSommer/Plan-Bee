@@ -22,10 +22,6 @@ public class HiveGrid : MonoBehaviour
     [SerializeField] private int startRadius = 1;
     [SerializeField] private HiveTileType startType = HiveTileType.InsideHive;
 
-    [Header("Build Mode")]
-    [Tooltip("Complete tiles instantly without waiting for builder bees.")]
-    [SerializeField] private bool instantBuild = false;
-
     // ── State ─────────────────────────────────────────────────────────────────
 
     // tile type for every grid cell that exists
@@ -82,15 +78,8 @@ public class HiveGrid : MonoBehaviour
         var sprite = library.GetMarkedSprite(type);
         SetSprite(markedTilemap, pos, sprite);
 
-        if (instantBuild)
-        {
-            CompleteBuild(pos);
-        }
-        else
-        {
-            buildQueue.Enqueue(pos);
-            OnTileMarked?.Invoke(pos);
-        }
+        buildQueue.Enqueue(pos);
+        OnTileMarked?.Invoke(pos);
         return true;
     }
 
