@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using UnityEngine.EventSystems;
 
 public class ClickManager : MonoBehaviour
@@ -19,9 +21,26 @@ public class ClickManager : MonoBehaviour
     private Vector3 dragStartPosition;
     private float dragTimer;
 
+    // 🐝 Click detection
+    private GameObject clickedBee;
+    private bool beeClickPending = false;
+    private float clickTimer;
+    private Vector3 clickStartPos;
+
     void Update()
     {
         HandleBeeDrag();
+        HandleBeeClick();
+
+        // 🧠 NEW: Close bee UI when clicking anywhere (except UI objects)
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (BeeInfoUI.Instance != null && BeeInfoUI.Instance.panel.activeSelf)
+            {
+                BeeInfoUI.Instance.Hide();
+                uiOpen = false;
+            }
+        }
 
         if (!Input.GetMouseButtonDown(0))
             return;
@@ -30,14 +49,28 @@ public class ClickManager : MonoBehaviour
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
 
+        // 🧠 Close UI if open (your original system kept intact)
+        if (uiOpen)
+        {
+            BeeInfoUI.Instance.Hide();
+            CloseUI();
+            return;
+        }
+
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        // 🐝 Bee drag
+        // 🐝 Bee detection (drag + click prep)
         RaycastHit2D beeHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, beeLayer);
 
         if (beeHit.collider != null)
         {
-            draggedBee = beeHit.collider.gameObject;
+            clickedBee = beeHit.collider.gameObject;
+            beeClickPending = true;
+            clickTimer = 0f;
+            clickStartPos = Input.mousePosition;
+
+            // Start drag system (unchanged behaviour)
+            draggedBee = clickedBee;
             isDraggingBee = true;
             dragStartPosition = draggedBee.transform.position;
             dragTimer = 0f;
@@ -46,13 +79,6 @@ public class ClickManager : MonoBehaviour
             if (bee != null)
                 bee.StartDragging();
 
-            return;
-        }
-
-        // Close open UI
-        if (uiOpen)
-        {
-            CloseUI();
             return;
         }
 
@@ -104,7 +130,6 @@ public class ClickManager : MonoBehaviour
 
         dragTimer += Time.deltaTime;
 
-        // Bee escapes if held too long
         if (dragTimer >= maxDragTime)
         {
             ReleaseBee();
@@ -117,9 +142,7 @@ public class ClickManager : MonoBehaviour
         Vector3 offset = mousePos - dragStartPosition;
 
         if (offset.magnitude > maxDragDistance)
-        {
             offset = offset.normalized * maxDragDistance;
-        }
 
         Vector3 targetPos = dragStartPosition + offset;
 
@@ -133,6 +156,38 @@ public class ClickManager : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             ReleaseBee();
+        }
+    }
+
+    void HandleBeeClick()
+    {
+        if (!beeClickPending || clickedBee == null)
+            return;
+
+        clickTimer += Time.deltaTime;
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            float moveDist = Vector3.Distance(clickStartPos, Input.mousePosition);
+
+            bool isClick = moveDist < 10f && clickTimer < 0.25f;
+
+            if (isClick)
+            {
+                Bee bee = clickedBee.GetComponent<Bee>();
+
+                if (bee != null)
+                {
+                    BeeInfoUI.Instance.Show(bee);
+                    uiOpen = true;
+                }
+
+                ReleaseBee();
+                isDraggingBee = false;
+            }
+
+            beeClickPending = false;
+            clickedBee = null;
         }
     }
 

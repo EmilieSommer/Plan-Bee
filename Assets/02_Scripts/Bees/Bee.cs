@@ -16,9 +16,10 @@ public abstract class Bee : MonoBehaviour
     [Header("Base Stats")]
     public float maxHealth = 10f;
     protected float currentHealth;
+    public float CurrentHealth => currentHealth;
 
     [Header("Movement")]
-    public float moveSpeed = 2f;
+    public float moveSpeed = 2f;    
 
     [Header("Steering")]
     public float acceleration = 8f;
