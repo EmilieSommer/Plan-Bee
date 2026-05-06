@@ -29,6 +29,8 @@ public class ClickManager : MonoBehaviour
 
     void Update()
     {
+        if (EggNamePopup.IsOpen)
+        return;
         HandleBeeDrag();
         HandleBeeClick();
 

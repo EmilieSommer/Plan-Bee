@@ -23,6 +23,14 @@ public class Egg : MonoBehaviour
     // 🔒 Only ONE nurse targeting
     private NurseBee reservedNurse = null;
 
+    public string eggName;
+
+    public void SetName(string newName)
+    {
+        eggName = newName;
+        Debug.Log("Egg named: " + eggName);
+    }
+
     private void OnEnable()
     {
         allEggs.Add(this);
