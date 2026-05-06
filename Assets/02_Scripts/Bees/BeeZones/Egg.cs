@@ -142,7 +142,14 @@ public class Egg : MonoBehaviour
     {
         OnHatched?.Invoke();
 
-        Instantiate(beePrefab, transform.position, Quaternion.identity);
+        GameObject beeObj = Instantiate(beePrefab, transform.position, Quaternion.identity);
+
+        // 🧠 PASS NAME INTO BEE
+        Bee bee = beeObj.GetComponent<Bee>();
+        if (bee != null)
+        {
+            bee.SetName(eggName);
+        }
 
         Destroy(gameObject);
     }

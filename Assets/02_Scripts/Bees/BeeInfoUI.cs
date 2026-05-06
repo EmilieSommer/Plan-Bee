@@ -40,7 +40,7 @@ public class BeeInfoUI : MonoBehaviour
         typeText.text = $"Type: {bee.beeType}";
 
         // 🏷️ custom name (NEW)
-        nameText.text = $"Name: {bee.gameObject.name}";
+        nameText.text = $"Name: {bee.beeName}";
 
         // 🚀 speed
         speedText.text = $"Speed: {bee.moveSpeed}";

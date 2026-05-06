@@ -80,6 +80,9 @@ public abstract class Bee : MonoBehaviour
 
     protected bool isBeingDragged = false;
 
+    [Header("Identity")]
+    public string beeName = "Unnamed Bee";
+
     protected virtual void Awake()
     {
 
@@ -109,6 +112,12 @@ public abstract class Bee : MonoBehaviour
     protected virtual void Start()
     {
         AssignZone();
+    }
+
+    public void SetName(string newName)
+    {
+        beeName = string.IsNullOrWhiteSpace(newName) ? "Unnamed Bee" : newName;
+        gameObject.name = beeName; // optional but useful in hierarchy
     }
 
     protected virtual void Update()
