@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class BeeInfoUI : MonoBehaviour
 {
@@ -7,9 +8,11 @@ public class BeeInfoUI : MonoBehaviour
 
     [Header("UI")]
     public GameObject panel;
-    public TMP_Text healthText;
-    public TMP_Text speedText;
+    public Slider healthSlider;
+
     public TMP_Text typeText;
+    public TMP_Text nameText;
+    public TMP_Text speedText;
 
     private Bee currentBee;
 
@@ -21,10 +24,10 @@ public class BeeInfoUI : MonoBehaviour
 
     void Update()
     {
-        // 🔥 live update while UI is open
+        // 🔥 live update health slider
         if (currentBee != null && panel.activeSelf)
         {
-            healthText.text = $"Health: {currentBee.CurrentHealth}/{currentBee.maxHealth}";
+            healthSlider.value = currentBee.CurrentHealth;
         }
     }
 
@@ -33,9 +36,18 @@ public class BeeInfoUI : MonoBehaviour
         currentBee = bee;
         panel.SetActive(true);
 
+        // 🐝 type
         typeText.text = $"Type: {bee.beeType}";
-        healthText.text = $"Health: {bee.CurrentHealth}/{bee.maxHealth}";
+
+        // 🏷️ custom name (NEW)
+        nameText.text = $"Name: {bee.gameObject.name}";
+
+        // 🚀 speed
         speedText.text = $"Speed: {bee.moveSpeed}";
+
+        // ❤️ health slider setup
+        healthSlider.maxValue = bee.maxHealth;
+        healthSlider.value = bee.CurrentHealth;
     }
 
     public void Hide()
