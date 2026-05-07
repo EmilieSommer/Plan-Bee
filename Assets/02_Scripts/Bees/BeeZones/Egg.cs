@@ -35,6 +35,11 @@ public class Egg : MonoBehaviour
         Debug.Log("Egg named: " + eggName);
     }
 
+    public float GetTimeRemaining()
+    {
+        return Mathf.Max(timer, 0f);
+    }
+
     private void OnEnable()
     {
         allEggs.Add(this);
@@ -48,8 +53,8 @@ public class Egg : MonoBehaviour
     private void Start()
     {
         timer = hatchTime;
-    }
 
+    }
     private void Update()
     {
         // ❌ cannot hatch if not named

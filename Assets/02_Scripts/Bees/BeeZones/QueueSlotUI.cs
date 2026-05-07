@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class QueueSlotUI : MonoBehaviour, IDropHandler
 {
@@ -7,7 +8,8 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
     private DraggableEggUI currentEgg; // UI reference
     private Egg currentWorldEgg;       // world egg reference
-
+    
+    public TextMeshProUGUI timerText;
     public void OnDrop(PointerEventData eventData)
     {
         if (EggNamePopup.IsOpen) return; // 🚫 block during naming
@@ -56,6 +58,24 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
     private void Update()
     {
+        if (isFilled && currentWorldEgg != null)
+        {
+            float timeLeft = currentWorldEgg.GetTimeRemaining();
+
+            if (timeLeft <= 0)
+            {
+                timerText.text = "Hatching...";
+            }
+            else
+            {
+                timerText.text = timeLeft.ToString("F1") + "s";
+            }
+        }
+        else
+        {
+            timerText.text = "";
+        }
+
         if (isFilled && (currentEgg == null || !currentEgg.gameObject.activeInHierarchy))
         {
             ClearSlot();
