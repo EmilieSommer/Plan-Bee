@@ -15,7 +15,11 @@ public class HiveUI : MonoBehaviour
     {
         if (HiveManager.Instance == null) return;
 
-        totalText.text = HiveManager.Instance.GetTotalBees().ToString();
+        // TOTAL: Bees / Capacity
+        totalText.text =
+            HiveManager.Instance.GetTotalBees() +
+            " / " +
+            HiveManager.Instance.GetHiveCapacity();
 
         queenText.text = GetCount(Bee.BeeType.Queen).ToString();
         houseText.text = GetCount(Bee.BeeType.House).ToString();

@@ -22,6 +22,7 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         if (NurseBeeZone.currentZone == null)
         {
             Debug.LogWarning("No Nurse Zone selected!");
+            UIMessagePopup.Instance.ShowMessage("Select a Nurse Zone first!");
             return;
         }
 
@@ -31,16 +32,20 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         {
             Debug.Log("Not enough honey!");
             egg.ResetToStartPosition();
+
+            UIMessagePopup.Instance.ShowMessage("Not enough honey!");
             return;
         }
 
-        // 🧠 Hive capacity check (SleepZones system)
+        // 🧠 Hive capacity check
         if (!HiveManager.Instance.CanSpawnBee())
         {
             Debug.Log("Hive is full (SleepZones limit reached)");
 
-            CurrencyManager.Instance.AddHoney(cost); // optional refund
+            CurrencyManager.Instance.AddHoney(cost); // refund
             egg.ResetToStartPosition();
+
+            UIMessagePopup.Instance.ShowMessage("Hive is full! Build more sleep zones.");
             return;
         }
 

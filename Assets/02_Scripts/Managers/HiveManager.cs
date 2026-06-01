@@ -7,7 +7,6 @@ public class HiveManager : MonoBehaviour
 
     private Dictionary<Bee.BeeType, int> beeCounts = new Dictionary<Bee.BeeType, int>();
     private HashSet<Bee> registeredBees = new HashSet<Bee>();
-
     private HashSet<SleepZone> sleepZones = new HashSet<SleepZone>();
 
     private int totalBees;
@@ -28,6 +27,12 @@ public class HiveManager : MonoBehaviour
         foreach (Bee bee in bees)
         {
             RegisterBee(bee);
+        }
+
+        SleepZone[] zones = FindObjectsOfType<SleepZone>();
+        foreach (SleepZone zone in zones)
+        {
+            RegisterSleepZone(zone);
         }
     }
 
@@ -61,10 +66,7 @@ public class HiveManager : MonoBehaviour
     // GETTERS
     // ------------------------
 
-    public int GetTotalBees()
-    {
-        return totalBees;
-    }
+    public int GetTotalBees() => totalBees;
 
     public int GetBeeCount(Bee.BeeType type)
     {
@@ -72,7 +74,7 @@ public class HiveManager : MonoBehaviour
     }
 
     // ------------------------
-    // SLEEP ZONES (CAPACITY)
+    // SLEEP ZONES
     // ------------------------
 
     public void RegisterSleepZone(SleepZone zone)
@@ -101,7 +103,7 @@ public class HiveManager : MonoBehaviour
     }
 
     // ------------------------
-    // SPAWN RULE (FIXED)
+    // SPAWN RULE
     // ------------------------
 
     public bool CanSpawnBee()

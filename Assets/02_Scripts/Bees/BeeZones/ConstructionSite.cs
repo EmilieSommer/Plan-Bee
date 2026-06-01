@@ -37,7 +37,6 @@ public class ConstructionSite : MonoBehaviour
 
         float t = Mathf.Clamp01(progress / buildTime);
 
-        // Fade IN building
         if (sr != null)
         {
             Color c = sr.color;
@@ -45,7 +44,6 @@ public class ConstructionSite : MonoBehaviour
             sr.color = c;
         }
 
-        // Fade OUT build zone
         if (parentZone != null)
         {
             parentZone.SetTransparency(1f - t);
@@ -88,15 +86,15 @@ public class ConstructionSite : MonoBehaviour
         if (col != null)
             col.enabled = true;
 
+        // Activate final zone
+        SleepZone sleepZone = GetComponent<SleepZone>();
+        if (sleepZone != null && HiveManager.Instance != null)
+        {
+            HiveManager.Instance.RegisterSleepZone(sleepZone);
+        }
+
         if (parentZone != null)
         {
-            HouseBeeZone zone = GetComponent<HouseBeeZone>();
-            if (zone != null)
-            {
-                zone.enabled = true;
-                zone.ActivateZone();
-            }
-
             parentZone.FinishBuild();
         }
 
