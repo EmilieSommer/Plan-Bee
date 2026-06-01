@@ -3,7 +3,14 @@ using UnityEngine;
 public class DroneBee : Bee
 {
     private Transform targetEnemy;
+    private DroneZone currentZone;
+
     private float attackTimer;
+
+    [Header("Movement Settings")]
+    public float zoneArrivalDistance = 1.5f;
+
+    private Vector2 zoneIdlePosition;
 
     protected override void Awake()
     {
@@ -11,31 +18,30 @@ public class DroneBee : Bee
         beeType = BeeType.Drone;
     }
 
+    protected override void Start()
+    {
+        base.Start();
+        attackTimer = attackCooldown;
+    }
+
     protected override void Update()
     {
         base.Update();
+
         FindNearestEnemy();
-    }
 
-    void FindNearestEnemy()
-    {
-        Enemy[] enemies = FindObjectsOfType<Enemy>();
-
-        Enemy closest = null;
-        float closestDist = Mathf.Infinity;
-
-        foreach (Enemy enemy in enemies)
+        // PRIORITY 1: ENEMY ALWAYS WINS
+        if (targetEnemy != null)
         {
-            float dist = Vector2.Distance(transform.position, enemy.transform.position);
-
-            if (dist < closestDist)
-            {
-                closestDist = dist;
-                closest = enemy;
-            }
+            currentZone = null;
+            return;
         }
 
-        targetEnemy = closest != null ? closest.transform : null;
+        // PRIORITY 2: FIND ZONE
+        if (currentZone == null)
+        {
+            currentZone = FindDroneZone();
+        }
     }
 
     protected override void StateUpdate()
@@ -43,6 +49,9 @@ public class DroneBee : Bee
         if (currentState == BeeState.Dead)
             return;
 
+        // ======================
+        // COMBAT MODE
+        // ======================
         if (targetEnemy != null)
         {
             float dist = Vector2.Distance(transform.position, targetEnemy.position);
@@ -56,6 +65,36 @@ public class DroneBee : Bee
                 currentState = BeeState.Moving;
                 targetPosition = targetEnemy.position;
             }
+
+            base.StateUpdate();
+            return;
+        }
+
+        // ======================
+        // ZONE MODE (IDLE)
+        // ======================
+        if (currentZone != null)
+        {
+            float dist = Vector2.Distance(transform.position, currentZone.transform.position);
+
+            if (dist > zoneArrivalDistance)
+            {
+                currentState = BeeState.Moving;
+                targetPosition = currentZone.transform.position;
+            }
+            else
+            {
+                // ✅ IMPORTANT: FREEZE POSITION INSIDE ZONE
+                currentState = BeeState.Idle;
+                targetPosition = transform.position; // STOP MOVING COMPLETELY
+
+                zoneIdlePosition = transform.position;
+            }
+        }
+        else
+        {
+            currentState = BeeState.Idle;
+            targetPosition = transform.position;
         }
 
         base.StateUpdate();
@@ -98,12 +137,55 @@ public class DroneBee : Bee
         }
     }
 
-    protected override void ReturnBehavior() { }
-
-    protected override void Die()
+    void FindNearestEnemy()
     {
-        // custom behavior (e.g. particles)
+        Enemy[] enemies = FindObjectsOfType<Enemy>();
 
-        base.Die(); // VERY IMPORTANT
+        Enemy closest = null;
+        float closestDist = Mathf.Infinity;
+
+        foreach (Enemy enemy in enemies)
+        {
+            float dist = Vector2.Distance(transform.position, enemy.transform.position);
+
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closest = enemy;
+            }
+        }
+
+        targetEnemy = closest != null ? closest.transform : null;
+    }
+
+    DroneZone FindDroneZone()
+    {
+        if (DroneZone.allZones == null || DroneZone.allZones.Count == 0)
+            return null;
+
+        DroneZone best = null;
+        float bestDist = Mathf.Infinity;
+
+        foreach (var zone in DroneZone.allZones)
+        {
+            if (zone == null) continue;
+
+            float dist = Vector2.Distance(transform.position, zone.transform.position);
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                best = zone;
+            }
+        }
+
+        return best;
+    }
+
+    protected override void ReturnBehavior()
+    {
+        currentZone = null;
+        targetEnemy = null;
+        targetPosition = transform.position; // IMPORTANT STOP MOVEMENT
     }
 }

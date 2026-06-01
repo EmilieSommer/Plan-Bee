@@ -7,18 +7,19 @@ public class BuildZone : MonoBehaviour
     public GameObject nursePrefab;
     public GameObject housePrefab;
     public GameObject sleepPrefab;
+    public GameObject dronePrefab; // ✅ NEW
 
     [Header("Costs")]
     public int nurseCost = 10;
     public int houseCost = 20;
     public int sleepCost = 15;
+    public int droneCost = 25; // ✅ NEW
 
     private bool isBuilt = false;
     private bool isBuilding = false;
 
     private ConstructionSite currentSite;
 
-    private float buildTimeout = 10f;
     private float buildTimer;
 
     private SpriteRenderer sr;
@@ -28,30 +29,16 @@ public class BuildZone : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
     }
 
-    public void BuildNurse()
-    {
-        TryStartConstruction(nursePrefab, nurseCost);
-    }
+    public void BuildNurse() => TryStartConstruction(nursePrefab, nurseCost);
+    public void BuildHouse()  => TryStartConstruction(housePrefab, houseCost);
+    public void BuildSleep()  => TryStartConstruction(sleepPrefab, sleepCost);
 
-    public void BuildHouse()
-    {
-        TryStartConstruction(housePrefab, houseCost);
-    }
-
-    public void BuildSleep()
-    {
-        TryStartConstruction(sleepPrefab, sleepCost);
-    }
+    // ✅ NEW
+    public void BuildDrone() => TryStartConstruction(dronePrefab, droneCost);
 
     void TryStartConstruction(GameObject prefab, int cost)
     {
         if (isBuilt || isBuilding) return;
-
-        if (CurrencyManager.Instance == null)
-        {
-            Debug.LogError("CurrencyManager is NULL");
-            return;
-        }
 
         if (!CurrencyManager.Instance.UseHoney(cost))
             return;
@@ -68,7 +55,6 @@ public class BuildZone : MonoBehaviour
 
         currentSite = obj.AddComponent<ConstructionSite>();
         currentSite.parentZone = this;
-
         currentSite.StartBuild();
 
         BuildManager.Instance.AddToQueue(currentSite);
@@ -89,21 +75,6 @@ public class BuildZone : MonoBehaviour
         isBuilt = true;
 
         Destroy(gameObject);
-    }
-
-    private void Update()
-    {
-        if (!isBuilding) return;
-
-        buildTimer += Time.deltaTime;
-
-        if (buildTimer > buildTimeout)
-        {
-            Debug.LogWarning("Build timeout reset");
-
-            isBuilding = false;
-            buildTimer = 0f;
-        }
     }
 
     void DisableZone()

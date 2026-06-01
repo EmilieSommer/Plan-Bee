@@ -78,19 +78,28 @@ public class ConstructionSite : MonoBehaviour
 
     void FinishBuild()
     {
-        Debug.Log("Build complete!");
-
         isBuilding = false;
 
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
             col.enabled = true;
 
-        // Activate final zone
-        SleepZone sleepZone = GetComponent<SleepZone>();
-        if (sleepZone != null && HiveManager.Instance != null)
+        // =========================
+        // FIX: PROPER ZONE REGISTRATION
+        // =========================
+
+        // Sleep zone
+        SleepZone sleep = GetComponent<SleepZone>();
+        if (sleep != null)
         {
-            HiveManager.Instance.RegisterSleepZone(sleepZone);
+            HiveManager.Instance.RegisterSleepZone(sleep);
+        }
+
+        // Drone zone
+        DroneZone drone = GetComponent<DroneZone>();
+        if (drone != null)
+        {
+            DroneZone.allZones.Add(drone);
         }
 
         if (parentZone != null)
