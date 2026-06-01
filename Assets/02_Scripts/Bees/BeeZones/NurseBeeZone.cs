@@ -5,10 +5,11 @@ public class NurseBeeZone : Zone
 {
     private BoxCollider2D box;
 
-    public static NurseBeeZone currentZone;
-
     [Header("UI")]
     public GameObject nurseCanvas;
+
+    [Header("Slots (assign per zone in Inspector)")]
+    [SerializeField] private QueueSlotUI[] slots;
 
     private void Awake()
     {
@@ -16,6 +17,15 @@ public class NurseBeeZone : Zone
         box = GetComponent<BoxCollider2D>();
 
         SetupCapacity();
+    }
+
+    private void Start()
+    {
+        // ✅ bind ONCE → permanent ownership
+        foreach (QueueSlotUI slot in slots)
+        {
+            slot.SetZone(this);
+        }
     }
 
     void SetupCapacity()
@@ -50,8 +60,6 @@ public class NurseBeeZone : Zone
     {
         if (nurseCanvas != null)
             nurseCanvas.SetActive(true);
-
-        currentZone = this;
     }
 
     public void SpawnEgg(EggType type)

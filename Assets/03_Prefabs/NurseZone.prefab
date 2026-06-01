@@ -3426,6 +3426,10 @@ MonoBehaviour:
     capacity: 1
     current: 0
   nurseCanvas: {fileID: 3040297141966562466}
+  slots:
+  - {fileID: 2879359856423169550}
+  - {fileID: 8770563302417467611}
+  - {fileID: 4858288723565428659}
 --- !u!1 &4899972304728464561
 GameObject:
   m_ObjectHideFlags: 0

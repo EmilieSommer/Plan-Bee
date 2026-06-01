@@ -11,6 +11,13 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
     public TextMeshProUGUI timerText;
 
+    private NurseBeeZone zone;
+
+    public void SetZone(NurseBeeZone newZone)
+    {
+        zone = newZone;
+    }
+
     public void OnDrop(PointerEventData eventData)
     {
         if (EggNamePopup.IsOpen) return;
@@ -19,10 +26,9 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         DraggableEggUI egg = eventData.pointerDrag?.GetComponent<DraggableEggUI>();
         if (egg == null) return;
 
-        if (NurseBeeZone.currentZone == null)
+        if (zone == null)
         {
-            Debug.LogWarning("No Nurse Zone selected!");
-            UIMessagePopup.Instance.ShowMessage("Select a Nurse Zone first!");
+            Debug.LogError("Slot has no zone assigned!");
             return;
         }
 
@@ -30,42 +36,45 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
         if (!CurrencyManager.Instance.UseHoney(cost))
         {
-            Debug.Log("Not enough honey!");
             egg.ResetToStartPosition();
-
             UIMessagePopup.Instance.ShowMessage("Not enough honey!");
             return;
         }
 
-        // 🧠 Hive capacity check
         if (!HiveManager.Instance.CanSpawnBee())
         {
-            Debug.Log("Hive is full (SleepZones limit reached)");
-
-            CurrencyManager.Instance.AddHoney(cost); // refund
+            CurrencyManager.Instance.AddHoney(cost);
             egg.ResetToStartPosition();
-
-            UIMessagePopup.Instance.ShowMessage("Hive is full! Build more sleep zones.");
+            UIMessagePopup.Instance.ShowMessage("Hive is full!");
             return;
         }
 
-        // ✅ accept egg
         egg.SnapToSlot(transform);
 
         currentEgg = egg;
         isFilled = true;
 
-        Egg worldEgg = EggSpawner.Instance.SpawnEgg(
-            egg.eggType,
-            NurseBeeZone.currentZone
-        );
-
+        Egg worldEgg = EggSpawner.Instance.SpawnEgg(egg.eggType, zone);
         currentWorldEgg = worldEgg;
 
+        // 🔥 SAFE POPUP CALL (NO GLOBAL STATE DEPENDENCY)
         if (currentWorldEgg != null)
         {
-            EggNamePopup.Instance.Open(currentWorldEgg);
             currentWorldEgg.OnHatched += ClearSlot;
+
+            if (EggNamePopup.Instance != null)
+            {
+                EggNamePopup.Instance.Open(currentWorldEgg);
+            }
+            else
+            {
+                Debug.LogError("EggNamePopup instance missing!");
+            }
+        }
+        else
+        {
+            Debug.LogError("SpawnEgg returned NULL!");
+            ClearSlot();
         }
     }
 

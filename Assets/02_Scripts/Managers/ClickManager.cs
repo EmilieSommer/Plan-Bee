@@ -21,7 +21,6 @@ public class ClickManager : MonoBehaviour
     private Vector3 dragStartPosition;
     private float dragTimer;
 
-    // 🐝 Click detection
     private GameObject clickedBee;
     private bool beeClickPending = false;
     private float clickTimer;
@@ -29,12 +28,9 @@ public class ClickManager : MonoBehaviour
 
     void Update()
     {
-        if (EggNamePopup.IsOpen)
-        return;
         HandleBeeDrag();
         HandleBeeClick();
 
-        // 🧠 NEW: Close bee UI when clicking anywhere (except UI objects)
         if (Input.GetMouseButtonDown(0))
         {
             if (BeeInfoUI.Instance != null && BeeInfoUI.Instance.panel.activeSelf)
@@ -47,11 +43,9 @@ public class ClickManager : MonoBehaviour
         if (!Input.GetMouseButtonDown(0))
             return;
 
-        // UI has priority
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
 
-        // 🧠 Close UI if open (your original system kept intact)
         if (uiOpen)
         {
             BeeInfoUI.Instance.Hide();
@@ -61,7 +55,6 @@ public class ClickManager : MonoBehaviour
 
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-        // 🐝 Bee detection (drag + click prep)
         RaycastHit2D beeHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, beeLayer);
 
         if (beeHit.collider != null)
@@ -71,7 +64,6 @@ public class ClickManager : MonoBehaviour
             clickTimer = 0f;
             clickStartPos = Input.mousePosition;
 
-            // Start drag system (unchanged behaviour)
             draggedBee = clickedBee;
             isDraggingBee = true;
             dragStartPosition = draggedBee.transform.position;
@@ -84,21 +76,17 @@ public class ClickManager : MonoBehaviour
             return;
         }
 
-        // 🍯 Honey
         RaycastHit2D honeyHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, honeyLayer);
 
         if (honeyHit.collider != null)
         {
             Honey honey = honeyHit.collider.GetComponent<Honey>();
-
             if (honey != null)
-            {
                 honey.Collect();
-                return;
-            }
+
+            return;
         }
 
-        // 🧱 Zones
         RaycastHit2D zoneHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, zoneLayer);
 
         if (zoneHit.collider != null)
