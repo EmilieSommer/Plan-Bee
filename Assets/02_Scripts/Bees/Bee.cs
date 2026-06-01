@@ -47,6 +47,8 @@ public abstract class Bee : MonoBehaviour
     protected Vector2 currentVelocity;
     protected Vector2 homePosition;
 
+    protected bool lockMovement = false;
+
     protected BeeState currentState;
     protected Rigidbody2D rb;
 
@@ -132,25 +134,22 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
-            if (isBeingDragged)
-    {
-        currentVelocity = Vector2.zero;
-        rb.linearVelocity = Vector2.zero;
-        return;
-    }
+        if (isBeingDragged || lockMovement)
+        {
+            currentVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            return;
+        }
 
-    if (currentState == BeeState.Working)
-    {
-        currentVelocity = Vector2.zero;
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
-        rb.Sleep();
-        return;
-    }
-
-    if (currentState == BeeState.Dead)
-        return;
- 
+        // 🔥 HARD STOP MOVEMENT (zones, idle freeze, etc.)
+        if (currentState == BeeState.Working || currentState == BeeState.Dead || lockMovement)
+        {
+            currentVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            return;
+        }
 
         Vector2 desiredVelocity = Vector2.zero;
 
@@ -158,16 +157,13 @@ public abstract class Bee : MonoBehaviour
         {
             Vector2 steering = moveDirection * moveSpeed;
 
-            // Avoid bees
             steering += GetForwardAvoidance();
-
-            // Separation
             steering += GetSeparationForce() * separationStrength;
 
             desiredVelocity = steering;
         }
 
-        // Smooth acceleration
+        // 🔥 IMPORTANT: smooth ONLY when not locked
         currentVelocity = Vector2.Lerp(
             currentVelocity,
             desiredVelocity,
@@ -183,6 +179,10 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void StateUpdate()
     {
+        // 🔥 HARD FREEZE OVERRIDE
+        if (lockMovement)
+            return;
+
         switch (currentState)
         {
             case BeeState.Idle:
@@ -203,7 +203,6 @@ public abstract class Bee : MonoBehaviour
                 break;
         }
     }
-
     protected bool HasValidZone()
     {
         if (assignedZone == null)
@@ -453,10 +452,20 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void IdleBehavior()
     {
+        if (lockMovement)
+            return;
+
         Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
         targetPosition = homePosition + randomOffset;
 
         currentState = BeeState.Moving;
+    }
+
+    protected void StopMovementInstant()
+    {
+        currentVelocity = Vector2.zero;
+        moveDirection = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
     }
 
     protected abstract void WorkBehavior();

@@ -10,8 +10,6 @@ public class DroneBee : Bee
     [Header("Movement Settings")]
     public float zoneArrivalDistance = 1.5f;
 
-    private Vector2 zoneIdlePosition;
-
     protected override void Awake()
     {
         base.Awake();
@@ -30,14 +28,14 @@ public class DroneBee : Bee
 
         FindNearestEnemy();
 
-        // PRIORITY 1: ENEMY ALWAYS WINS
+        // Enemy always takes priority
         if (targetEnemy != null)
         {
             currentZone = null;
             return;
         }
 
-        // PRIORITY 2: FIND ZONE
+        // No enemy? Find a zone
         if (currentZone == null)
         {
             currentZone = FindDroneZone();
@@ -49,12 +47,15 @@ public class DroneBee : Bee
         if (currentState == BeeState.Dead)
             return;
 
-        // ======================
-        // COMBAT MODE
-        // ======================
+        // =========================
+        // ENEMY BEHAVIOR
+        // =========================
         if (targetEnemy != null)
         {
-            float dist = Vector2.Distance(transform.position, targetEnemy.position);
+            float dist = Vector2.Distance(
+                transform.position,
+                targetEnemy.position
+            );
 
             if (dist <= attackRange)
             {
@@ -70,12 +71,15 @@ public class DroneBee : Bee
             return;
         }
 
-        // ======================
-        // ZONE MODE (IDLE)
-        // ======================
+        // =========================
+        // ZONE BEHAVIOR
+        // =========================
         if (currentZone != null)
         {
-            float dist = Vector2.Distance(transform.position, currentZone.transform.position);
+            float dist = Vector2.Distance(
+                transform.position,
+                currentZone.transform.position
+            );
 
             if (dist > zoneArrivalDistance)
             {
@@ -84,31 +88,39 @@ public class DroneBee : Bee
             }
             else
             {
-                // ✅ IMPORTANT: FREEZE POSITION INSIDE ZONE
-                currentState = BeeState.Idle;
-                targetPosition = transform.position; // STOP MOVING COMPLETELY
+                // EXACTLY like ForagerBee sheltering:
+                // stop completely and wait
+                currentState = BeeState.Working;
 
-                zoneIdlePosition = transform.position;
+                currentVelocity = Vector2.zero;
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
             }
-        }
-        else
-        {
-            currentState = BeeState.Idle;
-            targetPosition = transform.position;
+
+            base.StateUpdate();
+            return;
         }
 
+        currentState = BeeState.Idle;
         base.StateUpdate();
     }
 
     protected override void WorkBehavior()
     {
+        // Waiting in zone
         if (targetEnemy == null)
         {
-            currentState = BeeState.Idle;
+            currentVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
             return;
         }
 
-        float dist = Vector2.Distance(transform.position, targetEnemy.position);
+        // Combat mode
+        float dist = Vector2.Distance(
+            transform.position,
+            targetEnemy.position
+        );
 
         if (dist > attackRange)
         {
@@ -127,7 +139,8 @@ public class DroneBee : Bee
 
     void Attack()
     {
-        if (targetEnemy == null) return;
+        if (targetEnemy == null)
+            return;
 
         Enemy enemy = targetEnemy.GetComponent<Enemy>();
 
@@ -146,7 +159,13 @@ public class DroneBee : Bee
 
         foreach (Enemy enemy in enemies)
         {
-            float dist = Vector2.Distance(transform.position, enemy.transform.position);
+            if (enemy == null)
+                continue;
+
+            float dist = Vector2.Distance(
+                transform.position,
+                enemy.transform.position
+            );
 
             if (dist < closestDist)
             {
@@ -160,17 +179,24 @@ public class DroneBee : Bee
 
     DroneZone FindDroneZone()
     {
-        if (DroneZone.allZones == null || DroneZone.allZones.Count == 0)
+        if (DroneZone.allZones == null ||
+            DroneZone.allZones.Count == 0)
+        {
             return null;
+        }
 
         DroneZone best = null;
         float bestDist = Mathf.Infinity;
 
         foreach (var zone in DroneZone.allZones)
         {
-            if (zone == null) continue;
+            if (zone == null)
+                continue;
 
-            float dist = Vector2.Distance(transform.position, zone.transform.position);
+            float dist = Vector2.Distance(
+                transform.position,
+                zone.transform.position
+            );
 
             if (dist < bestDist)
             {
@@ -184,8 +210,18 @@ public class DroneBee : Bee
 
     protected override void ReturnBehavior()
     {
-        currentZone = null;
-        targetEnemy = null;
-        targetPosition = transform.position; // IMPORTANT STOP MOVEMENT
+    }
+
+    protected override void OnReachedTarget()
+    {
+        // If we reached our zone and there are no enemies,
+        // freeze completely.
+        if (targetEnemy == null && currentZone != null)
+        {
+            currentState = BeeState.Working;
+            return;
+        }
+
+        base.OnReachedTarget();
     }
 }
