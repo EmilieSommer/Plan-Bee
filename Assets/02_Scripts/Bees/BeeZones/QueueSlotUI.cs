@@ -6,14 +6,14 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 {
     public bool isFilled = false;
 
-    private DraggableEggUI currentEgg; // UI reference
-    private Egg currentWorldEgg;       // world egg reference
-    
+    private DraggableEggUI currentEgg;
+    private Egg currentWorldEgg;
+
     public TextMeshProUGUI timerText;
+
     public void OnDrop(PointerEventData eventData)
     {
-        if (EggNamePopup.IsOpen) return; // 🚫 block during naming
-
+        if (EggNamePopup.IsOpen) return;
         if (isFilled) return;
 
         DraggableEggUI egg = eventData.pointerDrag?.GetComponent<DraggableEggUI>();
@@ -27,11 +27,19 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
         int cost = egg.honeyCost;
 
-        // ❌ Check BEFORE anything happens
         if (!CurrencyManager.Instance.UseHoney(cost))
         {
             Debug.Log("Not enough honey!");
+            egg.ResetToStartPosition();
+            return;
+        }
 
+        // 🧠 Hive capacity check (SleepZones system)
+        if (!HiveManager.Instance.CanSpawnBee())
+        {
+            Debug.Log("Hive is full (SleepZones limit reached)");
+
+            CurrencyManager.Instance.AddHoney(cost); // optional refund
             egg.ResetToStartPosition();
             return;
         }
@@ -62,14 +70,9 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         {
             float timeLeft = currentWorldEgg.GetTimeRemaining();
 
-            if (timeLeft <= 0)
-            {
-                timerText.text = "Hatching...";
-            }
-            else
-            {
-                timerText.text = timeLeft.ToString("F1") + "s";
-            }
+            timerText.text = timeLeft <= 0
+                ? "Hatching..."
+                : timeLeft.ToString("F1") + "s";
         }
         else
         {

@@ -266,7 +266,7 @@ GameObject:
   m_Component:
   - component: {fileID: 22025525}
   - component: {fileID: 22025527}
-  - component: {fileID: 22025526}
+  - component: {fileID: 22025528}
   m_Layer: 8
   m_Name: QueenZone (4)
   m_TagString: Untagged
@@ -289,20 +289,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &22025526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 22025524}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &22025527
 SpriteRenderer:
   serializedVersion: 2
@@ -362,6 +348,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &22025528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 22025524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &43274443
 GameObject:
   m_ObjectHideFlags: 0
@@ -802,7 +801,7 @@ GameObject:
   m_Component:
   - component: {fileID: 197364192}
   - component: {fileID: 197364194}
-  - component: {fileID: 197364193}
+  - component: {fileID: 197364195}
   m_Layer: 8
   m_Name: QueenZone (6)
   m_TagString: Untagged
@@ -825,20 +824,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &197364193
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 197364191}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &197364194
 SpriteRenderer:
   serializedVersion: 2
@@ -898,6 +883,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &197364195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197364191}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &203668000
 GameObject:
   m_ObjectHideFlags: 0
@@ -2011,7 +2009,7 @@ GameObject:
   m_Component:
   - component: {fileID: 382401348}
   - component: {fileID: 382401350}
-  - component: {fileID: 382401349}
+  - component: {fileID: 382401351}
   m_Layer: 8
   m_Name: QueenZone (3)
   m_TagString: Untagged
@@ -2034,20 +2032,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &382401349
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 382401347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &382401350
 SpriteRenderer:
   serializedVersion: 2
@@ -2107,6 +2091,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &382401351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382401347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &431533000
 GameObject:
   m_ObjectHideFlags: 0
@@ -6319,7 +6316,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1336294341}
   - component: {fileID: 1336294343}
-  - component: {fileID: 1336294342}
+  - component: {fileID: 1336294344}
   m_Layer: 8
   m_Name: QueenZone (7)
   m_TagString: Untagged
@@ -6342,20 +6339,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1336294342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1336294340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &1336294343
 SpriteRenderer:
   serializedVersion: 2
@@ -6415,6 +6398,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1336294344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1336294340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &1338147322
 GameObject:
   m_ObjectHideFlags: 0
@@ -6673,7 +6669,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1368736260}
   - component: {fileID: 1368736262}
-  - component: {fileID: 1368736261}
+  - component: {fileID: 1368736263}
   m_Layer: 8
   m_Name: QueenZone (1)
   m_TagString: Untagged
@@ -6696,20 +6692,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1368736261
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1368736259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &1368736262
 SpriteRenderer:
   serializedVersion: 2
@@ -6769,6 +6751,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1368736263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368736259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &1368918904
 GameObject:
   m_ObjectHideFlags: 0
@@ -9485,7 +9480,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1905591312}
   - component: {fileID: 1905591314}
-  - component: {fileID: 1905591313}
+  - component: {fileID: 1905591315}
   m_Layer: 8
   m_Name: QueenZone (5)
   m_TagString: Untagged
@@ -9508,20 +9503,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1905591313
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1905591311}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &1905591314
 SpriteRenderer:
   serializedVersion: 2
@@ -9581,6 +9562,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1905591315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1905591311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &1911545738
 GameObject:
   m_ObjectHideFlags: 0
@@ -10319,7 +10313,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2049890888}
   - component: {fileID: 2049890890}
-  - component: {fileID: 2049890889}
+  - component: {fileID: 2049890891}
   m_Layer: 8
   m_Name: QueenZone (2)
   m_TagString: Untagged
@@ -10342,20 +10336,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1988522353}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2049890889
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2049890887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::QueenZone
-  zoneType: 5
-  limits: []
 --- !u!212 &2049890890
 SpriteRenderer:
   serializedVersion: 2
@@ -10415,6 +10395,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &2049890891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049890887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
+  capacityPerZone: 2
 --- !u!1 &2053461852
 GameObject:
   m_ObjectHideFlags: 0
