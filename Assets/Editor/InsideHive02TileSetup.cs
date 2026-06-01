@@ -115,14 +115,19 @@ public static class InsideHive02TileSetup
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) { Debug.LogWarning($"[Plan Bee] Importer not found: {path}"); return; }
 
-        importer.textureType            = TextureImporterType.Sprite;
-        importer.spriteImportMode       = SpriteImportMode.Single;
-        importer.filterMode             = FilterMode.Point;
-        importer.textureCompression     = TextureImporterCompression.Uncompressed;
-        importer.mipmapEnabled          = false;
-        importer.spritePixelsPerUnit    = 32f;
-        importer.spritePivot            = new Vector2(pivotX, pivotY);
-        importer.spriteAlignment        = (int)SpriteAlignment.Custom;
+        importer.textureType         = TextureImporterType.Sprite;
+        importer.spriteImportMode    = SpriteImportMode.Single;
+        importer.filterMode          = FilterMode.Point;
+        importer.textureCompression  = TextureImporterCompression.Uncompressed;
+        importer.mipmapEnabled       = false;
+        importer.spritePixelsPerUnit = 32f;
+
+        // spriteAlignment was removed in Unity 6 — use TextureImporterSettings instead
+        var settings = new TextureImporterSettings();
+        importer.ReadTextureSettings(settings);
+        settings.spriteAlignment = (int)SpriteAlignment.Custom;
+        settings.spritePivot     = new Vector2(pivotX, pivotY);
+        importer.SetTextureSettings(settings);
 
         importer.SaveAndReimport();
     }
