@@ -11,6 +11,9 @@ public class HiveManager : MonoBehaviour
 
     private int totalBees;
 
+    // NEW: queued eggs reserve capacity
+    private int queuedEggs = 0;
+
     private void Awake()
     {
         Instance = this;
@@ -63,6 +66,20 @@ public class HiveManager : MonoBehaviour
     }
 
     // ------------------------
+    // QUEUE TRACKING (NEW)
+    // ------------------------
+
+    public void RegisterQueuedEgg()
+    {
+        queuedEggs++;
+    }
+
+    public void UnregisterQueuedEgg()
+    {
+        queuedEggs = Mathf.Max(0, queuedEggs - 1);
+    }
+
+    // ------------------------
     // GETTERS
     // ------------------------
 
@@ -103,11 +120,11 @@ public class HiveManager : MonoBehaviour
     }
 
     // ------------------------
-    // SPAWN RULE
+    // SPAWN RULE (FIXED)
     // ------------------------
 
     public bool CanSpawnBee()
     {
-        return totalBees < GetHiveCapacity();
+        return (totalBees + queuedEggs) < GetHiveCapacity();
     }
 }

@@ -28,7 +28,7 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
         if (zone == null)
         {
-            Debug.LogError("Slot has no zone assigned!");
+            UIMessagePopup.Instance.ShowMessage("Select a Nurse Zone first!");
             return;
         }
 
@@ -41,6 +41,7 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             return;
         }
 
+        // ❗ IMPORTANT: capacity check includes queued eggs now
         if (!HiveManager.Instance.CanSpawnBee())
         {
             CurrencyManager.Instance.AddHoney(cost);
@@ -48,6 +49,9 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             UIMessagePopup.Instance.ShowMessage("Hive is full!");
             return;
         }
+
+        // 🧠 RESERVE CAPACITY IMMEDIATELY
+        HiveManager.Instance.RegisterQueuedEgg();
 
         egg.SnapToSlot(transform);
 
@@ -57,23 +61,13 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         Egg worldEgg = EggSpawner.Instance.SpawnEgg(egg.eggType, zone);
         currentWorldEgg = worldEgg;
 
-        // 🔥 SAFE POPUP CALL (NO GLOBAL STATE DEPENDENCY)
         if (currentWorldEgg != null)
         {
             currentWorldEgg.OnHatched += ClearSlot;
-
-            if (EggNamePopup.Instance != null)
-            {
-                EggNamePopup.Instance.Open(currentWorldEgg);
-            }
-            else
-            {
-                Debug.LogError("EggNamePopup instance missing!");
-            }
+            EggNamePopup.Instance.Open(currentWorldEgg);
         }
         else
         {
-            Debug.LogError("SpawnEgg returned NULL!");
             ClearSlot();
         }
     }
@@ -104,6 +98,10 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         if (currentWorldEgg != null)
         {
             currentWorldEgg.OnHatched -= ClearSlot;
+
+            // 🧠 release reserved slot
+            HiveManager.Instance.UnregisterQueuedEgg();
+
             currentWorldEgg = null;
         }
 

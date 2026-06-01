@@ -156,6 +156,9 @@ public class Egg : MonoBehaviour
         if (!hasName)
             return;
 
+        // 🧠 release reserved capacity
+        HiveManager.Instance.UnregisterQueuedEgg();
+
         OnHatched?.Invoke();
 
         GameObject beeObj = Instantiate(beePrefab, transform.position, Quaternion.identity);
