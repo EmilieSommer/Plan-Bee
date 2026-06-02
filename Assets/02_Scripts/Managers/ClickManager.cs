@@ -13,6 +13,10 @@ public class ClickManager : MonoBehaviour
     public float maxDragDistance = 1.5f;
     public float maxDragTime = 1.2f;
 
+    [Header("Smooth Drag")]
+    public float dragSmoothTime = 0.08f;
+    private Vector3 dragVelocity;
+
     private GameObject activeCanvas;
     private bool uiOpen = false;
 
@@ -31,15 +35,6 @@ public class ClickManager : MonoBehaviour
         HandleBeeDrag();
         HandleBeeClick();
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (BeeInfoUI.Instance != null && BeeInfoUI.Instance.panel.activeSelf)
-            {
-                BeeInfoUI.Instance.Hide();
-                uiOpen = false;
-            }
-        }
-
         if (!Input.GetMouseButtonDown(0))
             return;
 
@@ -48,7 +43,7 @@ public class ClickManager : MonoBehaviour
 
         if (uiOpen)
         {
-            BeeInfoUI.Instance.Hide();
+            BeeInfoUI.Instance.Close();
             CloseUI();
             return;
         }
@@ -68,6 +63,8 @@ public class ClickManager : MonoBehaviour
             isDraggingBee = true;
             dragStartPosition = draggedBee.transform.position;
             dragTimer = 0f;
+
+            dragVelocity = Vector3.zero;
 
             Bee bee = draggedBee.GetComponent<Bee>();
             if (bee != null)
@@ -131,17 +128,20 @@ public class ClickManager : MonoBehaviour
 
         Vector3 offset = mousePos - dragStartPosition;
 
+        if (offset.magnitude < 0.02f)
+            return;
+
         if (offset.magnitude > maxDragDistance)
             offset = offset.normalized * maxDragDistance;
 
         Vector3 targetPos = dragStartPosition + offset;
 
-        Rigidbody2D rb = draggedBee.GetComponent<Rigidbody2D>();
-
-        if (rb != null)
-            rb.MovePosition(targetPos);
-        else
-            draggedBee.transform.position = targetPos;
+        draggedBee.transform.position = Vector3.SmoothDamp(
+            draggedBee.transform.position,
+            targetPos,
+            ref dragVelocity,
+            dragSmoothTime
+        );
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -168,7 +168,7 @@ public class ClickManager : MonoBehaviour
 
                 if (bee != null)
                 {
-                    BeeInfoUI.Instance.Show(bee);
+                    BeeInfoUI.Instance.Open(bee);
                     uiOpen = true;
                 }
 
@@ -193,6 +193,7 @@ public class ClickManager : MonoBehaviour
 
         isDraggingBee = false;
         draggedBee = null;
+        dragVelocity = Vector3.zero;
     }
 
     void CloseUI()

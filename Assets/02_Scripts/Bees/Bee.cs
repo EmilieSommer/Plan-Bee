@@ -486,6 +486,19 @@ protected virtual void IdleBehavior()
         }
     }
 
+    public void Heal(float amount)
+    {
+        if (currentState == BeeState.Dead)
+            return;
+
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0f, maxHealth);
+    }
+
+    public void SetHealth(int value)
+    {
+        currentHealth = Mathf.Clamp(value, 0, maxHealth);
+    }
+
     protected virtual void Die()
     {
         currentState = BeeState.Dead;
