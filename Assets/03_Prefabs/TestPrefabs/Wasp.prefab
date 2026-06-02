@@ -129,4 +129,5 @@ MonoBehaviour:
   moveSpeed: 3
   attackRange: 1.2
   attackCooldown: 0.8
+  enemyType: 5
   aggroRange: 6

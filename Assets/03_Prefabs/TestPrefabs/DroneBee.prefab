@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DroneBee
   maxHealth: 10
-  moveSpeed: 2
+  moveSpeed: 3
   acceleration: 8
   turnSpeed: 5
   slowRadius: 0.5
@@ -129,6 +129,8 @@ MonoBehaviour:
   attackCooldown: 1
   beeType: 3
   beeName: OG drone Bee
+  zoneArrivalDistance: 1.5
+  targetLockTime: 2
 --- !u!212 &4223563190110776065
 SpriteRenderer:
   serializedVersion: 2

@@ -129,6 +129,7 @@ MonoBehaviour:
   moveSpeed: 2
   attackRange: 1.2
   attackCooldown: 1
+  enemyType: 6
   stealRange: 1
   minX: -30
   maxX: 30

@@ -12,6 +12,13 @@ public class Enemy : MonoBehaviour
     public float attackRange = 1.2f;
     public float attackCooldown = 1f;
 
+    [Header("Identity")]
+    public EnemyType enemyType;
+
+    [Header("Drone Targeting")]
+    public int currentDroneAttackers = 0;
+    public int maxDroneAttackers = 2;
+
     protected float attackTimer;
     protected Bee targetBee;
 
@@ -25,11 +32,11 @@ public class Enemy : MonoBehaviour
 
     protected virtual void Start()
     {
-        currentHealth = maxHealth; // ensures prefab overrides work correctly
+        currentHealth = maxHealth;
     }
 
     // -------------------------
-    // UPDATE LOOP
+    // UPDATE
     // -------------------------
     protected virtual void Update()
     {
@@ -46,14 +53,9 @@ public class Enemy : MonoBehaviour
         currentHealth -= amount;
 
         if (currentHealth <= 0f)
-        {
             Die();
-        }
     }
 
-    // -------------------------
-    // DEATH (override per enemy type)
-    // -------------------------
     protected virtual void Die()
     {
         Destroy(gameObject);
@@ -97,7 +99,6 @@ public class Enemy : MonoBehaviour
         if (dist <= attackRange) return;
 
         Vector2 dir = (targetBee.transform.position - transform.position).normalized;
-
         transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
     }
 
@@ -126,5 +127,42 @@ public class Enemy : MonoBehaviour
         if (targetBee == null) return;
 
         targetBee.TakeDamage(1f);
+    }
+
+    // -------------------------
+    // 🧠 THREAT SYSTEM
+    // -------------------------
+    public virtual int GetThreatLevel()
+    {
+        switch (enemyType)
+        {
+            case EnemyType.Bear: return 100;
+            case EnemyType.Wasp: return 80;
+            case EnemyType.RobberBee: return 70;
+            case EnemyType.Mouse: return 60;
+            case EnemyType.HiveBeetle: return 50;
+            case EnemyType.Ant: return 40;
+            case EnemyType.VarroaMite: return 30;
+            case EnemyType.WaxMoth: return 25;
+            default: return 10;
+        }
+    }
+
+    // -------------------------
+    // 🐝 DRONE SYSTEM
+    // -------------------------
+    public bool CanBeTargetedByDrone()
+    {
+        return currentDroneAttackers < maxDroneAttackers;
+    }
+
+    public void RegisterDrone()
+    {
+        currentDroneAttackers++;
+    }
+
+    public void UnregisterDrone()
+    {
+        currentDroneAttackers = Mathf.Max(0, currentDroneAttackers - 1);
     }
 }

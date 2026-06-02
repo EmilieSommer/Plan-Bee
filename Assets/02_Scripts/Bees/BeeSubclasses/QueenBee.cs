@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class QueenBee : Bee
 {
+    public static QueenBee Instance;
+
     public GameObject gameOverCanvas;
 
     [Header("UI")]
@@ -12,19 +14,24 @@ public class QueenBee : Bee
     public float regenRate = 0.5f;
     public float regenDelay = 3f;
 
+    [Header("Defense")]
+    public float protectionRadius = 8f;
+    public float dangerMultiplier = 2f;
+
     private float regenTimer = 0f;
 
     protected override void Awake()
     {
         base.Awake();
         beeType = BeeType.Queen;
+
+        Instance = this;
     }
 
     protected override void Start()
     {
         AssignZone();
 
-        // 🔥 initialize slider
         if (healthSlider != null)
         {
             healthSlider.maxValue = maxHealth;
@@ -40,20 +47,13 @@ public class QueenBee : Bee
         UpdateHealthUI();
     }
 
-    // -------------------------
-    // HEALTH UI
-    // -------------------------
     void UpdateHealthUI()
     {
-        if (healthSlider == null)
-            return;
+        if (healthSlider == null) return;
 
         healthSlider.value = currentHealth;
     }
 
-    // -------------------------
-    // REGENERATION
-    // -------------------------
     void HandleRegeneration()
     {
         if (currentState == BeeState.Dead)
@@ -88,9 +88,7 @@ public class QueenBee : Bee
     protected override void Die()
     {
         if (gameOverCanvas != null)
-        {
             gameOverCanvas.SetActive(true);
-        }
 
         Time.timeScale = 0f;
 
@@ -102,8 +100,7 @@ public class QueenBee : Bee
     {
         QueenZone queenZone = FindObjectOfType<QueenZone>();
 
-        if (queenZone == null)
-            return;
+        if (queenZone == null) return;
 
         assignedZone = queenZone;
         homePosition = queenZone.transform.position;
@@ -111,8 +108,6 @@ public class QueenBee : Bee
         queenZone.RegisterBee(this);
 
         if (ZoneManager.Instance != null)
-        {
             ZoneManager.Instance.RegisterBee(this);
-        }
     }
 }

@@ -450,16 +450,16 @@ public abstract class Bee : MonoBehaviour
         currentState = BeeState.Idle;
     }
 
-    protected virtual void IdleBehavior()
-    {
-        if (lockMovement)
-            return;
+protected virtual void IdleBehavior()
+{
+    if (lockMovement)
+        return;
 
-        Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
-        targetPosition = homePosition + randomOffset;
+    Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
+    targetPosition = homePosition + randomOffset;
 
-        currentState = BeeState.Moving;
-    }
+    currentState = BeeState.Moving;
+}
 
     protected void StopMovementInstant()
     {
