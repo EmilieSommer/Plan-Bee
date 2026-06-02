@@ -18,7 +18,6 @@ public class CurrencyManager : MonoBehaviour
     public CanvasGroup warningPanel;
     public float fadeDuration = 0.5f;
     public float showDuration = 1.5f;
-
     public AudioSource audioSource;
     public AudioClip warningSound;
 
@@ -26,10 +25,8 @@ public class CurrencyManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     private void Start()
@@ -43,15 +40,40 @@ public class CurrencyManager : MonoBehaviour
         }
     }
 
+    // -------------------------
+    // HONEY
+    // -------------------------
     public bool UseHoney(int amount)
     {
         if (honey < amount)
         {
-            ShowWarning();
+            TriggerNotEnoughResource("Not enough honey!");
             return false;
         }
 
         honey -= amount;
+        UpdateUI();
+        return true;
+    }
+
+    public void AddHoney(int amount)
+    {
+        honey += amount;
+        UpdateUI();
+    }
+
+    // -------------------------
+    // POLLEN
+    // -------------------------
+    public bool UsePollen(int amount)
+    {
+        if (pollen < amount)
+        {
+            TriggerNotEnoughResource("Not enough pollen!");
+            return false;
+        }
+
+        pollen -= amount;
         UpdateUI();
         return true;
     }
@@ -62,32 +84,24 @@ public class CurrencyManager : MonoBehaviour
         UpdateUI();
     }
 
-    public void AddHoney(int amount)
-    {
-        honey += amount;
-        UpdateUI();
-    }
-
-    public bool UsePollen(int amount)
-    {
-        if (pollen < amount)
-        {
-            ShowWarning();
-            return false;
-        }
-
-        pollen -= amount;
-        UpdateUI();
-        return true;
-    }
-
+    // -------------------------
+    // UI
+    // -------------------------
     void UpdateUI()
     {
-        if (pollenText != null)
-            pollenText.text = "Pollen: " + pollen;
+        if (pollenText != null) pollenText.text = "Pollen: " + pollen;
+        if (honeyText != null) honeyText.text = "Honey: " + honey;
+    }
 
-        if (honeyText != null)
-            honeyText.text = "Honey: " + honey;
+    // -------------------------
+    // WARNING SYSTEM
+    // -------------------------
+    void TriggerNotEnoughResource(string message)
+    {
+        ShowWarning();
+
+        if (UIMessagePopup.Instance != null)
+            UIMessagePopup.Instance.ShowMessage(message);
     }
 
     void ShowWarning()
@@ -105,7 +119,6 @@ public class CurrencyManager : MonoBehaviour
     {
         warningPanel.gameObject.SetActive(true);
 
-        // Fade in
         float t = 0;
         while (t < fadeDuration)
         {
@@ -115,10 +128,8 @@ public class CurrencyManager : MonoBehaviour
         }
 
         warningPanel.alpha = 1;
-
         yield return new WaitForSeconds(showDuration);
 
-        // Fade out
         t = fadeDuration;
         while (t > 0)
         {

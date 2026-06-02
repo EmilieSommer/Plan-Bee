@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class ConstructionSite : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class ConstructionSite : MonoBehaviour
 
     private SpriteRenderer sr;
     private bool isBuilding = false;
+
+    // NEW: progress callback (for UI)
+    public event Action<float> OnProgressChanged;
 
     private void Awake()
     {
@@ -37,6 +41,7 @@ public class ConstructionSite : MonoBehaviour
 
         float t = Mathf.Clamp01(progress / buildTime);
 
+        // building visual fade (your system)
         if (sr != null)
         {
             Color c = sr.color;
@@ -48,6 +53,9 @@ public class ConstructionSite : MonoBehaviour
         {
             parentZone.SetTransparency(1f - t);
         }
+
+        // NEW: send progress to UI
+        OnProgressChanged?.Invoke(t);
 
         if (progress >= buildTime)
         {
@@ -84,18 +92,12 @@ public class ConstructionSite : MonoBehaviour
         if (col != null)
             col.enabled = true;
 
-        // =========================
-        // FIX: PROPER ZONE REGISTRATION
-        // =========================
-
-        // Sleep zone
         SleepZone sleep = GetComponent<SleepZone>();
         if (sleep != null)
         {
             HiveManager.Instance.RegisterSleepZone(sleep);
         }
 
-        // Drone zone
         DroneZone drone = GetComponent<DroneZone>();
         if (drone != null)
         {
@@ -121,5 +123,11 @@ public class ConstructionSite : MonoBehaviour
         {
             zone.SetInactive();
         }
+    }
+
+    // OPTIONAL helper if you want UI polling instead of events
+    public float GetProgress()
+    {
+        return Mathf.Clamp01(progress / buildTime);
     }
 }
