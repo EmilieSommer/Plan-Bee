@@ -101,7 +101,7 @@ public class ConstructionSite : MonoBehaviour
         DroneZone drone = GetComponent<DroneZone>();
         if (drone != null)
         {
-            DroneZone.allZones.Add(drone);
+            drone.SetBuilt();
         }
 
         if (parentZone != null)
