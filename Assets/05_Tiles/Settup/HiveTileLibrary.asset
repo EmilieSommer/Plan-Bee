@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09cd9d1180a9141c99d7eec4d1bc30cd, type: 3}
+  m_Name: HiveTileLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::HiveTileLibrary
+  sets:
+  - type: 1
+    builtTile: {fileID: 11400000, guid: da06b3f1937f04fd8b1f5045ff90ce8c, type: 2}
+    overlayTile: {fileID: 11400000, guid: d24c116762e1a4815bbcd799beb2aefb, type: 2}
+    markedSprite: {fileID: 0}
+  - type: 3
+    builtTile: {fileID: 11400000, guid: 65df7acf140044313bb052b957d057e7, type: 2}
+    overlayTile: {fileID: 11400000, guid: 1193884a1c81647eba91ed32aa50554e, type: 2}
+    markedSprite: {fileID: 0}
+  - type: 4
+    builtTile: {fileID: 11400000, guid: 8e2b500c4c1f44741a02007a0d0546d2, type: 2}
+    overlayTile: {fileID: 11400000, guid: d4a4c38a85e0e42349180d7a850a6f1d, type: 2}
+    markedSprite: {fileID: 0}
+  - type: 2
+    builtTile: {fileID: 0}
+    overlayTile: {fileID: 0}
+    markedSprite: {fileID: 0}

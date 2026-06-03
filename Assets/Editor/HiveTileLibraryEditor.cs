@@ -1,48 +1,32 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
-/// One-click tool: Tools → Plan Bee → Populate Tile Library
-/// Scans Assets/05_Tiles/ and assigns every sprite to the correct slot
-/// in a HiveTileLibrary ScriptableObject based on filename.
+/// Tools → Plan Bee → Populate Tile Library
+/// Assigns RuleTile assets to each HiveTileType slot in HiveTileLibrary.
+/// Run "Setup All Room Tiles" first to generate the RuleTile assets.
 /// </summary>
 public static class HiveTileLibraryEditor
 {
-    // Map from filename suffix → bitmask index  (T=8  B=4  L=2  R=1)
-    static readonly (string suffix, int mask)[] VariantMap =
+    static readonly (HiveTileType type, string builtPath, string overlayPath)[] TypeMap =
     {
-        ("_01",      0),   // no connections
-        ("_02_T",    8),   // top
-        ("_03_B",    4),   // bottom
-        ("_04_L",    2),   // left
-        ("_05_R",    1),   // right
-        ("_06_TB",  12),   // top + bottom
-        ("_07_LR",   3),   // left + right
-        ("_08_TL",  10),   // top + left
-        ("_09_TR",   9),   // top + right
-        ("_10_BL",   6),   // bottom + left
-        ("_11_BR",   5),   // bottom + right
-        ("_12_TBL", 14),   // top + bottom + left
-        ("_13_TBR", 13),   // top + bottom + right
-        ("_14_TLR", 11),   // top + left + right
-        ("_15_BLR",  7),   // bottom + left + right
-        ("_16_TBLR",15),   // all
-    };
-
-    // Map from HiveTileType → sprite name prefix in Assets/05_Tiles/
-    static readonly (HiveTileType type, string prefix, string markedPrefix)[] TypeMap =
-    {
-        (HiveTileType.InsideHive, "Inside_Hive", "MarkedForRoom"),
-        (HiveTileType.Solid,      "Solid",        "MarkedForSolid"),
-        (HiveTileType.Brood,      "Brood",        "MarkedForRoom"),
-        (HiveTileType.Storage,    "Storage",      "MarkedForRoom"),
+        (HiveTileType.InsideHive,
+            "Assets/05_Tiles/InsideHive/InsideHive_Border_RuleTile.asset",
+            "Assets/05_Tiles/InsideHive/InsideHive_Overlay_RuleTile.asset"),
+        (HiveTileType.Brood,
+            "Assets/05_Tiles/Brood/Brood_Border_RuleTile.asset",
+            "Assets/05_Tiles/Brood/Brood_Overlay_RuleTile.asset"),
+        (HiveTileType.Storage,
+            "Assets/05_Tiles/Storage/Storage_Border_RuleTile.asset",
+            "Assets/05_Tiles/Storage/Storage_Overlay_RuleTile.asset"),
+        (HiveTileType.Solid, null, null),
     };
 
     [MenuItem("Tools/Plan Bee/Populate Tile Library")]
     static void Populate()
     {
-        // Find or create the library asset
         const string assetPath = "Assets/09_ScriptableObjects/HiveTileLibrary.asset";
         var lib = AssetDatabase.LoadAssetAtPath<HiveTileLibrary>(assetPath);
         if (lib == null)
@@ -56,28 +40,29 @@ public static class HiveTileLibraryEditor
 
         for (int i = 0; i < TypeMap.Length; i++)
         {
-            var (type, prefix, markedPrefix) = TypeMap[i];
+            var (type, builtPath, overlayPath) = TypeMap[i];
             var set = new HiveTileLibrary.TileSet { type = type };
-            set.variants = new Sprite[16];
 
-            foreach (var (suffix, mask) in VariantMap)
+            if (builtPath != null)
             {
-                string name = $"Assets/05_Tiles/{prefix}{suffix}.png";
-                var sp = AssetDatabase.LoadAssetAtPath<Sprite>(name);
-                if (sp != null) set.variants[mask] = sp;
-                else Debug.LogWarning($"[HiveTileLibrary] Sprite not found: {name}");
+                set.builtTile = AssetDatabase.LoadAssetAtPath<TileBase>(builtPath);
+                if (set.builtTile == null)
+                    Debug.LogWarning($"[HiveTileLibrary] Missing: {builtPath} — run Setup All Room Tiles first.");
             }
 
-            // Marked sprite — use bitmask 0 (all-walls closed) of the marked set
-            string markedPath = $"Assets/05_Tiles/{markedPrefix}_01.png";
-            set.markedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(markedPath);
+            if (overlayPath != null)
+            {
+                set.overlayTile = AssetDatabase.LoadAssetAtPath<TileBase>(overlayPath);
+                if (set.overlayTile == null)
+                    Debug.LogWarning($"[HiveTileLibrary] Missing: {overlayPath} — run Setup All Room Tiles first.");
+            }
 
             lib.sets[i] = set;
         }
 
         EditorUtility.SetDirty(lib);
         AssetDatabase.SaveAssets();
-        Debug.Log($"[HiveTileLibrary] Populated {TypeMap.Length} tile sets. Asset: {assetPath}");
+        Debug.Log($"[HiveTileLibrary] Populated {TypeMap.Length} tile sets → {assetPath}");
         Selection.activeObject = lib;
     }
 }

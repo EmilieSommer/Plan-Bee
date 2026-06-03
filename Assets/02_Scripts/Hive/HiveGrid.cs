@@ -10,12 +10,8 @@ public class HiveGrid : MonoBehaviour
 {
     public static HiveGrid Instance { get; private set; }
 
-    [Header("Tilemaps")]
-    [SerializeField] private Tilemap builtTilemap;
-    [SerializeField] private Tilemap markedTilemap;
-
-    [Header("Library")]
-    [SerializeField] private HiveTileLibrary library;
+    [Header("Visuals")]
+    [SerializeField] private HiveVisuals visuals;
 
     [Header("Starting Hive")]
     [SerializeField] private Vector3Int startCenter = Vector3Int.zero;
@@ -44,7 +40,7 @@ public class HiveGrid : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        library.Init();
+        if (visuals == null) visuals = GetComponent<HiveVisuals>();
     }
 
     void Start()
@@ -75,8 +71,7 @@ public class HiveGrid : MonoBehaviour
         types[pos]  = type;
         marked[pos] = true;
 
-        var sprite = library.GetMarkedSprite(type);
-        SetSprite(markedTilemap, pos, sprite);
+        visuals?.SetMarked(pos, type);
 
         buildQueue.Enqueue(pos);
         OnTileMarked?.Invoke(pos);
@@ -106,22 +101,23 @@ public class HiveGrid : MonoBehaviour
         if (!types.ContainsKey(pos)) return;
 
         marked[pos] = false;
-        markedTilemap.SetTile(pos, null);
+        visuals?.ClearMarked(pos);
         Place(pos, types[pos]);
         OnTileBuilt?.Invoke(pos);
     }
 
-    public bool HasTile(Vector3Int pos)  => types.ContainsKey(pos);
-    public bool IsMarked(Vector3Int pos) => marked.TryGetValue(pos, out var m) && m;
+    public bool HasTile(Vector3Int pos)    => types.ContainsKey(pos);
+    public bool IsMarked(Vector3Int pos)   => marked.TryGetValue(pos, out var m) && m;
+    public bool CanBuildAt(Vector3Int pos) => !types.ContainsKey(pos) && IsAdjacentToAny(pos);
 
     public HiveTileType GetType(Vector3Int pos) =>
         types.TryGetValue(pos, out var t) ? t : HiveTileType.None;
 
     public Vector3Int WorldToCell(Vector3 world) =>
-        builtTilemap.WorldToCell(world);
+        GetComponent<Grid>()?.WorldToCell(world) ?? Vector3Int.zero;
 
     public Vector3 CellToWorld(Vector3Int cell) =>
-        builtTilemap.GetCellCenterWorld(cell);
+        GetComponent<Grid>()?.GetCellCenterWorld(cell) ?? Vector3.zero;
 
     // ── Internals ─────────────────────────────────────────────────────────────
 
@@ -130,43 +126,14 @@ public class HiveGrid : MonoBehaviour
         if (!types.ContainsKey(pos)) types[pos] = type;
         if (!marked.ContainsKey(pos)) marked[pos] = false;
 
-        RefreshSprite(pos);
-        foreach (var d in Dirs) RefreshSprite(pos + d);
+        visuals?.SetBuilt(pos, type);
     }
-
-    void RefreshSprite(Vector3Int pos)
-    {
-        if (!types.TryGetValue(pos, out var type)) return;
-        if (marked.TryGetValue(pos, out var isMarked) && isMarked) return;
-
-        int mask = 0;
-        // T=8  B=4  L=2  R=1  — matches the sprite naming convention
-        if (SameBuilt(pos + Vector3Int.up,    type)) mask |= 8;
-        if (SameBuilt(pos + Vector3Int.down,  type)) mask |= 4;
-        if (SameBuilt(pos + Vector3Int.left,  type)) mask |= 2;
-        if (SameBuilt(pos + Vector3Int.right, type)) mask |= 1;
-
-        SetSprite(builtTilemap, pos, library.GetSprite(type, mask));
-    }
-
-    bool SameBuilt(Vector3Int pos, HiveTileType type) =>
-        types.TryGetValue(pos, out var t) && t == type &&
-        (!marked.TryGetValue(pos, out var m) || !m);
 
     bool IsAdjacentToAny(Vector3Int pos)
     {
-        if (types.Count == 0) return true;   // first tile always allowed
+        if (types.Count == 0) return true;
         foreach (var d in Dirs)
             if (types.ContainsKey(pos + d)) return true;
         return false;
-    }
-
-    void SetSprite(Tilemap tilemap, Vector3Int pos, Sprite sprite)
-    {
-        if (sprite == null) { tilemap.SetTile(pos, null); return; }
-        var tile = ScriptableObject.CreateInstance<Tile>();
-        tile.sprite = sprite;
-        tile.colliderType = Tile.ColliderType.None;
-        tilemap.SetTile(pos, tile);
     }
 }

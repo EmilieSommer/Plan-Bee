@@ -49,7 +49,8 @@ public class BuildPanel : MonoBehaviour
         Vector3 world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         world.z = 0f;
         Vector3Int cell = HiveGrid.Instance.WorldToCell(world);
-        HiveGrid.Instance.TryMark(cell, _selected);
+        if (!HiveGrid.Instance.TryMark(cell, _selected))
+            BuildCursor.Instance?.FlashInvalid(cell);
     }
 
     // ── API ───────────────────────────────────────────────────────────────────
