@@ -37,17 +37,17 @@ public class RainSystem : MonoBehaviour
     // -----------------------------
     // START RAIN (FADE IN)
     // -----------------------------
+// RainSystem
     public void StartRain()
     {
         FadeTo(maxEmission);
+        BeeDeathPopup.Instance.ShowMessage("Rainy weather — Forager bees move slower!", 4f);
     }
 
-    // -----------------------------
-    // STOP RAIN (FADE OUT)
-    // -----------------------------
     public void StopRain()
     {
         FadeTo(0f);
+        BeeDeathPopup.Instance.ShowMessage("Rain has stopped — Forager bees back to normal speed!", 4f);
     }
 
     // -----------------------------
