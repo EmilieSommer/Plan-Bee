@@ -5,11 +5,15 @@ public class RobberBee : Enemy
     [Header("Robber Settings")]
     public float stealRange = 1f;
 
+    [Header("Flee Settings")]
+    public float fleeDroneRange = 4f;
+    public float fleeSpeed = 3.5f;
+
     [Header("World Bounds")]
-    public float minX = -30f;
-    public float maxX = 30f;
-    public float minY = -20f;
-    public float maxY = 20f;
+    public float minX = -15f;
+    public float maxX = 15f;
+    public float minY = -15f;
+    public float maxY = 15f;
 
     private Honey targetHoney;
     private bool carryingHoney = false;
@@ -21,11 +25,22 @@ public class RobberBee : Enemy
         {
             CarryHoney();
             Escape();
+            return;
         }
-        else
+
+        FindHoney();
+
+        if (targetHoney != null)
         {
-            FindHoney();
             MoveToHoney();
+            return;
+        }
+
+        // No honey — flee from drones if nearby
+        DroneBee closestDrone = FindClosestDroneInRange();
+        if (closestDrone != null)
+        {
+            FleeFromDrone(closestDrone);
         }
     }
 
@@ -44,8 +59,7 @@ public class RobberBee : Enemy
 
         foreach (Honey honey in honeyObjects)
         {
-            if (honey == null)
-                continue;
+            if (honey == null) continue;
 
             float dist = Vector2.Distance(transform.position, honey.transform.position);
 
@@ -64,8 +78,7 @@ public class RobberBee : Enemy
     // -------------------------
     void MoveToHoney()
     {
-        if (targetHoney == null)
-            return;
+        if (targetHoney == null) return;
 
         float dist = Vector2.Distance(transform.position, targetHoney.transform.position);
 
@@ -75,11 +88,8 @@ public class RobberBee : Enemy
             return;
         }
 
-        Vector2 direction =
-            (targetHoney.transform.position - transform.position).normalized;
-
-        transform.position +=
-            (Vector3)(direction * moveSpeed * Time.deltaTime);
+        Vector2 direction = (targetHoney.transform.position - transform.position).normalized;
+        transform.position += (Vector3)(direction * moveSpeed * Time.deltaTime);
     }
 
     // -------------------------
@@ -87,15 +97,12 @@ public class RobberBee : Enemy
     // -------------------------
     void StealHoney()
     {
-        if (targetHoney == null)
-            return;
+        if (targetHoney == null) return;
 
         carryingHoney = true;
-
-        targetHoney.SetCarried(true); // ✅ mark as stolen
+        targetHoney.SetCarried(true);
 
         escapeDirection = ((Vector2)transform.position).normalized;
-
         if (escapeDirection == Vector2.zero)
             escapeDirection = Vector2.right;
 
@@ -108,11 +115,8 @@ public class RobberBee : Enemy
     // -------------------------
     void CarryHoney()
     {
-        if (targetHoney == null)
-            return;
-
-        targetHoney.transform.localPosition =
-            new Vector3(0.5f, 0f, 0f);
+        if (targetHoney == null) return;
+        targetHoney.transform.localPosition = new Vector3(0.5f, 0f, 0f);
     }
 
     // -------------------------
@@ -120,14 +124,13 @@ public class RobberBee : Enemy
     // -------------------------
     void Escape()
     {
-        transform.position +=
-            (Vector3)(escapeDirection * moveSpeed * Time.deltaTime);
+        transform.position += (Vector3)(escapeDirection * moveSpeed * Time.deltaTime);
 
         if (IsOutsideWorld())
         {
             if (targetHoney != null)
             {
-                targetHoney.SetCarried(false); // just in case
+                targetHoney.SetCarried(false);
                 Destroy(targetHoney.gameObject);
             }
 
@@ -141,6 +144,37 @@ public class RobberBee : Enemy
                transform.position.x > maxX ||
                transform.position.y < minY ||
                transform.position.y > maxY;
+    }
+
+    // -------------------------
+    // FLEE FROM DRONE
+    // -------------------------
+    DroneBee FindClosestDroneInRange()
+    {
+        DroneBee[] drones = FindObjectsOfType<DroneBee>();
+
+        DroneBee closest = null;
+        float closestDist = Mathf.Infinity;
+
+        foreach (DroneBee drone in drones)
+        {
+            if (drone == null) continue;
+
+            float dist = Vector2.Distance(transform.position, drone.transform.position);
+            if (dist <= fleeDroneRange && dist < closestDist)
+            {
+                closestDist = dist;
+                closest = drone;
+            }
+        }
+
+        return closest;
+    }
+
+    void FleeFromDrone(DroneBee drone)
+    {
+        Vector2 fleeDir = ((Vector2)transform.position - (Vector2)drone.transform.position).normalized;
+        transform.position += (Vector3)(fleeDir * fleeSpeed * Time.deltaTime);
     }
 
     // -------------------------
@@ -162,12 +196,10 @@ public class RobberBee : Enemy
     // -------------------------
     void DropHoney()
     {
-        if (!carryingHoney || targetHoney == null)
-            return;
+        if (!carryingHoney || targetHoney == null) return;
 
         targetHoney.transform.SetParent(null);
-
-        targetHoney.SetCarried(false); // ✅ now collectible again
+        targetHoney.SetCarried(false);
 
         carryingHoney = false;
         targetHoney = null;
