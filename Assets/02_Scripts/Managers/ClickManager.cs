@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using UnityEngine.EventSystems;
 
 public class ClickManager : MonoBehaviour
@@ -9,191 +7,195 @@ public class ClickManager : MonoBehaviour
     public LayerMask zoneLayer;
     public LayerMask beeLayer;
 
+    [Header("Drag Settings")]
+    public float dragThreshold = 12f;
+
+    [Header("Camera")]
+    public float panSpeed = 0.01f;
+
     [Header("Bee Drag")]
-    public float maxDragDistance = 1.5f;
-    public float maxDragTime = 1.2f;
+    public float beeDragSmoothTime = 0.08f;
+    public float maxBeeDragDistance = 1.5f;
 
-    [Header("Smooth Drag")]
-    public float dragSmoothTime = 0.08f;
-    private Vector3 dragVelocity;
+    private Vector3 mouseStart;
+    private bool isDragging;
+    private bool dragStarted;
 
-    private GameObject activeCanvas;
-    private bool uiOpen = false;
+    private bool cameraDrag;
+    private Vector3 cameraStartPos;
 
     private GameObject draggedBee;
-    private bool isDraggingBee = false;
-    private Vector3 dragStartPosition;
-    private float dragTimer;
+    private Vector3 beeStartWorld;
+    private Vector3 beeDragVelocity;
 
     private GameObject clickedBee;
-    private bool beeClickPending = false;
-    private float clickTimer;
-    private Vector3 clickStartPos;
+
+    // Zone deferral
+    private BuildZone pendingBuildZone;
+    private NurseBeeZone pendingNurseZone;
+
+    private GameObject activeCanvas;
+    private bool uiOpen;
 
     void Update()
     {
-        HandleBeeDrag();
-        HandleBeeClick();
+        HandleUIClose();
+        HandleMouseDown();
+        HandleMouseDrag();
+        HandleMouseUp();
+    }
 
-        if (!Input.GetMouseButtonDown(0))
-            return;
+    void HandleUIClose()
+    {
+        if (!uiOpen) return;
+        if (!Input.GetMouseButtonDown(0)) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        BeeInfoUI.Instance.Close();
+        CloseUI();
+    }
 
-        if (uiOpen)
-        {
-            BeeInfoUI.Instance.Close();
-            CloseUI();
-            return;
-        }
+   void HandleMouseDown()
+    {
+        if (!Input.GetMouseButtonDown(0)) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseStart = Input.mousePosition;
+        dragStarted = false;
+        isDragging = false;
+        pendingBuildZone = null;
+        pendingNurseZone = null;
 
-        RaycastHit2D beeHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, beeLayer);
+        Vector2 world = Camera.main.ScreenToWorldPoint(mouseStart);
 
+        // Bee hit
+        RaycastHit2D beeHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, beeLayer);
         if (beeHit.collider != null)
         {
             clickedBee = beeHit.collider.gameObject;
-            beeClickPending = true;
-            clickTimer = 0f;
-            clickStartPos = Input.mousePosition;
-
             draggedBee = clickedBee;
-            isDraggingBee = true;
-            dragStartPosition = draggedBee.transform.position;
-            dragTimer = 0f;
-
-            dragVelocity = Vector3.zero;
+            beeStartWorld = draggedBee.transform.position;
 
             Bee bee = draggedBee.GetComponent<Bee>();
-            if (bee != null)
-                bee.StartDragging();
+            if (bee != null) bee.StartDragging();
 
             return;
         }
 
-        RaycastHit2D honeyHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, honeyLayer);
-
+        // Honey (checked before zones so honey on top of a zone is always collectable)
+        RaycastHit2D honeyHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, honeyLayer);
         if (honeyHit.collider != null)
         {
             Honey honey = honeyHit.collider.GetComponent<Honey>();
-            if (honey != null)
-                honey.Collect();
-
+            if (honey != null) honey.Collect();
             return;
         }
 
-        RaycastHit2D zoneHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, zoneLayer);
-
+        // Zone hit — store it, don't open yet
+        RaycastHit2D zoneHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, zoneLayer);
         if (zoneHit.collider != null)
         {
-            BuildZone buildZone = zoneHit.collider.GetComponent<BuildZone>();
-
-            if (buildZone != null)
-            {
-                buildZone.Open();
-                activeCanvas = buildZone.buildCanvas;
-                uiOpen = true;
-                return;
-            }
-
-            NurseBeeZone nurseZone = zoneHit.collider.GetComponent<NurseBeeZone>();
-
-            if (nurseZone != null)
-            {
-                nurseZone.Open();
-                activeCanvas = nurseZone.nurseCanvas;
-                uiOpen = true;
-                return;
-            }
-        }
-    }
-
-    void HandleBeeDrag()
-    {
-        if (!isDraggingBee || draggedBee == null)
-            return;
-
-        dragTimer += Time.deltaTime;
-
-        if (dragTimer >= maxDragTime)
-        {
-            ReleaseBee();
-            return;
-        }
-
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = draggedBee.transform.position.z;
-
-        Vector3 offset = mousePos - dragStartPosition;
-
-        if (offset.magnitude < 0.02f)
-            return;
-
-        if (offset.magnitude > maxDragDistance)
-            offset = offset.normalized * maxDragDistance;
-
-        Vector3 targetPos = dragStartPosition + offset;
-
-        draggedBee.transform.position = Vector3.SmoothDamp(
-            draggedBee.transform.position,
-            targetPos,
-            ref dragVelocity,
-            dragSmoothTime
-        );
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            ReleaseBee();
-        }
-    }
-
-    void HandleBeeClick()
-    {
-        if (!beeClickPending || clickedBee == null)
-            return;
-
-        clickTimer += Time.deltaTime;
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            float moveDist = Vector3.Distance(clickStartPos, Input.mousePosition);
-
-            bool isClick = moveDist < 10f && clickTimer < 0.25f;
-
-            if (isClick)
-            {
-                Bee bee = clickedBee.GetComponent<Bee>();
-
-                if (bee != null)
-                {
-                    BeeInfoUI.Instance.Open(bee);
-                    uiOpen = true;
-                }
-
-                ReleaseBee();
-                isDraggingBee = false;
-            }
-
-            beeClickPending = false;
             clickedBee = null;
+            pendingBuildZone = zoneHit.collider.GetComponent<BuildZone>();
+            pendingNurseZone = zoneHit.collider.GetComponent<NurseBeeZone>();
+            cameraDrag = true;
+            cameraStartPos = Camera.main.transform.position;
+            return;
+        }
+
+        // Empty space
+        cameraDrag = true;
+        cameraStartPos = Camera.main.transform.position;
+    }
+    void HandleMouseDrag()
+    {
+        if (!Input.GetMouseButton(0)) return;
+
+        Vector3 delta = Input.mousePosition - mouseStart;
+
+        if (!dragStarted && delta.magnitude > dragThreshold)
+        {
+            dragStarted = true;
+
+            if (draggedBee != null)
+            {
+                cameraDrag = false;
+                isDragging = true;
+            }
+        }
+
+        // Bee drag
+        if (isDragging && draggedBee != null)
+        {
+            Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorld.z = draggedBee.transform.position.z;
+
+            Vector3 offset = mouseWorld - beeStartWorld;
+            if (offset.magnitude > maxBeeDragDistance)
+                offset = offset.normalized * maxBeeDragDistance;
+
+            draggedBee.transform.position = Vector3.SmoothDamp(
+                draggedBee.transform.position,
+                beeStartWorld + offset,
+                ref beeDragVelocity,
+                beeDragSmoothTime
+            );
+
+            return;
+        }
+
+        // Camera drag
+        if (cameraDrag && dragStarted && draggedBee == null)
+        {
+            Vector3 move = new Vector3(-delta.x, -delta.y, 0f) * panSpeed;
+            Camera.main.transform.position = cameraStartPos + move;
         }
     }
 
-    void ReleaseBee()
+    void HandleMouseUp()
     {
+        if (!Input.GetMouseButtonUp(0)) return;
+
+        Vector3 totalMove = Input.mousePosition - mouseStart;
+        bool isClick = totalMove.magnitude < dragThreshold;
+
+        // End bee drag
         if (draggedBee != null)
         {
             Bee bee = draggedBee.GetComponent<Bee>();
+            if (bee != null) bee.StopDragging();
 
-            if (bee != null)
-                bee.StopDragging();
+            if (isClick)
+            {
+                BeeInfoUI.Instance.Open(draggedBee.GetComponent<Bee>());
+                uiOpen = true;
+            }
         }
 
-        isDraggingBee = false;
+        // Open zone UI only if it was a clean click (not a drag)
+        if (isClick)
+        {
+            if (pendingBuildZone != null)
+            {
+                pendingBuildZone.Open();
+                activeCanvas = pendingBuildZone.buildCanvas;
+                uiOpen = true;
+            }
+            else if (pendingNurseZone != null)
+            {
+                pendingNurseZone.Open();
+                activeCanvas = pendingNurseZone.nurseCanvas;
+                uiOpen = true;
+            }
+        }
+
         draggedBee = null;
-        dragVelocity = Vector3.zero;
+        isDragging = false;
+        cameraDrag = false;
+        dragStarted = false;
+        clickedBee = null;
+        pendingBuildZone = null;
+        pendingNurseZone = null;
     }
 
     void CloseUI()
@@ -203,7 +205,6 @@ public class ClickManager : MonoBehaviour
             activeCanvas.SetActive(false);
             activeCanvas = null;
         }
-
         uiOpen = false;
     }
 }

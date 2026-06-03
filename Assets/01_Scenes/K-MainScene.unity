@@ -10661,6 +10661,8 @@ MonoBehaviour:
   dragSpeed: 1
   dragSmoothTime: 0.08
   maxDragDistance: 10
+  trackpadZoomSpeed: 1
+  trackpadPanSpeed: 0.05
 --- !u!4 &1823473694
 Transform:
   m_ObjectHideFlags: 0

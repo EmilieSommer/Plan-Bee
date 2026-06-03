@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraController2D : MonoBehaviour
 {
@@ -6,52 +7,51 @@ public class CameraController2D : MonoBehaviour
     public float zoomSpeed = 3f;
     public float minZoom = 2f;
     public float maxZoom = 10f;
-    public float zoomSmoothTime = 0.2f;
+    public float zoomSmoothTime = 0.15f;
 
-    [Header("Drag")]
-    public float dragSpeed = 1f;
-    public float dragSmoothTime = 0.08f;
+    [Header("Pan")]
+    public float panSpeed = 0.01f;
 
-    [Header("Drag Limits")]
-    public float maxDragDistance = 10f;
+    [Header("Bounds")]
+    public float minX = -10f;
+    public float maxX =  10f;
+    public float minY = -10f;
+    public float maxY =  10f;
 
     private Camera cam;
 
     private float targetZoom;
     private float zoomVelocity;
 
-    private Vector3 dragOrigin;
-    private Vector3 moveVelocity;
-
-    private Vector3 startPosition;
+    private bool isPanning = false;
+    private Vector3 panStartMouse;
+    private Vector3 panStartPos;
 
     void Start()
     {
         cam = Camera.main;
         targetZoom = cam.orthographicSize;
-        startPosition = transform.position;
     }
 
     void Update()
     {
         HandleZoom();
-        HandleDrag();
+        HandlePan();
     }
 
+    // ======================================================
+    // ZOOM
+    // ======================================================
     void HandleZoom()
     {
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-        if (scroll != 0f)
+        if (Mathf.Abs(scroll) > 0f)
         {
             targetZoom -= scroll * zoomSpeed;
             targetZoom = Mathf.Clamp(targetZoom, minZoom, maxZoom);
+            ApplyZoomAtCursor();
         }
-
-        Vector3 mouseScreen = Input.mousePosition;
-        mouseScreen.z = Mathf.Abs(cam.transform.position.z);
-
-        Vector3 mouseBefore = cam.ScreenToWorldPoint(mouseScreen);
 
         cam.orthographicSize = Mathf.SmoothDamp(
             cam.orthographicSize,
@@ -60,47 +60,63 @@ public class CameraController2D : MonoBehaviour
             zoomSmoothTime
         );
 
-        Vector3 mouseAfter = cam.ScreenToWorldPoint(mouseScreen);
-
-        Vector3 offset = mouseBefore - mouseAfter;
-
-        Vector3 targetPosition = transform.position + offset;
-
-        transform.position = ClampToRange(targetPosition);
+        ClampPosition();
     }
 
-    void HandleDrag()
+    void ApplyZoomAtCursor()
     {
-        if (Input.GetMouseButtonDown(2))
-        {
-            dragOrigin = cam.ScreenToWorldPoint(Input.mousePosition);
-        }
+        Vector3 mouse = Input.mousePosition;
+        mouse.z = Mathf.Abs(cam.transform.position.z);
 
-        if (Input.GetMouseButton(2))
-        {
-            Vector3 currentPos = cam.ScreenToWorldPoint(Input.mousePosition);
-            Vector3 difference = dragOrigin - currentPos;
+        Vector3 before = cam.ScreenToWorldPoint(mouse);
+        cam.orthographicSize = targetZoom;
+        Vector3 after = cam.ScreenToWorldPoint(mouse);
 
-            Vector3 targetPosition = transform.position + difference * dragSpeed;
-
-            transform.position = Vector3.SmoothDamp(
-                transform.position,
-                ClampToRange(targetPosition),
-                ref moveVelocity,
-                dragSmoothTime
-            );
-        }
+        transform.position += before - after;
     }
 
-    Vector3 ClampToRange(Vector3 target)
+    // ======================================================
+    // PAN
+    // ======================================================
+    void HandlePan()
     {
-        Vector3 offset = target - startPosition;
-
-        if (offset.magnitude > maxDragDistance)
+        if (Input.GetMouseButtonDown(0))
         {
-            offset = offset.normalized * maxDragDistance;
+            if (EventSystem.current != null &&
+                EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            Vector2 world = cam.ScreenToWorldPoint(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(world, Vector2.zero);
+
+            if (hit.collider == null)
+            {
+                isPanning = true;
+                panStartMouse = Input.mousePosition;
+                panStartPos = transform.position;
+            }
         }
 
-        return startPosition + offset;
+        if (Input.GetMouseButtonUp(0))
+            isPanning = false;
+
+        if (!isPanning)
+            return;
+
+        Vector3 delta = Input.mousePosition - panStartMouse;
+        transform.position = panStartPos + new Vector3(-delta.x, -delta.y, 0f) * panSpeed;
+
+        ClampPosition();
+    }
+
+    // ======================================================
+    // CLAMP
+    // ======================================================
+    void ClampPosition()
+    {
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Clamp(pos.x, minX, maxX);
+        pos.y = Mathf.Clamp(pos.y, minY, maxY);
+        transform.position = pos;
     }
 }
