@@ -3,111 +3,93 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
+/// <summary>
+/// Tools → Plan Bee → Populate Tile Library
+///
+/// Scans the per-type Border and Overlay PNG folders, parses filenames to
+/// derive a 4-bit cardinal mask (T=1 B=2 L=4 R=8), and stores the resulting
+/// sprite references into HiveTileLibrary. The PNG files themselves are not
+/// modified — this only indexes them.
+///
+/// Filename conventions:
+///   Border PNG : letters in the name = sides connected to same-type
+///                (the floor / fully-connected tile is "r-t-l-b.png")
+///   Overlay PNG: prefix "inside_" is stripped, then letters = sides that
+///                face a different room type (overlay visible there)
+///   Suffixes "-1", "-2", … (alternates) and "_hive" are stripped.
+///   Any extra files in a slot are ignored (no random output).
+/// </summary>
 public static class RoomTileSetup
 {
-    static readonly int THIS = RuleTile.TilingRuleOutput.Neighbor.This;
-    static readonly int NOT  = RuleTile.TilingRuleOutput.Neighbor.NotThis;
+    const string LibraryPath = "Assets/05_Tiles/Settup/HiveTileLibrary.asset";
 
-    [MenuItem("Tools/Plan Bee/Setup All Room Tiles")]
-    static void SetupAll()
+    static readonly (HiveTileType type, string borderFolder, string overlayFolder)[] Map =
     {
-        // Border tiles — outer edge where zone meets empty space
-        SetupBorder("Assets/05_Tiles/InsideHive/Inside_Border",
-                    "Assets/05_Tiles/InsideHive/InsideHive_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Brood/Brood_Border",
-                    "Assets/05_Tiles/Brood/Brood_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Drone/Drone_Border",
-                    "Assets/05_Tiles/Drone/Drone_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Storage/Storage_Border",
-                    "Assets/05_Tiles/Storage/Storage_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Hive/Hive_Borders",
-                    "Assets/05_Tiles/Hive/Hive_Border_RuleTile.asset");
+        (HiveTileType.InsideHive,
+            "Assets/05_Tiles/InsideHive/Inside_Border",
+            "Assets/05_Tiles/InsideHive/InsideHive_Overlay"),
+        (HiveTileType.Brood,
+            "Assets/05_Tiles/Brood/Brood_Border",
+            "Assets/05_Tiles/Brood/Brood_Overlay"),
+        (HiveTileType.Storage,
+            "Assets/05_Tiles/Storage/Storage_Border",
+            "Assets/05_Tiles/Storage/Storage_Overlay"),
+        (HiveTileType.Hive,
+            "Assets/05_Tiles/Hive/Hive_Outside_Border",
+            null),
+    };
 
-        // Overlay tiles — transparent edges where two zone types meet
-        SetupOverlay("Assets/05_Tiles/InsideHive/InsideHive_Overlay",
-                     "Assets/05_Tiles/InsideHive/InsideHive_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Brood/Brood_Overlay",
-                     "Assets/05_Tiles/Brood/Brood_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Drone/Drone_Overlay",
-                     "Assets/05_Tiles/Drone/Drone_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Storage/Storage_Overlay",
-                     "Assets/05_Tiles/Storage/Storage_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Storage/Storage_Inside",
-                     "Assets/05_Tiles/Storage/Storage_InsideEdge_RuleTile.asset");
+    [MenuItem("Tools/Plan Bee/Populate Tile Library")]
+    static void PopulateLibrary()
+    {
+        var library = AssetDatabase.LoadAssetAtPath<HiveTileLibrary>(LibraryPath);
+        if (library == null)
+        {
+            Debug.LogError($"[Plan Bee] HiveTileLibrary not found at {LibraryPath}");
+            return;
+        }
 
+        var sets = new List<HiveTileLibrary.TileSet>();
+        foreach (var (type, borderFolder, overlayFolder) in Map)
+        {
+            sets.Add(new HiveTileLibrary.TileSet
+            {
+                type    = type,
+                border  = LoadByMask(borderFolder, isOverlay: false),
+                overlay = overlayFolder != null
+                    ? LoadByMask(overlayFolder, isOverlay: true)
+                    : new Sprite[16],
+            });
+        }
+        library.sets = sets.ToArray();
+
+        EditorUtility.SetDirty(library);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log("[Plan Bee] All room RuleTiles created.");
+
+        int borderCount = 0, overlayCount = 0;
+        foreach (var s in library.sets)
+        {
+            foreach (var sp in s.border)  if (sp != null) borderCount++;
+            foreach (var sp in s.overlay) if (sp != null) overlayCount++;
+        }
+        Debug.Log($"[Plan Bee] HiveTileLibrary populated — " +
+                  $"{library.sets.Length} types, {borderCount} borders, {overlayCount} overlays.");
+
+        Selection.activeObject = library;
     }
 
     // -----------------------------------------------------------------------
 
-    static void SetupBorder(string folder, string output)
+    static Sprite[] LoadByMask(string folder, bool isOverlay)
     {
-        if (!Directory.Exists(folder)) { Debug.LogWarning($"[Plan Bee] Missing: {folder}"); return; }
-        ConfigureSprites(folder);
-        AssetDatabase.Refresh();
-
-        var tile = ScriptableObject.CreateInstance<RuleTile>();
-        tile.m_TilingRules = new List<RuleTile.TilingRule>();
-
-        var groups = ScanFolder(folder, isOverlay: false);
-
-        var floorKey = (true, true, true, true);
-        if (groups.TryGetValue(floorKey, out var floor))
+        var result = new Sprite[16];
+        if (!Directory.Exists(folder))
         {
-            tile.m_DefaultSprite = floor[0];
-            groups.Remove(floorKey);
+            Debug.LogWarning($"[Plan Bee] Folder missing: {folder}");
+            return result;
         }
-
-        foreach (var kv in groups)
-        {
-            var (t, b, l, r) = kv.Key;
-            tile.m_TilingRules.Add(MakeRule(kv.Value,
-                t ? THIS : NOT, b ? THIS : NOT, l ? THIS : NOT, r ? THIS : NOT));
-        }
-
-        Save(tile, output);
-        Debug.Log($"[Plan Bee] Border {Path.GetFileName(folder)}: {tile.m_TilingRules.Count} rules");
-    }
-
-    static void SetupOverlay(string folder, string output)
-    {
-        if (!Directory.Exists(folder)) { Debug.LogWarning($"[Plan Bee] Missing: {folder}"); return; }
-        ConfigureSprites(folder);
-        AssetDatabase.Refresh();
-
-        var tile = ScriptableObject.CreateInstance<RuleTile>();
-        tile.m_TilingRules = new List<RuleTile.TilingRule>();
-
-        var groups = ScanFolder(folder, isOverlay: true);
-
-        var transparentKey = (false, false, false, false);
-        if (groups.TryGetValue(transparentKey, out var transparent))
-        {
-            tile.m_DefaultSprite = transparent[0];
-            groups.Remove(transparentKey);
-        }
-
-        foreach (var kv in groups)
-        {
-            var (t, b, l, r) = kv.Key;
-            tile.m_TilingRules.Add(MakeRule(kv.Value,
-                t ? NOT : THIS, b ? NOT : THIS, l ? NOT : THIS, r ? NOT : THIS));
-        }
-
-        Save(tile, output);
-        Debug.Log($"[Plan Bee] Overlay {Path.GetFileName(folder)}: {tile.m_TilingRules.Count} rules");
-    }
-
-    // -----------------------------------------------------------------------
-
-    static Dictionary<(bool t, bool b, bool l, bool r), List<Sprite>> ScanFolder(
-        string folder, bool isOverlay)
-    {
-        var groups = new Dictionary<(bool, bool, bool, bool), List<Sprite>>();
 
         foreach (var fullPath in Directory.GetFiles(folder, "*.png"))
         {
@@ -123,67 +105,29 @@ public static class RoomTileSetup
             if (dash >= 0 && int.TryParse(name.Substring(dash + 1), out _))
                 name = name.Substring(0, dash);
 
+            // Strip _hive suffix on Hive border PNGs
+            if (name.EndsWith("_hive"))
+                name = name.Substring(0, name.Length - 5);
+
             if (isOverlay)
             {
                 if (name == "inside")               name = "";
                 else if (name.StartsWith("inside_")) name = name.Substring(7);
             }
 
-            bool t = name.Contains('t');
-            bool b = name.Contains('b');
-            bool l = name.Contains('l');
-            bool r = name.Contains('r');
+            int mask = 0;
+            if (name.Contains('t')) mask |= 1;
+            if (name.Contains('b')) mask |= 2;
+            if (name.Contains('l')) mask |= 4;
+            if (name.Contains('r')) mask |= 8;
 
-            var key = (t, b, l, r);
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
             if (sprite == null) continue;
 
-            if (!groups.TryGetValue(key, out var list))
-                groups[key] = list = new List<Sprite>();
-            list.Add(sprite);
+            // First match wins — explicit, no randomness.
+            if (result[mask] == null) result[mask] = sprite;
         }
-
-        return groups;
-    }
-
-    static RuleTile.TilingRule MakeRule(List<Sprite> sprites, int top, int bot, int left, int right)
-    {
-        return new RuleTile.TilingRule
-        {
-            m_Sprites           = new Sprite[] { sprites[0] },
-            m_Output            = RuleTile.TilingRuleOutput.OutputSprite.Single,
-            m_NeighborPositions = new List<Vector3Int>
-                                    { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right },
-            m_Neighbors         = new List<int> { top, bot, left, right },
-        };
-    }
-
-    static void ConfigureSprites(string folder)
-    {
-        foreach (var fullPath in Directory.GetFiles(folder, "*.png"))
-        {
-            string assetPath = fullPath.Replace('\\', '/');
-            int idx = assetPath.IndexOf("Assets/");
-            if (idx < 0) continue;
-            assetPath = assetPath.Substring(idx);
-
-            var imp = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-            if (imp == null) continue;
-
-            imp.textureType         = TextureImporterType.Sprite;
-            imp.spriteImportMode    = SpriteImportMode.Single;
-            imp.filterMode          = FilterMode.Point;
-            imp.textureCompression  = TextureImporterCompression.Uncompressed;
-            imp.mipmapEnabled       = false;
-            imp.spritePixelsPerUnit = 32f;
-            imp.SaveAndReimport();
-        }
-    }
-
-    static void Save(RuleTile tile, string path)
-    {
-        if (File.Exists(path)) AssetDatabase.DeleteAsset(path);
-        AssetDatabase.CreateAsset(tile, path);
+        return result;
     }
 }
 #endif

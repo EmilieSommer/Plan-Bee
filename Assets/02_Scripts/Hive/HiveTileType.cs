@@ -4,5 +4,6 @@ public enum HiveTileType
     InsideHive,
     Solid,
     Brood,
-    Storage
+    Storage,
+    Hive
 }

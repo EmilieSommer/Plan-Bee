@@ -13,17 +13,14 @@ public class HiveGrid : MonoBehaviour
     [Header("Visuals")]
     [SerializeField] private HiveVisuals visuals;
 
-    [Header("Starting Hive")]
-    [SerializeField] private Vector3Int startCenter = Vector3Int.zero;
-    [SerializeField] private int startRadius = 1;
-    [SerializeField] private HiveTileType startType = HiveTileType.InsideHive;
-
     // ── State ─────────────────────────────────────────────────────────────────
 
     // tile type for every grid cell that exists
     private readonly Dictionary<Vector3Int, HiveTileType> types  = new();
     // construction status
     private readonly Dictionary<Vector3Int, bool>         marked = new();
+    // cells that cannot be demolished or modified (e.g. the hive entrance)
+    private readonly HashSet<Vector3Int> lockedCells = new();
 
     // build queue consumed by builder bees
     private readonly Queue<Vector3Int> buildQueue = new();
@@ -45,16 +42,53 @@ public class HiveGrid : MonoBehaviour
 
     void Start()
     {
-        BuildStartingHive();
+        ScanPaintedTiles();
     }
 
     // ── Starting hive ─────────────────────────────────────────────────────────
 
-    void BuildStartingHive()
+    /// <summary>
+    /// Reads whatever was painted on the Built tilemap in the scene, identifies
+    /// each cell's HiveTileType via the library's sprite reverse-lookup, and
+    /// registers them as the starting hive. Then re-renders every cell so the
+    /// autotile picks the correct edge variant for each.
+    /// </summary>
+    void ScanPaintedTiles()
     {
-        for (int x = -startRadius; x <= startRadius; x++)
-        for (int y = -startRadius; y <= startRadius; y++)
-            Place(startCenter + new Vector3Int(x, y, 0), startType);
+        if (visuals == null || visuals.BuiltTilemap == null || visuals.Library == null) return;
+
+        var tilemap = visuals.BuiltTilemap;
+        var library = visuals.Library;
+        library.Init();
+
+        // Collect first, render after — masks depend on neighbors being registered.
+        var found = new List<(Vector3Int pos, HiveTileType type)>();
+
+        foreach (var pos in tilemap.cellBounds.allPositionsWithin)
+        {
+            var sprite = tilemap.GetSprite(pos);
+            if (sprite == null) continue;
+            var type = library.GetTypeFromSprite(sprite);
+            if (type == HiveTileType.None) continue;
+
+            types[pos]  = type;
+            marked[pos] = false;
+            found.Add((pos, type));
+        }
+
+        // Auto-detect the entrance: any InsideHive cell from the starting layout
+        // that touches at least one empty neighbor is the entrance and is locked.
+        foreach (var (pos, type) in found)
+        {
+            if (type != HiveTileType.InsideHive) continue;
+            foreach (var d in Dirs)
+            {
+                if (!types.ContainsKey(pos + d)) { lockedCells.Add(pos); break; }
+            }
+        }
+
+        // Now redraw each so the correct variant is chosen for its actual neighbors.
+        foreach (var (pos, _) in found) visuals.RefreshAt(pos);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -109,6 +143,7 @@ public class HiveGrid : MonoBehaviour
     public bool HasTile(Vector3Int pos)    => types.ContainsKey(pos);
     public bool IsMarked(Vector3Int pos)   => marked.TryGetValue(pos, out var m) && m;
     public bool CanBuildAt(Vector3Int pos) => !types.ContainsKey(pos) && IsAdjacentToAny(pos);
+    public bool IsLocked(Vector3Int pos)   => lockedCells.Contains(pos);
 
     public HiveTileType GetType(Vector3Int pos) =>
         types.TryGetValue(pos, out var t) ? t : HiveTileType.None;
