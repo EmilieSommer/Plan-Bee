@@ -14,29 +14,27 @@ public static class RoomTileSetup
     static void SetupAll()
     {
         // Border tiles — outer edge where zone meets empty space
-        SetupBorder("Assets/05_Tiles/InsideHive/Inside:Border",
+        SetupBorder("Assets/05_Tiles/InsideHive/Inside_Border",
                     "Assets/05_Tiles/InsideHive/InsideHive_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Brood/Brood:border",
+        SetupBorder("Assets/05_Tiles/Brood/Brood_Border",
                     "Assets/05_Tiles/Brood/Brood_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Drone/Drone:Border",
+        SetupBorder("Assets/05_Tiles/Drone/Drone_Border",
                     "Assets/05_Tiles/Drone/Drone_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Storage/Storage:border",
+        SetupBorder("Assets/05_Tiles/Storage/Storage_Border",
                     "Assets/05_Tiles/Storage/Storage_Border_RuleTile.asset");
-        SetupBorder("Assets/05_Tiles/Hive/Hive:borders",
+        SetupBorder("Assets/05_Tiles/Hive/Hive_Borders",
                     "Assets/05_Tiles/Hive/Hive_Border_RuleTile.asset");
 
         // Overlay tiles — transparent edges where two zone types meet
-        SetupOverlay("Assets/05_Tiles/InsideHive/Insidehive:overlay",
+        SetupOverlay("Assets/05_Tiles/InsideHive/InsideHive_Overlay",
                      "Assets/05_Tiles/InsideHive/InsideHive_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/InsideHive/Extra/Inside:Storage",
-                     "Assets/05_Tiles/InsideHive/InsideHive_StorageEdge_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Brood/Brood:Overlay",
+        SetupOverlay("Assets/05_Tiles/Brood/Brood_Overlay",
                      "Assets/05_Tiles/Brood/Brood_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Drone/Drone:Overlay",
+        SetupOverlay("Assets/05_Tiles/Drone/Drone_Overlay",
                      "Assets/05_Tiles/Drone/Drone_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Storage/Storage:overlay",
+        SetupOverlay("Assets/05_Tiles/Storage/Storage_Overlay",
                      "Assets/05_Tiles/Storage/Storage_Overlay_RuleTile.asset");
-        SetupOverlay("Assets/05_Tiles/Storage/Storage:Inside",
+        SetupOverlay("Assets/05_Tiles/Storage/Storage_Inside",
                      "Assets/05_Tiles/Storage/Storage_InsideEdge_RuleTile.asset");
 
         AssetDatabase.SaveAssets();
