@@ -39,13 +39,11 @@ public class ForagerBee : Bee
 
     protected override bool HasWork()
     {
-        // Foragers always have work unless it's snowing
         return WinterSystem.Instance == null || !WinterSystem.Instance.isSnowing;
     }
 
     protected override void OnJobFound()
     {
-        // Kicked back to work by heartbeat — restart foraging
         if (!isOutForaging && !shelteringFromSnow)
             StartForaging();
     }
@@ -59,18 +57,14 @@ public class ForagerBee : Bee
         if (currentState == BeeState.Dead)
             return;
 
-        // ❄ SNOW BEHAVIOR
         if (WinterSystem.Instance != null && WinterSystem.Instance.isSnowing)
         {
             HandleSnow();
-
             if (currentState != BeeState.Working)
                 base.Update();
-
             return;
         }
 
-        // Snow just stopped → always resume regardless of flag
         if (shelteringFromSnow)
         {
             shelteringFromSnow = false;
@@ -78,17 +72,14 @@ public class ForagerBee : Bee
             return;
         }
 
-        // ☔ RAIN SLOWDOWN
         float weatherSlow = IsRaining() ? rainSlowMultiplier : 1f;
         moveSpeed = baseMoveSpeed / weatherSlow;
 
         if (isOutForaging)
         {
             timer -= Time.deltaTime / weatherSlow;
-
             if (timer <= 0f)
                 StartReturning();
-
             return;
         }
 
@@ -112,19 +103,27 @@ public class ForagerBee : Bee
             shelteringFromSnow = true;
             isOutForaging = false;
 
-            currentZone = FindNearestHouseZone();
+            SleepZone sleep = FindNearestSleepZone();
 
-            if (currentZone != null)
+            if (sleep != null)
             {
-                targetPosition = currentZone.transform.position;
-                currentState = BeeState.Returning;
+                ReserveSleep(sleep);
+                targetPosition = sleep.transform.position;
             }
+            else
+            {
+                targetPosition = homePosition;
+            }
+
+            currentState = BeeState.Returning;
         }
 
         if (Vector2.Distance(transform.position, targetPosition) < 0.2f)
         {
+            SleepZone sleep = GetSleepZoneAtPosition(rb.position);
+            if (sleep != null) RegisterSleep(sleep);
             StopMovementInstant();
-            currentState = BeeState.Working; // frozen until snow stops
+            currentState = BeeState.Working;
         }
     }
 
@@ -175,9 +174,7 @@ public class ForagerBee : Bee
     void DepositPollen()
     {
         if (pollenPrefab != null && currentZone != null)
-        {
             Instantiate(pollenPrefab, currentZone.GetDepositPoint(), Quaternion.identity);
-        }
 
         CurrencyManager.Instance.pollen += pollenPerTrip;
 
@@ -215,27 +212,61 @@ public class ForagerBee : Bee
         baseMoveSpeed = Mathf.Min(baseMoveSpeed + amount, max);
     }
 
+    // ======================================================
+    // SLEEP
+    // ======================================================
+
     protected override void GoHome()
     {
         SleepZone sleep = FindNearestSleepZone();
 
-        Vector2 destination = sleep != null
-            ? (Vector2)sleep.transform.position
-            : homePosition;
+        if (sleep == null)
+        {
+            isAtHome = true;
+            StopMovementInstant();
+            currentState = BeeState.Idle;
+            return;
+        }
 
-        float dist = Vector2.Distance(rb.position, destination);
+        ReserveSleep(sleep);
+
+        float dist = Vector2.Distance(rb.position, sleep.transform.position);
 
         if (dist < 0.3f)
         {
             isAtHome = true;
             StopMovementInstant();
             currentState = BeeState.Idle;
+            RegisterSleep(sleep);
         }
         else
         {
-            targetPosition = destination;
+            targetPosition = sleep.transform.position;
             currentState = BeeState.Moving;
         }
+    }
+
+    protected override void OnReachedTarget()
+    {
+        SleepZone zone = GetSleepZoneAtPosition(rb.position);
+        if (zone != null)
+        {
+            if (zone.HasSpace || zone.IsRegistered(this))
+            {
+                RegisterSleep(zone);
+                isAtHome = true;
+                StopMovementInstant();
+                currentState = BeeState.Idle;
+            }
+            else
+            {
+                isAtHome = false;
+                GoHome();
+            }
+            return;
+        }
+
+        base.OnReachedTarget();
     }
 
     protected override void WorkBehavior() { }

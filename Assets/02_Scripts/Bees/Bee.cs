@@ -49,6 +49,11 @@ public abstract class Bee : MonoBehaviour
     public float jobCheckInterval = 2f;
     private float jobCheckTimer;
 
+    [Header("Sleep")]
+    public float sleepDelayRange = 1.5f;
+    private float sleepDelayTimer = 0f;
+    private bool waitingForSleep = false;
+
     protected Vector2 moveDirection;
     protected Vector2 targetPosition;
     protected Vector2 currentVelocity;
@@ -94,8 +99,10 @@ public abstract class Bee : MonoBehaviour
     [Header("Identity")]
     public string beeName = "Unnamed Bee";
 
-    // tracks whether bee has returned to home zone after finding no work
     protected bool isAtHome = false;
+
+    private SleepZone currentSleepZone;
+    private SleepZone pendingSleepZone;
 
     protected virtual void Awake()
     {
@@ -134,6 +141,18 @@ public abstract class Bee : MonoBehaviour
         if (retaliationTimer > 0f)
             retaliationTimer -= Time.deltaTime;
 
+        // Staggered sleep delay
+        if (waitingForSleep)
+        {
+            sleepDelayTimer -= Time.deltaTime;
+            if (sleepDelayTimer <= 0f)
+            {
+                waitingForSleep = false;
+                GoHome();
+            }
+            return;
+        }
+
         jobCheckTimer += Time.deltaTime;
         if (jobCheckTimer >= jobCheckInterval)
         {
@@ -149,10 +168,8 @@ public abstract class Bee : MonoBehaviour
     // JOB VALIDATION SYSTEM
     // ======================================================
 
-    // Subclasses return true when there is work available right now
     protected virtual bool HasWork() => false;
 
-    // Called every jobCheckInterval — override to add extra logic
     protected virtual void ValidateJob()
     {
         if (isBeingDragged || lockMovement) return;
@@ -160,7 +177,9 @@ public abstract class Bee : MonoBehaviour
 
         if (HasWork())
         {
-            // Bee is idle or wandering home but work exists → restart job
+            waitingForSleep = false;
+            sleepDelayTimer = 0f;
+
             if (currentState == BeeState.Idle || isAtHome)
             {
                 isAtHome = false;
@@ -169,18 +188,16 @@ public abstract class Bee : MonoBehaviour
         }
         else
         {
-            // No work → go home and stand still if not already doing so
-            if (currentState == BeeState.Idle && !isAtHome)
+            if (currentState == BeeState.Idle && !isAtHome && !waitingForSleep)
             {
-                GoHome();
+                sleepDelayTimer = Random.Range(0f, sleepDelayRange);
+                waitingForSleep = true;
             }
         }
     }
 
-    // Called when validation finds work and bee is idle — override in subclass
     protected virtual void OnJobFound() { }
 
-    // Sends bee back to its zone to stand still
     protected virtual void GoHome()
     {
         if (assignedZone == null) return;
@@ -189,18 +206,20 @@ public abstract class Bee : MonoBehaviour
 
         if (distToHome < 0.3f)
         {
-            // Already at home — freeze completely
             isAtHome = true;
             StopMovementInstant();
             currentState = BeeState.Idle;
         }
         else
         {
-            // Move back to home zone
             targetPosition = homePosition;
             currentState = BeeState.Moving;
         }
     }
+
+    // ======================================================
+    // SLEEP ZONE
+    // ======================================================
 
     protected SleepZone FindNearestSleepZone()
     {
@@ -211,6 +230,8 @@ public abstract class Bee : MonoBehaviour
 
         foreach (var zone in zones)
         {
+            if (!zone.HasSpace) continue;
+
             float dist = Vector2.Distance(transform.position, zone.transform.position);
             if (dist < closestDist)
             {
@@ -221,6 +242,57 @@ public abstract class Bee : MonoBehaviour
 
         return closest;
     }
+
+    protected void ReserveSleep(SleepZone zone)
+    {
+        if (pendingSleepZone != null && pendingSleepZone != zone)
+        {
+            pendingSleepZone.Unregister(this);
+            pendingSleepZone = null;
+        }
+
+        if (zone != null && pendingSleepZone != zone)
+        {
+            if (zone.TryRegister(this))
+                pendingSleepZone = zone;
+        }
+    }
+
+    protected void RegisterSleep(SleepZone zone)
+    {
+        pendingSleepZone = null;
+        currentSleepZone = zone;
+    }
+
+    protected void UnregisterSleep()
+    {
+        if (pendingSleepZone != null)
+        {
+            pendingSleepZone.Unregister(this);
+            pendingSleepZone = null;
+        }
+
+        if (currentSleepZone != null)
+        {
+            currentSleepZone.Unregister(this);
+            currentSleepZone = null;
+        }
+    }
+
+    protected SleepZone GetSleepZoneAtPosition(Vector2 pos)
+    {
+        SleepZone[] zones = FindObjectsOfType<SleepZone>();
+        foreach (var zone in zones)
+        {
+            if (Vector2.Distance(pos, zone.transform.position) < 0.5f)
+                return zone;
+        }
+        return null;
+    }
+
+    // ======================================================
+    // FIXED UPDATE
+    // ======================================================
 
     protected virtual void FixedUpdate()
     {
@@ -240,7 +312,6 @@ public abstract class Bee : MonoBehaviour
             return;
         }
 
-        // Hard freeze when idle and at home
         if (currentState == BeeState.Idle && isAtHome)
         {
             currentVelocity = Vector2.zero;
@@ -415,7 +486,6 @@ public abstract class Bee : MonoBehaviour
 
     void CheckIfStuck()
     {
-        // Don't run stuck detection when frozen at home
         if (isAtHome || currentState == BeeState.Idle || currentState == BeeState.Working)
             return;
 
@@ -463,7 +533,6 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void OnReachedTarget()
     {
-        // If we just arrived home, freeze
         float distToHome = Vector2.Distance(rb.position, homePosition);
         if (distToHome < 0.3f && !HasWork())
         {
@@ -474,12 +543,9 @@ public abstract class Bee : MonoBehaviour
         currentState = BeeState.Idle;
     }
 
-    // Idle no longer roams — job system drives all movement
     protected virtual void IdleBehavior()
     {
         if (lockMovement) return;
-        // Intentionally empty: bees stand still when idle.
-        // ValidateJob() handles whether to work or go home.
     }
 
     protected void StopMovementInstant()
@@ -489,11 +555,12 @@ public abstract class Bee : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
     }
 
-    // Call this from subclasses whenever they start a new job cycle
-    // so isAtHome gets cleared correctly
     protected void MarkAsWorking()
     {
         isAtHome = false;
+        waitingForSleep = false;
+        sleepDelayTimer = 0f;
+        UnregisterSleep();
     }
 
     protected abstract void WorkBehavior();
@@ -517,13 +584,8 @@ public abstract class Bee : MonoBehaviour
         attacker.TakeDamage(retaliationDamage);
         retaliationTimer = retaliationCooldown;
 
-        // Snap fully toward attacker
         Vector2 dirToEnemy = ((Vector2)attacker.transform.position - rb.position).normalized;
-        
-        // Hard face the enemy
         rb.rotation = Mathf.Atan2(dirToEnemy.y, dirToEnemy.x) * Mathf.Rad2Deg;
-        
-        // Stronger lunge toward them
         moveDirection = dirToEnemy;
         currentVelocity = dirToEnemy * moveSpeed;
         rb.MovePosition(rb.position + dirToEnemy * 0.6f);
@@ -543,6 +605,7 @@ public abstract class Bee : MonoBehaviour
     protected virtual void Die()
     {
         currentState = BeeState.Dead;
+        UnregisterSleep();
 
         if (HiveManager.Instance != null) HiveManager.Instance.UnregisterBee(this);
         if (ZoneManager.Instance != null) ZoneManager.Instance.UnregisterBee(this);
@@ -594,7 +657,10 @@ public abstract class Bee : MonoBehaviour
     public virtual void StopDragging()
     {
         isBeingDragged = false;
-        isAtHome = false; // re-evaluate job on drop
+        isAtHome = false;
+        waitingForSleep = false;
+        sleepDelayTimer = 0f;
+        UnregisterSleep();
         PickRandomDirection();
         currentState = BeeState.Idle;
     }

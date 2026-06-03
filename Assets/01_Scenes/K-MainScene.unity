@@ -360,7 +360,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1001 &41238641
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -734,7 +734,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c497f0d34f6274e8bf5dddbb806024, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeasonManager
-  daysPerSeason: 5
+  daysPerSeason: 1
   seasonText: {fileID: 840744604}
   seasonDescriptionText: {fileID: 0}
   springPopup: {fileID: 1627274708}
@@ -1203,7 +1203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1 &201638593
 GameObject:
   m_ObjectHideFlags: 0
@@ -2342,6 +2342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9510b49a448a76468f19431b73a381b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueenBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -2356,6 +2357,7 @@ MonoBehaviour:
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
   jobCheckInterval: 2
+  sleepDelayRange: 1.5
   retaliationRange: 1.5
   retaliationDamage: 1
   retaliationCooldown: 2
@@ -6897,6 +6899,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d1f8f4e7ea8c304192413eeecea79bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ForagerBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -6911,6 +6914,7 @@ MonoBehaviour:
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
   jobCheckInterval: 2
+  sleepDelayRange: 1.5
   retaliationRange: 1.5
   retaliationDamage: 1
   retaliationCooldown: 2
@@ -7957,7 +7961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1 &1338147322
 GameObject:
   m_ObjectHideFlags: 0
@@ -8310,7 +8314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1 &1368918904
 GameObject:
   m_ObjectHideFlags: 0
@@ -10838,6 +10842,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea97a551224d33a468d7bd3112adb766, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuilderBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -10852,6 +10857,7 @@ MonoBehaviour:
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
   jobCheckInterval: 2
+  sleepDelayRange: 1.5
   retaliationRange: 1.5
   retaliationDamage: 1
   retaliationCooldown: 2
@@ -10860,6 +10866,7 @@ MonoBehaviour:
   attackCooldown: 1
   beeType: 4
   beeName: Unnamed Bee
+  arrivalDistance: 0.5
 --- !u!50 &1823473700
 Rigidbody2D:
   serializedVersion: 5
@@ -11570,7 +11577,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1 &1911545738
 GameObject:
   m_ObjectHideFlags: 0
@@ -12657,7 +12664,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
+  capacityPerZone: 1
 --- !u!1 &2080041503
 GameObject:
   m_ObjectHideFlags: 0
@@ -13104,6 +13111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec68ffdff640d71419ec606617333aac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -13118,6 +13126,7 @@ MonoBehaviour:
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
   jobCheckInterval: 2
+  sleepDelayRange: 1.5
   retaliationRange: 1.5
   retaliationDamage: 1
   retaliationCooldown: 2
@@ -13127,6 +13136,7 @@ MonoBehaviour:
   beeType: 2
   beeName: Unnamed Bee
   workDistanceThreshold: 0.5
+  maxTendingTime: 30
 --- !u!50 &2109975945
 Rigidbody2D:
   serializedVersion: 5
@@ -13783,7 +13793,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4955414623882435554, guid: 36d1e55958d130c4e987c2cf687144cd, type: 3}
       propertyPath: capacityPerZone
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -2214563520536479670, guid: 36d1e55958d130c4e987c2cf687144cd, type: 3}
@@ -13885,6 +13895,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d60fa6a75012c54ca291f6363743906, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -13899,6 +13910,7 @@ MonoBehaviour:
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
   jobCheckInterval: 2
+  sleepDelayRange: 1.5
   retaliationRange: 1.5
   retaliationDamage: 1
   retaliationCooldown: 2

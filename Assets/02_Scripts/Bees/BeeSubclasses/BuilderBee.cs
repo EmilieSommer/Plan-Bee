@@ -2,51 +2,126 @@ using UnityEngine;
 
 public class BuilderBee : Bee
 {
-    protected override void Update()
+    [Header("Work Settings")]
+    public float arrivalDistance = 0.5f;
+
+    private ConstructionSite currentSite;
+
+    protected override void Awake()
     {
-        base.Update();
-
-        if (BuildManager.Instance == null) return;
-
-        ConstructionSite activeSite = BuildManager.Instance.activeSite;
-        if (activeSite == null) return;
-
-        targetPosition = activeSite.transform.position;
-
-        if (currentState != BeeState.Moving)
-        {
-            currentState = BeeState.Moving;
-        }
+        base.Awake();
+        beeType = BeeType.Builder;
     }
 
-    protected override void Die()
+    protected override bool HasWork()
     {
-        base.Die(); // VERY IMPORTANT
+        return BuildManager.Instance != null && BuildManager.Instance.activeSite != null;
+    }
+
+    protected override void OnJobFound()
+    {
+        ConstructionSite site = BuildManager.Instance.activeSite;
+        if (site == currentSite && currentState == BeeState.Moving) return;
+
+        currentSite = site;
+        MarkAsWorking();
+        targetPosition = currentSite.transform.position;
+        currentState = BeeState.Moving;
+    }
+
+    protected override void IdleBehavior()
+    {
+        if (!HasWork()) return;
+        OnJobFound();
+    }
+
+    protected override void OnReachedTarget()
+    {
+        if (HasWork())
+        {
+            currentState = BeeState.Working;
+            return;
+        }
+
+        SleepZone zone = GetSleepZoneAtPosition(rb.position);
+        if (zone != null)
+        {
+            if (zone.HasSpace || zone.IsRegistered(this))
+            {
+                RegisterSleep(zone);
+                isAtHome = true;
+                StopMovementInstant();
+                currentState = BeeState.Idle;
+            }
+            else
+            {
+                isAtHome = false;
+                GoHome();
+            }
+            return;
+        }
+
+        currentSite = null;
+        base.OnReachedTarget();
+    }
+
+    protected override void WorkBehavior()
+    {
+        if (!HasWork())
+        {
+            currentSite = null;
+            currentState = BeeState.Idle;
+            return;
+        }
+
+        ConstructionSite site = BuildManager.Instance.activeSite;
+
+        if (site != currentSite)
+        {
+            currentSite = site;
+            targetPosition = currentSite.transform.position;
+            currentState = BeeState.Moving;
+            return;
+        }
+
+        float dist = Vector2.Distance(transform.position, currentSite.transform.position);
+        if (dist > arrivalDistance)
+        {
+            targetPosition = currentSite.transform.position;
+            currentState = BeeState.Moving;
+        }
     }
 
     protected override void GoHome()
     {
         SleepZone sleep = FindNearestSleepZone();
 
-        Vector2 destination = sleep != null
-            ? (Vector2)sleep.transform.position
-            : homePosition;
+        if (sleep == null)
+        {
+            isAtHome = true;
+            StopMovementInstant();
+            currentState = BeeState.Idle;
+            return;
+        }
 
-        float dist = Vector2.Distance(rb.position, destination);
+        ReserveSleep(sleep);
+
+        float dist = Vector2.Distance(rb.position, sleep.transform.position);
 
         if (dist < 0.3f)
         {
             isAtHome = true;
             StopMovementInstant();
             currentState = BeeState.Idle;
+            RegisterSleep(sleep);
         }
         else
         {
-            targetPosition = destination;
+            targetPosition = sleep.transform.position;
             currentState = BeeState.Moving;
         }
     }
 
-    protected override void WorkBehavior() { }
     protected override void ReturnBehavior() { }
+    protected override void Die() => base.Die();
 }

@@ -49,10 +49,8 @@ public class HouseBee : Bee
 
     protected override bool HasWork()
     {
-        // Already holding a valid target
         if (target != null) return true;
 
-        // Check if any unclaimed pollen exists
         if (Pollen.allPollen == null || Pollen.allPollen.Count == 0) return false;
 
         foreach (Pollen p in Pollen.allPollen)
@@ -65,7 +63,6 @@ public class HouseBee : Bee
 
     protected override void OnJobFound()
     {
-        // Heartbeat found work while idle — try to grab a target
         if (target == null)
         {
             Pollen p = FindAvailablePollen();
@@ -80,7 +77,6 @@ public class HouseBee : Bee
         }
         else
         {
-            // Had a target but drifted idle — go back to it
             MarkAsWorking();
             targetPosition = target.transform.position;
             currentState = BeeState.Moving;
@@ -95,7 +91,6 @@ public class HouseBee : Bee
     {
         if (hasStartedWorking) return;
 
-        // Try to find pollen — if none, job system handles going home
         if (target == null)
         {
             Pollen p = FindAvailablePollen();
@@ -141,7 +136,6 @@ public class HouseBee : Bee
         {
             hasStartedWorking = true;
             workTimer = convertTime;
-
             if (rb != null) rb.linearVelocity = Vector2.zero;
         }
         else
@@ -156,12 +150,28 @@ public class HouseBee : Bee
         if (target != null)
         {
             currentState = BeeState.Working;
+            return;
         }
-        else
+
+        SleepZone zone = GetSleepZoneAtPosition(rb.position);
+        if (zone != null)
         {
-            // Let base handle home freeze if no work
-            base.OnReachedTarget();
+            if (zone.HasSpace || zone.IsRegistered(this))
+            {
+                RegisterSleep(zone);
+                isAtHome = true;
+                StopMovementInstant();
+                currentState = BeeState.Idle;
+            }
+            else
+            {
+                isAtHome = false;
+                GoHome();
+            }
+            return;
         }
+
+        base.OnReachedTarget();
     }
 
     // ======================================================
@@ -226,25 +236,36 @@ public class HouseBee : Bee
         base.StopDragging();
     }
 
+    // ======================================================
+    // SLEEP
+    // ======================================================
+
     protected override void GoHome()
     {
         SleepZone sleep = FindNearestSleepZone();
 
-        Vector2 destination = sleep != null
-            ? (Vector2)sleep.transform.position
-            : homePosition;
+        if (sleep == null)
+        {
+            isAtHome = true;
+            StopMovementInstant();
+            currentState = BeeState.Idle;
+            return;
+        }
 
-        float dist = Vector2.Distance(rb.position, destination);
+        ReserveSleep(sleep);
+
+        float dist = Vector2.Distance(rb.position, sleep.transform.position);
 
         if (dist < 0.3f)
         {
             isAtHome = true;
             StopMovementInstant();
             currentState = BeeState.Idle;
+            RegisterSleep(sleep);
         }
         else
         {
-            targetPosition = destination;
+            targetPosition = sleep.transform.position;
             currentState = BeeState.Moving;
         }
     }
