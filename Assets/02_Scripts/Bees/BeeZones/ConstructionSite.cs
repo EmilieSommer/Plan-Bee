@@ -11,7 +11,9 @@ public class ConstructionSite : MonoBehaviour
     private SpriteRenderer sr;
     private bool isBuilding = false;
 
-    // NEW: progress callback (for UI)
+    [Header("Builder Limit")]
+    public int maxBuilders = 2;
+
     public event Action<float> OnProgressChanged;
 
     private void Awake()
@@ -41,7 +43,6 @@ public class ConstructionSite : MonoBehaviour
 
         float t = Mathf.Clamp01(progress / buildTime);
 
-        // building visual fade (your system)
         if (sr != null)
         {
             Color c = sr.color;
@@ -50,20 +51,15 @@ public class ConstructionSite : MonoBehaviour
         }
 
         if (parentZone != null)
-        {
             parentZone.SetTransparency(1f - t);
-        }
 
-        // NEW: send progress to UI
         OnProgressChanged?.Invoke(t);
 
         if (progress >= buildTime)
-        {
             FinishBuild();
-        }
     }
 
-    int GetBuilderCount()
+    public int GetBuilderCount()
     {
         Collider2D[] hits = Physics2D.OverlapBoxAll(
             transform.position,
@@ -76,12 +72,15 @@ public class ConstructionSite : MonoBehaviour
         foreach (var hit in hits)
         {
             if (hit.CompareTag("Bee") && hit.GetComponent<BuilderBee>() != null)
-            {
                 count++;
-            }
         }
 
         return count;
+    }
+
+    public bool HasBuilderSpace()
+    {
+        return GetBuilderCount() < maxBuilders;
     }
 
     void FinishBuild()
@@ -94,20 +93,14 @@ public class ConstructionSite : MonoBehaviour
 
         SleepZone sleep = GetComponent<SleepZone>();
         if (sleep != null)
-        {
             HiveManager.Instance.RegisterSleepZone(sleep);
-        }
 
         DroneZone drone = GetComponent<DroneZone>();
         if (drone != null)
-        {
             drone.SetBuilt();
-        }
 
         if (parentZone != null)
-        {
             parentZone.FinishBuild();
-        }
 
         BuildManager.Instance.FinishCurrent();
 
@@ -120,12 +113,9 @@ public class ConstructionSite : MonoBehaviour
 
         HouseBeeZone zone = GetComponent<HouseBeeZone>();
         if (zone != null)
-        {
             zone.SetInactive();
-        }
     }
 
-    // OPTIONAL helper if you want UI polling instead of events
     public float GetProgress()
     {
         return Mathf.Clamp01(progress / buildTime);

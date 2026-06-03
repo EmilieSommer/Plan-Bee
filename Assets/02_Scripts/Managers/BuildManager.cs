@@ -39,4 +39,9 @@ public class BuildManager : MonoBehaviour
     {
         StartNext();
     }
+
+    public IEnumerable<ConstructionSite> GetQueue()
+    {
+        return queue;
+    }
 }

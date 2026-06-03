@@ -1,13 +1,10 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BuilderBee : Bee
 {
     [Header("Work Settings")]
     public float arrivalDistance = 0.5f;
-
-    [Header("Build Speed")]
-    public float buildTickInterval = 1f; // how often it contributes to building
-    private float buildTimer = 0f;
 
     private ConstructionSite currentSite;
 
@@ -17,14 +14,57 @@ public class BuilderBee : Bee
         beeType = BeeType.Builder;
     }
 
+    // ======================================================
+    // SITE SELECTION
+    // ======================================================
+
+    ConstructionSite GetAvailableSite()
+    {
+        if (BuildManager.Instance == null) return null;
+
+        ConstructionSite active = BuildManager.Instance.activeSite;
+        if (active == null) return null;
+
+        // Build list of queued sites
+        List<ConstructionSite> queuedSites = new List<ConstructionSite>();
+        foreach (ConstructionSite site in BuildManager.Instance.GetQueue())
+        {
+            if (site != null) queuedSites.Add(site);
+        }
+
+        // No other sites — always go to active
+        if (queuedSites.Count == 0) return active;
+
+        int activeCount = active.GetBuilderCount();
+
+        // Only send to secondary if active has strictly more builders than the secondary
+        // meaning active is well covered and secondary needs help
+        foreach (ConstructionSite site in queuedSites)
+        {
+            int siteCount = site.GetBuilderCount();
+
+            // Secondary site only gets a bee if active has more bees than it
+            if (activeCount > siteCount + 1)
+                return site;
+        }
+
+        // Default — go to active
+        return active;
+    }
+
+    // ======================================================
+    // JOB VALIDATION
+    // ======================================================
+
     protected override bool HasWork()
     {
-        return BuildManager.Instance != null && BuildManager.Instance.activeSite != null;
+        return BuildManager.Instance != null && GetAvailableSite() != null;
     }
 
     protected override void OnJobFound()
     {
-        ConstructionSite site = BuildManager.Instance.activeSite;
+        ConstructionSite site = GetAvailableSite();
+        if (site == null) return;
         if (site == currentSite && currentState == BeeState.Moving) return;
 
         currentSite = site;
@@ -33,16 +73,34 @@ public class BuilderBee : Bee
         currentState = BeeState.Moving;
     }
 
+    // ======================================================
+    // IDLE
+    // ======================================================
+
     protected override void IdleBehavior()
     {
         if (!HasWork()) return;
         OnJobFound();
     }
 
+    // ======================================================
+    // TARGET REACHED
+    // ======================================================
+
     protected override void OnReachedTarget()
     {
         if (HasWork())
         {
+            // Check if a less populated site is available
+            ConstructionSite best = GetAvailableSite();
+            if (best != null && best != currentSite)
+            {
+                currentSite = best;
+                targetPosition = currentSite.transform.position;
+                currentState = BeeState.Moving;
+                return;
+            }
+
             currentState = BeeState.Working;
             return;
         }
@@ -69,6 +127,10 @@ public class BuilderBee : Bee
         base.OnReachedTarget();
     }
 
+    // ======================================================
+    // WORK
+    // ======================================================
+
     protected override void WorkBehavior()
     {
         if (!HasWork())
@@ -78,13 +140,19 @@ public class BuilderBee : Bee
             return;
         }
 
-        ConstructionSite site = BuildManager.Instance.activeSite;
-
-        if (site != currentSite)
+        // Periodically recheck if a less populated site is available
+        ConstructionSite best = GetAvailableSite();
+        if (best != null && best != currentSite)
         {
-            currentSite = site;
+            currentSite = best;
             targetPosition = currentSite.transform.position;
             currentState = BeeState.Moving;
+            return;
+        }
+
+        if (currentSite == null)
+        {
+            currentState = BeeState.Idle;
             return;
         }
 
@@ -95,6 +163,10 @@ public class BuilderBee : Bee
             currentState = BeeState.Moving;
         }
     }
+
+    // ======================================================
+    // SLEEP
+    // ======================================================
 
     protected override void GoHome()
     {

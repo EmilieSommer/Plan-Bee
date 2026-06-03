@@ -116,6 +116,10 @@ MonoBehaviour:
   houseCost: 1
   sleepCost: 1
   droneCost: 1
+  nurseBuildTime: 30
+  houseBuildTime: 30
+  sleepBuildTime: 30
+  droneBuildTime: 30
   buildProgressText: {fileID: 5530859385436341682}
 --- !u!61 &8613737606629651233
 BoxCollider2D:

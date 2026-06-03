@@ -234,6 +234,7 @@ MonoBehaviour:
     capacity: 3
     current: 0
   nurseCanvas: {fileID: 9121601987656341170}
+  slots: []
 --- !u!114 &6672336312784576611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,8 +247,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5eeabe90c126bd489603cdb466ccd8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionSite
-  buildTime: 5
+  buildTime: 30
   parentZone: {fileID: 4829339963523079310, guid: 37908f8a570106540b518978bc5c023d, type: 3}
+  maxBuilders: 2
 --- !u!1 &3838159043995770629
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,6 +340,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
   isFilled: 0
+  timerText: {fileID: 0}
 --- !u!1 &4365766892331337752
 GameObject:
   m_ObjectHideFlags: 0
@@ -503,6 +506,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
   isFilled: 0
+  timerText: {fileID: 0}
 --- !u!1 &6066991612432466545
 GameObject:
   m_ObjectHideFlags: 0
@@ -593,6 +597,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueueSlotUI
   isFilled: 0
+  timerText: {fileID: 0}
 --- !u!1 &6254605146207677757
 GameObject:
   m_ObjectHideFlags: 0

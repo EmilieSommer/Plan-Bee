@@ -16,6 +16,12 @@ public class BuildZone : MonoBehaviour
     public int sleepCost = 15;
     public int droneCost = 25;
 
+    [Header("Build Times")]
+    public float nurseBuildTime = 10f;
+    public float houseBuildTime = 15f;
+    public float sleepBuildTime = 8f;
+    public float droneBuildTime = 20f;
+
     [Header("UI")]
     public TextMeshProUGUI buildProgressText;
 
@@ -30,7 +36,6 @@ public class BuildZone : MonoBehaviour
     {
         sr = GetComponent<SpriteRenderer>();
 
-        // timer starts OFF
         if (buildProgressText != null)
         {
             buildProgressText.gameObject.SetActive(false);
@@ -41,15 +46,15 @@ public class BuildZone : MonoBehaviour
     // -------------------------
     // BUILD BUTTONS
     // -------------------------
-    public void BuildNurse() => TryStartConstruction(nursePrefab, nurseCost);
-    public void BuildHouse() => TryStartConstruction(housePrefab, houseCost);
-    public void BuildSleep() => TryStartConstruction(sleepPrefab, sleepCost);
-    public void BuildDrone() => TryStartConstruction(dronePrefab, droneCost);
+    public void BuildNurse() => TryStartConstruction(nursePrefab, nurseCost, nurseBuildTime);
+    public void BuildHouse() => TryStartConstruction(housePrefab, houseCost, houseBuildTime);
+    public void BuildSleep() => TryStartConstruction(sleepPrefab, sleepCost, sleepBuildTime);
+    public void BuildDrone() => TryStartConstruction(dronePrefab, droneCost, droneBuildTime);
 
     // -------------------------
     // START BUILD
     // -------------------------
-    void TryStartConstruction(GameObject prefab, int cost)
+    void TryStartConstruction(GameObject prefab, int cost, float buildTime)
     {
         if (isBuilt || isBuilding) return;
 
@@ -66,7 +71,6 @@ public class BuildZone : MonoBehaviour
 
         DisableZone();
 
-        // 🟢 ACTIVATE TIMER HERE
         if (buildProgressText != null)
         {
             buildProgressText.gameObject.SetActive(true);
@@ -76,6 +80,7 @@ public class BuildZone : MonoBehaviour
         GameObject obj = Instantiate(prefab, transform.position, Quaternion.identity);
 
         currentSite = obj.AddComponent<ConstructionSite>();
+        currentSite.buildTime = buildTime;
         currentSite.parentZone = this;
         currentSite.StartBuild();
 
@@ -134,7 +139,7 @@ public class BuildZone : MonoBehaviour
     }
 
     // -------------------------
-    // TRANSPARENCY (used by ConstructionSite)
+    // TRANSPARENCY
     // -------------------------
     public void SetTransparency(float alpha)
     {
