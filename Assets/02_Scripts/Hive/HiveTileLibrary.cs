@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
-/// Holds the 16 autotile sprite variants for each HiveTileType.
-/// Sprites are indexed 0-15 by connection bitmask: T=8  B=4  L=2  R=1.
-/// Populate once via Tools → Plan Bee → Populate Tile Library.
+/// Holds the Rule Tiles and Marked Tiles for each HiveTileType.
 /// </summary>
 [CreateAssetMenu(fileName = "HiveTileLibrary", menuName = "Plan Bee/Hive Tile Library")]
 public class HiveTileLibrary : ScriptableObject
@@ -14,12 +13,11 @@ public class HiveTileLibrary : ScriptableObject
     {
         public HiveTileType type;
 
-        [Tooltip("16 sprites indexed by bitmask (T=8 B=4 L=2 R=1). " +
-                 "Index 0 = no neighbours, index 15 = all neighbours.")]
-        public Sprite[] variants = new Sprite[16];
+        [Tooltip("The built tile (usually a Rule Tile for autoconnecting).")]
+        public TileBase builtTile;
 
         [Tooltip("Shown while tile is marked / under construction.")]
-        public Sprite markedSprite;
+        public TileBase markedTile;
     }
 
     public TileSet[] sets;
@@ -36,18 +34,15 @@ public class HiveTileLibrary : ScriptableObject
             _lookup[s.type] = s;
     }
 
-    public Sprite GetSprite(HiveTileType type, int bitmask)
+    public TileBase GetBuiltTile(HiveTileType type)
     {
         if (_lookup == null) Init();
-        if (_lookup.TryGetValue(type, out var set) &&
-            bitmask >= 0 && bitmask < set.variants.Length)
-            return set.variants[bitmask];
-        return null;
+        return _lookup.TryGetValue(type, out var set) ? set.builtTile : null;
     }
 
-    public Sprite GetMarkedSprite(HiveTileType type)
+    public TileBase GetMarkedTile(HiveTileType type)
     {
         if (_lookup == null) Init();
-        return _lookup.TryGetValue(type, out var set) ? set.markedSprite : null;
+        return _lookup.TryGetValue(type, out var set) ? set.markedTile : null;
     }
 }

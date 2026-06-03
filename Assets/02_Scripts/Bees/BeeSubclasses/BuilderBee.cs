@@ -2,26 +2,62 @@ using UnityEngine;
 
 public class BuilderBee : Bee
 {
+    private Vector3Int currentJobPos;
+    private bool hasJob = false;
+    public float buildSpeed = 1f;
+
     protected override void Update()
     {
         base.Update();
 
-        if (BuildManager.Instance == null) return;
+        if (HiveGrid.Instance == null) return;
 
-        ConstructionSite activeSite = BuildManager.Instance.activeSite;
-        if (activeSite == null) return;
-
-        targetPosition = activeSite.transform.position;
-
-        if (currentState != BeeState.Moving)
+        if (!hasJob)
         {
-            currentState = BeeState.Moving;
+            if (HiveGrid.Instance.TryDequeueBuildJob(out currentJobPos))
+            {
+                hasJob = true;
+                targetPosition = HiveGrid.Instance.CellToWorld(currentJobPos);
+                currentState = BeeState.Moving;
+            }
+            else
+            {
+                // No jobs, wait
+                if (currentState != BeeState.Idle)
+                    currentState = BeeState.Idle;
+            }
+        }
+        else
+        {
+            // We have a job, check if we arrived
+            if (currentState == BeeState.Moving)
+            {
+                if (Vector3.Distance(transform.position, targetPosition) < 0.2f)
+                {
+                    currentState = BeeState.Working;
+                }
+            }
+            else if (currentState == BeeState.Working)
+            {
+                // Is it still marked for building? (Another bee might have finished it)
+                if (!HiveGrid.Instance.IsMarked(currentJobPos))
+                {
+                    hasJob = false;
+                    currentState = BeeState.Idle;
+                }
+                else
+                {
+                    HiveGrid.Instance.AddBuildProgress(currentJobPos, buildSpeed * Time.deltaTime);
+                }
+            }
         }
     }
 
     protected override void Die()
     {
-        base.Die(); // VERY IMPORTANT
+        // Ideally we'd put the job back in the queue if we die while working, 
+        // but for now we just die.
+        base.Die(); 
     }
 
     protected override void WorkBehavior() { }

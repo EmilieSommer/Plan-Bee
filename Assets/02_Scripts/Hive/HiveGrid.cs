@@ -4,7 +4,7 @@ using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Manages the hive tile grid.
-/// Handles placement, autotiling (same-type merging), and build-queue handoff.
+/// Handles placement, tile logic, and builder assignments.
 /// </summary>
 public class HiveGrid : MonoBehaviour
 {
@@ -22,12 +22,19 @@ public class HiveGrid : MonoBehaviour
     [SerializeField] private int startRadius = 1;
     [SerializeField] private HiveTileType startType = HiveTileType.InsideHive;
 
+    [Header("Build Settings")]
+    [SerializeField] private float buildTimePerTile = 5f;
+
     // ── State ─────────────────────────────────────────────────────────────────
 
     // tile type for every grid cell that exists
     private readonly Dictionary<Vector3Int, HiveTileType> types  = new();
-    // construction status
+    
+    // construction status (true = marked for building, false = fully built)
     private readonly Dictionary<Vector3Int, bool>         marked = new();
+
+    // tracks build progress (0 to buildTimePerTile)
+    private readonly Dictionary<Vector3Int, float> buildProgress = new();
 
     // build queue consumed by builder bees
     private readonly Queue<Vector3Int> buildQueue = new();
@@ -74,9 +81,10 @@ public class HiveGrid : MonoBehaviour
 
         types[pos]  = type;
         marked[pos] = true;
+        buildProgress[pos] = 0f;
 
-        var sprite = library.GetMarkedSprite(type);
-        SetSprite(markedTilemap, pos, sprite);
+        var tile = library.GetMarkedTile(type);
+        markedTilemap.SetTile(pos, tile);
 
         buildQueue.Enqueue(pos);
         OnTileMarked?.Invoke(pos);
@@ -99,14 +107,33 @@ public class HiveGrid : MonoBehaviour
     }
 
     /// <summary>
-    /// Called when a builder bee finishes constructing a tile.
+    /// Called by builder bees every frame they are at the tile working.
     /// </summary>
-    public void CompleteBuild(Vector3Int pos)
+    public void AddBuildProgress(Vector3Int pos, float amount)
+    {
+        if (!marked.TryGetValue(pos, out bool isMarked) || !isMarked) return;
+
+        if (!buildProgress.ContainsKey(pos)) buildProgress[pos] = 0f;
+        buildProgress[pos] += amount;
+
+        // Optional: you can change markedTilemap alpha here if you want visual fade
+        
+        if (buildProgress[pos] >= buildTimePerTile)
+        {
+            CompleteBuild(pos);
+        }
+    }
+
+    /// <summary>
+    /// Called when a tile has received enough progress.
+    /// </summary>
+    private void CompleteBuild(Vector3Int pos)
     {
         if (!types.ContainsKey(pos)) return;
 
         marked[pos] = false;
         markedTilemap.SetTile(pos, null);
+        
         Place(pos, types[pos]);
         OnTileBuilt?.Invoke(pos);
     }
@@ -130,28 +157,9 @@ public class HiveGrid : MonoBehaviour
         if (!types.ContainsKey(pos)) types[pos] = type;
         if (!marked.ContainsKey(pos)) marked[pos] = false;
 
-        RefreshSprite(pos);
-        foreach (var d in Dirs) RefreshSprite(pos + d);
+        // Set the RuleTile on the tilemap, Unity handles the adjacency visuals!
+        builtTilemap.SetTile(pos, library.GetBuiltTile(type));
     }
-
-    void RefreshSprite(Vector3Int pos)
-    {
-        if (!types.TryGetValue(pos, out var type)) return;
-        if (marked.TryGetValue(pos, out var isMarked) && isMarked) return;
-
-        int mask = 0;
-        // T=8  B=4  L=2  R=1  — matches the sprite naming convention
-        if (SameBuilt(pos + Vector3Int.up,    type)) mask |= 8;
-        if (SameBuilt(pos + Vector3Int.down,  type)) mask |= 4;
-        if (SameBuilt(pos + Vector3Int.left,  type)) mask |= 2;
-        if (SameBuilt(pos + Vector3Int.right, type)) mask |= 1;
-
-        SetSprite(builtTilemap, pos, library.GetSprite(type, mask));
-    }
-
-    bool SameBuilt(Vector3Int pos, HiveTileType type) =>
-        types.TryGetValue(pos, out var t) && t == type &&
-        (!marked.TryGetValue(pos, out var m) || !m);
 
     bool IsAdjacentToAny(Vector3Int pos)
     {
@@ -159,14 +167,5 @@ public class HiveGrid : MonoBehaviour
         foreach (var d in Dirs)
             if (types.ContainsKey(pos + d)) return true;
         return false;
-    }
-
-    void SetSprite(Tilemap tilemap, Vector3Int pos, Sprite sprite)
-    {
-        if (sprite == null) { tilemap.SetTile(pos, null); return; }
-        var tile = ScriptableObject.CreateInstance<Tile>();
-        tile.sprite = sprite;
-        tile.colliderType = Tile.ColliderType.None;
-        tilemap.SetTile(pos, tile);
     }
 }

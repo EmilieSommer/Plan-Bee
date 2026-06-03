@@ -3,40 +3,19 @@ using UnityEngine;
 
 public class BuildManager : MonoBehaviour
 {
-    public static BuildManager Instance;
+    public static BuildManager Instance { get; private set; }
 
-    private Queue<ConstructionSite> queue = new Queue<ConstructionSite>();
+    private readonly Queue<ConstructionSite> queue = new Queue<ConstructionSite>();
 
-    public ConstructionSite activeSite;
-
-    private void Awake()
+    void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
     public void AddToQueue(ConstructionSite site)
     {
+        if (site == null) return;
         queue.Enqueue(site);
-
-        if (activeSite == null)
-        {
-            StartNext();
-        }
-    }
-
-    void StartNext()
-    {
-        if (queue.Count == 0)
-        {
-            activeSite = null;
-            return;
-        }
-
-        activeSite = queue.Dequeue();
-    }
-
-    public void FinishCurrent()
-    {
-        StartNext();
     }
 }
