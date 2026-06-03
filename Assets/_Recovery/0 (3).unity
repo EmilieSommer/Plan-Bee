@@ -1474,85 +1474,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 203668000}
   m_CullTransparentMesh: 1
---- !u!1 &241854489
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 241854490}
-  - component: {fileID: 241854492}
-  - component: {fileID: 241854491}
-  m_Layer: 5
-  m_Name: Text (Legacy)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &241854490
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241854489}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1871815495}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &241854491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241854489}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
-    m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
-    m_Alignment: 4
-    m_AlignByGeometry: 0
-    m_RichText: 1
-    m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
-    m_LineSpacing: 1
-  m_Text: Button
---- !u!222 &241854492
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241854489}
-  m_CullTransparentMesh: 1
 --- !u!1001 &243578268
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2355,10 +2276,6 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -2442,7 +2359,7 @@ Transform:
   m_GameObject: {fileID: 343284933}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.46, y: 0.34, z: 0}
+  m_LocalPosition: {x: 0.88, y: 0.34, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -6910,10 +6827,6 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -8924,7 +8837,6 @@ RectTransform:
   - {fileID: 718734761}
   - {fileID: 1368918905}
   - {fileID: 988893820}
-  - {fileID: 1871815495}
   m_Father: {fileID: 2099207664}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -9681,7 +9593,7 @@ MonoBehaviour:
   beeLayer:
     serializedVersion: 2
     m_Bits: 512
-  dragThreshold: 12
+  dragThreshold: 10
   panSpeed: 0.01
   beeDragSmoothTime: 0.08
   maxBeeDragDistance: 1.5
@@ -10851,10 +10763,6 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -11195,139 +11103,6 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1864318781}
-  m_CullTransparentMesh: 1
---- !u!1 &1871815494
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1871815495}
-  - component: {fileID: 1871815498}
-  - component: {fileID: 1871815497}
-  - component: {fileID: 1871815496}
-  m_Layer: 5
-  m_Name: BuySpeedButton
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1871815495
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871815494}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 241854490}
-  m_Father: {fileID: 1433660226}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 252, y: -54.4}
-  m_SizeDelta: {x: 160, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1871815496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871815494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1871815497}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2017733037}
-        m_TargetAssemblyTypeName: BeeInfoUI, Assembly-CSharp
-        m_MethodName: BuySpeed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1871815497
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871815494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.7610062, g: 0.31828237, b: 0.31828237, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1871815498
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871815494}
   m_CullTransparentMesh: 1
 --- !u!1 &1885647606
 GameObject:
@@ -12386,9 +12161,6 @@ MonoBehaviour:
   maxLives: 10
   healCost: 1
   healAmount: 1
-  speedCost: 1
-  speedUpgradeAmount: 0.5
-  maxSpeed: 6
 --- !u!4 &2017733038
 Transform:
   m_ObjectHideFlags: 0
@@ -12549,9 +12321,8 @@ GameObject:
   - component: {fileID: 2075487785}
   - component: {fileID: 2075487786}
   - component: {fileID: 2075487787}
-  - component: {fileID: 2075487788}
   m_Layer: 8
-  m_Name: SleepZone
+  m_Name: QueenZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12638,26 +12409,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2075487784}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 937f2b0b2ba65f846a12f907929041d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QueenZone
   zoneType: 5
   limits: []
---- !u!114 &2075487788
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2075487784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 2
 --- !u!1 &2080041503
 GameObject:
   m_ObjectHideFlags: 0
@@ -13117,10 +12875,6 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -13898,10 +13652,6 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -13912,6 +13662,7 @@ MonoBehaviour:
   workBuffer: 0.2
   honeyPrefab: {fileID: 251181548223704740, guid: 05a77bb90fdd12846af6728cbfc01ab6, type: 3}
   honeyAmount: 1
+  searchInterval: 0.5
 --- !u!1001 &6598379499430766234
 PrefabInstance:
   m_ObjectHideFlags: 0

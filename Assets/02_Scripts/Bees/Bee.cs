@@ -13,13 +13,16 @@ public abstract class Bee : MonoBehaviour
         Dead
     }
 
+    [Header("Parasite Effects")]
+    public float workSpeedMultiplier = 1f;
+
     [Header("Base Stats")]
     public float maxHealth = 10f;
     protected float currentHealth;
     public float CurrentHealth => currentHealth;
 
     [Header("Movement")]
-    public float moveSpeed = 2f;    
+    public float moveSpeed = 2f;
 
     [Header("Steering")]
     public float acceleration = 8f;
@@ -42,6 +45,10 @@ public abstract class Bee : MonoBehaviour
     public float stuckCheckInterval = 0.5f;
     public float stuckMoveThreshold = 0.05f;
 
+    [Header("Job Validation")]
+    public float jobCheckInterval = 2f;
+    private float jobCheckTimer;
+
     protected Vector2 moveDirection;
     protected Vector2 targetPosition;
     protected Vector2 currentVelocity;
@@ -52,11 +59,14 @@ public abstract class Bee : MonoBehaviour
     protected BeeState currentState;
     protected Rigidbody2D rb;
 
-    // 🔥 Stuck detection
     private float stuckTimer;
     private Vector2 lastPosition;
 
-    private bool isLockedOnTarget = false;
+    [Header("Retaliation")]
+    public float retaliationRange = 1.5f;
+    public float retaliationDamage = 1f;
+    public float retaliationCooldown = 2f;
+    private float retaliationTimer = 0f;
 
     public enum BeeType
     {
@@ -67,7 +77,7 @@ public abstract class Bee : MonoBehaviour
         Builder,
         Queen,
     }
-    
+
     [Header("Combat")]
     public float attackDamage = 2f;
     public float attackRange = 1.2f;
@@ -79,35 +89,30 @@ public abstract class Bee : MonoBehaviour
     public BeeType beeType;
 
     protected Zone assignedZone;
-
     protected bool isBeingDragged = false;
 
     [Header("Identity")]
     public string beeName = "Unnamed Bee";
 
+    // tracks whether bee has returned to home zone after finding no work
+    protected bool isAtHome = false;
+
     protected virtual void Awake()
     {
-
         if (HiveManager.Instance != null)
-        {
             HiveManager.Instance.RegisterBee(this);
-        }
 
         attackTimer = 0f;
         rb = GetComponent<Rigidbody2D>();
-
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
-
         rb.bodyType = RigidbodyType2D.Kinematic;
 
         currentHealth = maxHealth;
         currentState = BeeState.Idle;
-
         homePosition = transform.position;
 
         PickRandomDirection();
-
         lastPosition = rb.position;
     }
 
@@ -119,17 +124,102 @@ public abstract class Bee : MonoBehaviour
     public void SetName(string newName)
     {
         beeName = string.IsNullOrWhiteSpace(newName) ? "Unnamed Bee" : newName;
-        gameObject.name = beeName; // optional but useful in hierarchy
+        gameObject.name = beeName;
     }
 
     protected virtual void Update()
     {
-        if (currentState == BeeState.Dead)
-            return;
+        if (currentState == BeeState.Dead) return;
+
+        if (retaliationTimer > 0f)
+            retaliationTimer -= Time.deltaTime;
+
+        jobCheckTimer += Time.deltaTime;
+        if (jobCheckTimer >= jobCheckInterval)
+        {
+            jobCheckTimer = 0f;
+            ValidateJob();
+        }
 
         CheckIfStuck();
-
         StateUpdate();
+    }
+
+    // ======================================================
+    // JOB VALIDATION SYSTEM
+    // ======================================================
+
+    // Subclasses return true when there is work available right now
+    protected virtual bool HasWork() => false;
+
+    // Called every jobCheckInterval — override to add extra logic
+    protected virtual void ValidateJob()
+    {
+        if (isBeingDragged || lockMovement) return;
+        if (currentState == BeeState.Dead) return;
+
+        if (HasWork())
+        {
+            // Bee is idle or wandering home but work exists → restart job
+            if (currentState == BeeState.Idle || isAtHome)
+            {
+                isAtHome = false;
+                OnJobFound();
+            }
+        }
+        else
+        {
+            // No work → go home and stand still if not already doing so
+            if (currentState == BeeState.Idle && !isAtHome)
+            {
+                GoHome();
+            }
+        }
+    }
+
+    // Called when validation finds work and bee is idle — override in subclass
+    protected virtual void OnJobFound() { }
+
+    // Sends bee back to its zone to stand still
+    protected virtual void GoHome()
+    {
+        if (assignedZone == null) return;
+
+        float distToHome = Vector2.Distance(rb.position, homePosition);
+
+        if (distToHome < 0.3f)
+        {
+            // Already at home — freeze completely
+            isAtHome = true;
+            StopMovementInstant();
+            currentState = BeeState.Idle;
+        }
+        else
+        {
+            // Move back to home zone
+            targetPosition = homePosition;
+            currentState = BeeState.Moving;
+        }
+    }
+
+    protected SleepZone FindNearestSleepZone()
+    {
+        SleepZone[] zones = FindObjectsOfType<SleepZone>();
+
+        SleepZone closest = null;
+        float closestDist = Mathf.Infinity;
+
+        foreach (var zone in zones)
+        {
+            float dist = Vector2.Distance(transform.position, zone.transform.position);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closest = zone;
+            }
+        }
+
+        return closest;
     }
 
     protected virtual void FixedUpdate()
@@ -142,8 +232,16 @@ public abstract class Bee : MonoBehaviour
             return;
         }
 
-        // 🔥 HARD STOP MOVEMENT (zones, idle freeze, etc.)
-        if (currentState == BeeState.Working || currentState == BeeState.Dead || lockMovement)
+        if (currentState == BeeState.Working || currentState == BeeState.Dead)
+        {
+            currentVelocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            return;
+        }
+
+        // Hard freeze when idle and at home
+        if (currentState == BeeState.Idle && isAtHome)
         {
             currentVelocity = Vector2.zero;
             rb.linearVelocity = Vector2.zero;
@@ -156,14 +254,11 @@ public abstract class Bee : MonoBehaviour
         if (currentState == BeeState.Moving || currentState == BeeState.Returning)
         {
             Vector2 steering = moveDirection * moveSpeed;
-
             steering += GetForwardAvoidance();
             steering += GetSeparationForce() * separationStrength;
-
             desiredVelocity = steering;
         }
 
-        // 🔥 IMPORTANT: smooth ONLY when not locked
         currentVelocity = Vector2.Lerp(
             currentVelocity,
             desiredVelocity,
@@ -179,43 +274,36 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void StateUpdate()
     {
-        // 🔥 HARD FREEZE OVERRIDE
-        if (lockMovement)
-            return;
+        if (lockMovement) return;
 
         switch (currentState)
         {
             case BeeState.Idle:
                 IdleBehavior();
                 break;
-
             case BeeState.Moving:
                 MoveToTarget();
                 break;
-
             case BeeState.Working:
                 WorkBehavior();
                 break;
-
             case BeeState.Returning:
                 MoveToTarget();
                 ReturnBehavior();
                 break;
         }
     }
+
     protected bool HasValidZone()
     {
         if (assignedZone == null)
-        {
             AssignZone();
-        }
-
         return assignedZone != null;
     }
 
-    // ------------------------
+    // ======================================================
     // MOVEMENT
-    // ------------------------
+    // ======================================================
 
     protected void MoveToTarget()
     {
@@ -230,12 +318,7 @@ public abstract class Bee : MonoBehaviour
         }
 
         Vector2 desiredDirection = toTarget.normalized;
-
-        moveDirection = Vector2.Lerp(
-            moveDirection,
-            desiredDirection,
-            turnSpeed * Time.deltaTime
-        ).normalized;
+        moveDirection = Vector2.Lerp(moveDirection, desiredDirection, turnSpeed * Time.deltaTime).normalized;
 
         float speedFactor = Mathf.Clamp01(distance / slowRadius);
         float adjustedSpeed = moveSpeed * Mathf.Lerp(0.3f, 1f, speedFactor);
@@ -243,23 +326,18 @@ public abstract class Bee : MonoBehaviour
         currentVelocity = moveDirection * adjustedSpeed;
     }
 
-    // ------------------------
+    // ======================================================
     // AVOIDANCE
-    // ------------------------
+    // ======================================================
 
     protected Vector2 GetForwardAvoidance()
     {
         Vector2 forward = currentVelocity;
-
-        if (forward.sqrMagnitude < 0.01f)
-            forward = moveDirection;
-
+        if (forward.sqrMagnitude < 0.01f) forward = moveDirection;
         forward.Normalize();
 
         Vector2 futurePosition = (Vector2)transform.position + forward * avoidanceLookAhead;
-
         Collider2D[] hits = Physics2D.OverlapCircleAll(futurePosition, avoidanceRadius);
-
         Vector2 avoidance = Vector2.zero;
 
         foreach (var hit in hits)
@@ -272,55 +350,26 @@ public abstract class Bee : MonoBehaviour
 
             float strengthMultiplier = 1f;
 
-            // 🔥 DYNAMIC PRIORITY RULES
-
-            // ------------------------
-            // FORAGER BEHAVIOR
-            // ------------------------
             if (beeType == BeeType.Forager)
             {
-                // Check if it's a working house bee
                 HouseBee house = other as HouseBee;
-
-                if (house != null && house.IsWorking)
-                {
-                    // ✅ STRONGLY avoid working bees
-                    strengthMultiplier = 4f;
-                }
-                else
-                {
-                    // ✅ ignore non-working house bees
-                    if (other.beeType == BeeType.House)
-                        continue;
-                }
+                if (house != null && house.IsWorking) strengthMultiplier = 4f;
+                else if (other.beeType == BeeType.House) continue;
             }
 
-            // ------------------------
-            // HOUSE BEE BEHAVIOR
-            // ------------------------
             if (beeType == BeeType.House)
             {
-                // If THIS bee is working → ignore everything
                 HouseBee self = this as HouseBee;
-                if (self != null && self.IsWorking)
-                    continue;
-
-                // Otherwise yield to foragers
-                if (other.beeType == BeeType.Forager)
-                    strengthMultiplier = 2.5f;
+                if (self != null && self.IsWorking) continue;
+                if (other.beeType == BeeType.Forager) strengthMultiplier = 2.5f;
             }
 
             Vector2 diff = (Vector2)transform.position - (Vector2)other.transform.position;
             float dist = diff.magnitude;
-
-            if (dist > 0.01f)
-                avoidance += (diff.normalized / dist) * strengthMultiplier;
+            if (dist > 0.01f) avoidance += (diff.normalized / dist) * strengthMultiplier;
         }
 
-        if (avoidance != Vector2.zero)
-            return avoidance.normalized * avoidanceStrength;
-
-        return Vector2.zero;
+        return avoidance != Vector2.zero ? avoidance.normalized * avoidanceStrength : Vector2.zero;
     }
 
     protected Vector2 GetSeparationForce()
@@ -338,70 +387,44 @@ public abstract class Bee : MonoBehaviour
 
             float strengthMultiplier = 1f;
 
-            // ------------------------
-            // FORAGER BEHAVIOR
-            // ------------------------
             if (beeType == BeeType.Forager)
             {
                 HouseBee house = other as HouseBee;
-
-                if (house != null && house.IsWorking)
-                {
-                    // ✅ Strongly avoid working house bees
-                    strengthMultiplier = 3.5f;
-                }
-                else
-                {
-                    // ✅ Ignore non-working house bees
-                    if (other.beeType == BeeType.House)
-                        continue;
-                }
+                if (house != null && house.IsWorking) strengthMultiplier = 3.5f;
+                else if (other.beeType == BeeType.House) continue;
             }
 
-            // ------------------------
-            // HOUSE BEE BEHAVIOR
-            // ------------------------
             if (beeType == BeeType.House)
             {
                 HouseBee self = this as HouseBee;
-
-                // ✅ If THIS bee is working → ignore everything
-                if (self != null && self.IsWorking)
-                    continue;
-
-                // ✅ Yield to foragers
-                if (other.beeType == BeeType.Forager)
-                    strengthMultiplier = 2.5f;
+                if (self != null && self.IsWorking) continue;
+                if (other.beeType == BeeType.Forager) strengthMultiplier = 2.5f;
             }
 
             Vector2 diff = (Vector2)(transform.position - other.transform.position);
             float dist = diff.magnitude;
-
-            if (dist > 0.01f)
-            {
-                force += (diff.normalized / dist) * strengthMultiplier;
-            }
+            if (dist > 0.01f) force += (diff.normalized / dist) * strengthMultiplier;
         }
 
         return force;
     }
 
-    // ------------------------
+    // ======================================================
     // STUCK SYSTEM
-    // ------------------------
+    // ======================================================
 
     void CheckIfStuck()
     {
-        stuckTimer += Time.deltaTime;
+        // Don't run stuck detection when frozen at home
+        if (isAtHome || currentState == BeeState.Idle || currentState == BeeState.Working)
+            return;
 
+        stuckTimer += Time.deltaTime;
         if (stuckTimer >= stuckCheckInterval)
         {
             float moved = Vector2.Distance(rb.position, lastPosition);
-
             if (moved < stuckMoveThreshold)
-            {
                 ResolveStuck();
-            }
 
             lastPosition = rb.position;
             stuckTimer = 0f;
@@ -411,21 +434,14 @@ public abstract class Bee : MonoBehaviour
     void ResolveStuck()
     {
         Vector2 randomDir = Random.insideUnitCircle.normalized;
-
-        Vector2 newDir = (moveDirection + randomDir).normalized;
-
-        moveDirection = newDir;
-
-        // Nudge out of overlap
-        rb.MovePosition(rb.position + newDir * 0.2f);
-
-        // Adjust target slightly
+        moveDirection = (moveDirection + randomDir).normalized;
+        rb.MovePosition(rb.position + moveDirection * 0.2f);
         targetPosition += randomDir * 0.5f;
     }
 
-    // ------------------------
+    // ======================================================
     // ROTATION
-    // ------------------------
+    // ======================================================
 
     protected void RotateTowardsMovement()
     {
@@ -441,25 +457,30 @@ public abstract class Bee : MonoBehaviour
         moveDirection = Random.insideUnitCircle.normalized;
     }
 
-    // ------------------------
+    // ======================================================
     // STATES
-    // ------------------------
+    // ======================================================
 
     protected virtual void OnReachedTarget()
     {
+        // If we just arrived home, freeze
+        float distToHome = Vector2.Distance(rb.position, homePosition);
+        if (distToHome < 0.3f && !HasWork())
+        {
+            isAtHome = true;
+            StopMovementInstant();
+        }
+
         currentState = BeeState.Idle;
     }
 
-protected virtual void IdleBehavior()
-{
-    if (lockMovement)
-        return;
-
-    Vector2 randomOffset = Random.insideUnitCircle * roamRadius;
-    targetPosition = homePosition + randomOffset;
-
-    currentState = BeeState.Moving;
-}
+    // Idle no longer roams — job system drives all movement
+    protected virtual void IdleBehavior()
+    {
+        if (lockMovement) return;
+        // Intentionally empty: bees stand still when idle.
+        // ValidateJob() handles whether to work or go home.
+    }
 
     protected void StopMovementInstant()
     {
@@ -468,29 +489,49 @@ protected virtual void IdleBehavior()
         rb.linearVelocity = Vector2.zero;
     }
 
+    // Call this from subclasses whenever they start a new job cycle
+    // so isAtHome gets cleared correctly
+    protected void MarkAsWorking()
+    {
+        isAtHome = false;
+    }
+
     protected abstract void WorkBehavior();
     protected abstract void ReturnBehavior();
 
-    // ------------------------
+    // ======================================================
     // HEALTH
-    // ------------------------
+    // ======================================================
 
-    public virtual void TakeDamage(float amount)
+    public void TakeDamage(float amount, Enemy attacker = null)
     {
         currentHealth -= amount;
+        if (currentHealth <= 0f) { currentHealth = 0f; Die(); return; }
+        if (attacker != null) TryRetaliate(attacker);
+    }
 
-        if (currentHealth <= 0f)
-        {
-            currentHealth = 0f;
-            Die();
-        }
+    void TryRetaliate(Enemy attacker)
+    {
+        if (retaliationTimer > 0f) return;
+
+        attacker.TakeDamage(retaliationDamage);
+        retaliationTimer = retaliationCooldown;
+
+        // Snap fully toward attacker
+        Vector2 dirToEnemy = ((Vector2)attacker.transform.position - rb.position).normalized;
+        
+        // Hard face the enemy
+        rb.rotation = Mathf.Atan2(dirToEnemy.y, dirToEnemy.x) * Mathf.Rad2Deg;
+        
+        // Stronger lunge toward them
+        moveDirection = dirToEnemy;
+        currentVelocity = dirToEnemy * moveSpeed;
+        rb.MovePosition(rb.position + dirToEnemy * 0.6f);
     }
 
     public void Heal(float amount)
     {
-        if (currentState == BeeState.Dead)
-            return;
-
+        if (currentState == BeeState.Dead) return;
         currentHealth = Mathf.Clamp(currentHealth + amount, 0f, maxHealth);
     }
 
@@ -503,41 +544,20 @@ protected virtual void IdleBehavior()
     {
         currentState = BeeState.Dead;
 
-        // 🧠 Unregister from Hive
-        if (HiveManager.Instance != null)
-        {
-            HiveManager.Instance.UnregisterBee(this);
-        }
-
-        // 🧠 Unregister from Zone system
-        if (ZoneManager.Instance != null)
-        {
-            ZoneManager.Instance.UnregisterBee(this);
-        }
-
-        // 🔥 ALSO remove from its zone
-        if (assignedZone != null)
-        {
-            assignedZone.UnregisterBee(this);
-        }
+        if (HiveManager.Instance != null) HiveManager.Instance.UnregisterBee(this);
+        if (ZoneManager.Instance != null) ZoneManager.Instance.UnregisterBee(this);
+        if (assignedZone != null) assignedZone.UnregisterBee(this);
 
         rb.linearVelocity = Vector2.zero;
-
         Destroy(gameObject);
     }
 
     protected virtual void AssignZone()
     {
-        if (assignedZone != null)
-            return;
+        if (assignedZone != null) return;
+        if (ZoneManager.Instance == null) return;
 
-        if (ZoneManager.Instance == null)
-            return;
-
-        assignedZone = ZoneManager.Instance.GetClosestZone(
-            beeType,
-            transform.position
-        );
+        assignedZone = ZoneManager.Instance.GetClosestZone(beeType, transform.position);
 
         if (assignedZone != null)
         {
@@ -550,9 +570,7 @@ protected virtual void IdleBehavior()
     public void AssignZoneDirect(Zone newZone)
     {
         if (assignedZone == newZone) return;
-
-        if (assignedZone != null)
-            assignedZone.UnregisterBee(this);
+        if (assignedZone != null) assignedZone.UnregisterBee(this);
 
         assignedZone = newZone;
 
@@ -562,6 +580,7 @@ protected virtual void IdleBehavior()
             homePosition = assignedZone.transform.position;
         }
 
+        isAtHome = false;
         currentState = BeeState.Idle;
     }
 
@@ -575,7 +594,13 @@ protected virtual void IdleBehavior()
     public virtual void StopDragging()
     {
         isBeingDragged = false;
+        isAtHome = false; // re-evaluate job on drop
         PickRandomDirection();
         currentState = BeeState.Idle;
+    }
+
+    public virtual void UpgradeSpeed(float amount, float max)
+    {
+        moveSpeed = Mathf.Min(moveSpeed + amount, max);
     }
 }

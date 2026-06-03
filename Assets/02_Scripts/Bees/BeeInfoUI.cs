@@ -24,8 +24,14 @@ public class BeeInfoUI : MonoBehaviour
     public int healCost = 5;
     public int healAmount = 2;
 
+    [Header("Speed Settings")]
+    public int speedCost = 5;
+    public float speedUpgradeAmount = 0.5f;
+    public float maxSpeed = 6f;
+
     private Bee currentBee;
     private int lastHealth = -1;
+    private float lastSpeed = -1f;
 
     void Awake()
     {
@@ -41,11 +47,17 @@ public class BeeInfoUI : MonoBehaviour
             return;
 
         int health = Mathf.RoundToInt(currentBee.CurrentHealth);
-
         if (health != lastHealth)
         {
             lastHealth = health;
             UpdateHearts(health);
+        }
+
+        // refresh speed text if it changed
+        if (currentBee.moveSpeed != lastSpeed)
+        {
+            lastSpeed = currentBee.moveSpeed;
+            speedText.text = $"Speed: {currentBee.moveSpeed:F1}";
         }
     }
 
@@ -58,11 +70,12 @@ public class BeeInfoUI : MonoBehaviour
 
         panel.SetActive(true);
 
-        typeText.text = $"Type: {bee.beeType}";
-        nameText.text = $"Name: {bee.beeName}";
-        speedText.text = $"Speed: {bee.moveSpeed}";
+        typeText.text  = $"Type: {bee.beeType}";
+        nameText.text  = $"Name: {bee.beeName}";
+        speedText.text = $"Speed: {bee.moveSpeed:F1}";
 
         lastHealth = -1;
+        lastSpeed  = -1f;
         UpdateHearts(Mathf.RoundToInt(bee.CurrentHealth));
     }
 
@@ -88,7 +101,6 @@ public class BeeInfoUI : MonoBehaviour
             if (EventSystem.current == null)
                 return;
 
-            // click on UI → ignore
             if (EventSystem.current.IsPointerOverGameObject())
                 return;
 
@@ -97,16 +109,14 @@ public class BeeInfoUI : MonoBehaviour
     }
 
     // ======================================================
-    // HEART UPDATE (clamped to max 10)
+    // HEART UPDATE
     // ======================================================
     void UpdateHearts(int currentHealth)
     {
         currentHealth = Mathf.Clamp(currentHealth, 0, maxLives);
 
         for (int i = 0; i < hearts.Length; i++)
-        {
             hearts[i].enabled = i < currentHealth;
-        }
     }
 
     // ======================================================
@@ -119,22 +129,29 @@ public class BeeInfoUI : MonoBehaviour
 
         int currentHealth = Mathf.RoundToInt(currentBee.CurrentHealth);
 
-        // already full
         if (currentHealth >= maxLives)
             return;
 
-        // ❌ check currency FIRST
         if (!CurrencyManager.Instance.UseHoney(healCost))
-        {
-            // CurrencyManager already shows warning + sound
             return;
-        }
 
-        // ✔ apply heal
         int newHealth = Mathf.Min(currentHealth + healAmount, maxLives);
-
         currentBee.SetHealth(newHealth);
-
         UpdateHearts(newHealth);
+    }
+
+    // ======================================================
+    // SPEED BUTTON
+    // ======================================================
+    public void BuySpeed()
+    {
+        if (currentBee == null) return;
+        if (currentBee.moveSpeed >= maxSpeed) return;
+
+        if (!CurrencyManager.Instance.UseHoney(speedCost)) return;
+
+        currentBee.UpgradeSpeed(speedUpgradeAmount, maxSpeed);
+        speedText.text = $"Speed: {currentBee.moveSpeed:F1}";
+        lastSpeed = currentBee.moveSpeed;
     }
 }

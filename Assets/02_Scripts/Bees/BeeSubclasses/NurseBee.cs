@@ -4,9 +4,11 @@ public class NurseBee : Bee
 {
     [Header("Work Settings")]
     public float workDistanceThreshold = 1.5f;
+    public float maxTendingTime = 30f;
 
     private Egg assignedEgg;
     private bool isTending = false;
+    private float tendingTimer = 0f;
 
     private float orbitAngle = 0f;
 
@@ -19,18 +21,51 @@ public class NurseBee : Bee
     {
         base.Update();
 
-        // ✅ FIX: only clear if there WAS an egg
         if (assignedEgg != null && !IsEggValid(assignedEgg))
-        {
             ClearAssignment();
-        }
-
-        CheckForWorkContinuously();
     }
 
-    // ------------------------
+    // ======================================================
+    // JOB VALIDATION
+    // ======================================================
+
+    protected override bool HasWork()
+    {
+        if (IsEggValid(assignedEgg)) return true;
+        if (Egg.allEggs == null) return false;
+
+        foreach (Egg egg in Egg.allEggs)
+        {
+            if (IsEggValid(egg) && !egg.HasNurse() && !egg.IsReserved())
+                return true;
+        }
+
+        return false;
+    }
+
+    protected override void OnJobFound()
+    {
+        if (!IsEggValid(assignedEgg))
+        {
+            Egg egg = FindClosestEgg();
+            if (egg != null)
+            {
+                assignedEgg = egg;
+                MarkAsWorking();
+                MoveToEgg(assignedEgg);
+            }
+        }
+        else
+        {
+            MarkAsWorking();
+            MoveToEgg(assignedEgg);
+        }
+    }
+
+    // ======================================================
     // VALIDATION
-    // ------------------------
+    // ======================================================
+
     private bool IsEggValid(Egg egg)
     {
         return egg != null && !egg.IsHatched();
@@ -46,12 +81,14 @@ public class NurseBee : Bee
 
         assignedEgg = null;
         isTending = false;
+        tendingTimer = 0f;
         currentState = BeeState.Idle;
     }
 
-    // ------------------------
-    // IDLE / SEARCH
-    // ------------------------
+    // ======================================================
+    // IDLE
+    // ======================================================
+
     protected override void IdleBehavior()
     {
         if (IsEggValid(assignedEgg))
@@ -60,38 +97,19 @@ public class NurseBee : Bee
             return;
         }
 
-        assignedEgg = FindClosestEgg();
-
-        if (assignedEgg != null)
+        Egg egg = FindClosestEgg();
+        if (egg != null)
         {
+            assignedEgg = egg;
+            MarkAsWorking();
             MoveToEgg(assignedEgg);
         }
-        else
-        {
-            base.IdleBehavior(); // ✅ roam like normal bees
-        }
     }
 
-    void CheckForWorkContinuously()
-    {
-        if (currentState == BeeState.Dead || isTending)
-            return;
-
-        if (!IsEggValid(assignedEgg))
-        {
-            assignedEgg = FindClosestEgg();
-
-            if (assignedEgg != null)
-            {
-                currentState = BeeState.Moving;
-                targetPosition = assignedEgg.transform.position;
-            }
-        }
-    }
-
-    // ------------------------
+    // ======================================================
     // WORK
-    // ------------------------
+    // ======================================================
+
     protected override void WorkBehavior()
     {
         if (!IsEggValid(assignedEgg))
@@ -104,6 +122,7 @@ public class NurseBee : Bee
 
         if (dist > workDistanceThreshold)
         {
+            tendingTimer = 0f;
             MoveToEgg(assignedEgg);
             return;
         }
@@ -113,21 +132,32 @@ public class NurseBee : Bee
             if (assignedEgg.TryAssignNurse(this))
             {
                 isTending = true;
+                tendingTimer = 0f;
             }
             else
             {
-                assignedEgg.ClearReservation(this); // ✅ release reservation
+                assignedEgg.ClearReservation(this);
                 ClearAssignment();
                 return;
             }
         }
 
+        tendingTimer += Time.deltaTime;
+
+        // Safety escape — if egg hasn't hatched after max time, give up
+        if (tendingTimer >= maxTendingTime)
+        {
+            ClearAssignment();
+            return;
+        }
+
         OrbitEgg();
     }
 
-    // ------------------------
+    // ======================================================
     // TARGET REACHED
-    // ------------------------
+    // ======================================================
+
     protected override void OnReachedTarget()
     {
         if (IsEggValid(assignedEgg))
@@ -137,28 +167,29 @@ public class NurseBee : Bee
         else
         {
             ClearAssignment();
+            base.OnReachedTarget();
         }
     }
 
-    // ------------------------
+    // ======================================================
     // MOVEMENT
-    // ------------------------
+    // ======================================================
+
     private void MoveToEgg(Egg egg)
     {
         if (!IsEggValid(egg)) return;
 
         Vector2 offset = Random.insideUnitCircle.normalized * 0.3f;
         targetPosition = (Vector2)egg.transform.position + offset;
-
         currentState = BeeState.Moving;
     }
 
     private Egg FindClosestEgg()
     {
+        if (Egg.allEggs == null) return null;
+
         Egg closest = null;
         float closestDist = Mathf.Infinity;
-
-        if (Egg.allEggs == null) return null;
 
         foreach (Egg egg in Egg.allEggs)
         {
@@ -167,10 +198,13 @@ public class NurseBee : Bee
 
             float dist = Vector2.Distance(transform.position, egg.transform.position);
 
-           if (dist < closestDist)
+            if (dist < closestDist)
             {
-                if (egg.TryReserve(this)) // ✅ reserve immediately
+                if (egg.TryReserve(this))
                 {
+                    if (closest != null)
+                        closest.ClearReservation(this);
+
                     closestDist = dist;
                     closest = egg;
                 }
@@ -180,43 +214,45 @@ public class NurseBee : Bee
         return closest;
     }
 
-    // ------------------------
+    // ======================================================
     // ORBIT
-    // ------------------------
+    // ======================================================
+
     private void OrbitEgg()
     {
-        // ✅ safe check
-        if (assignedEgg != null && !IsEggValid(assignedEgg))
+        if (!IsEggValid(assignedEgg))
         {
             ClearAssignment();
             return;
         }
 
-        orbitAngle += Time.deltaTime * 2f;
-
-        float radius = 0.4f;
+        orbitAngle += Time.deltaTime * 2f * workSpeedMultiplier;
 
         Vector2 offset = new Vector2(
             Mathf.Cos(orbitAngle),
             Mathf.Sin(orbitAngle)
-        ) * radius;
+        ) * 0.4f;
 
-        targetPosition = (Vector2)assignedEgg.transform.position + offset;
+        // Move directly — bypasses the state machine movement system
+        rb.MovePosition((Vector2)assignedEgg.transform.position + offset);
 
-        currentState = BeeState.Moving;
+        // Face direction of orbit
+        Vector2 tangent = new Vector2(-Mathf.Sin(orbitAngle), Mathf.Cos(orbitAngle));
+        rb.rotation = Mathf.Atan2(tangent.y, tangent.x) * Mathf.Rad2Deg;
+
+        // Stay in Working so WorkBehavior keeps being called
+        currentState = BeeState.Working;
     }
 
-    // ------------------------
-    // DEATH
-    // ------------------------
-    protected override void Die()
-    {
-        base.Die();
-    }
+    // ======================================================
+    // RETURN / DEATH
+    // ======================================================
 
     protected override void ReturnBehavior()
     {
         ClearAssignment();
         currentState = BeeState.Idle;
     }
+
+    protected override void Die() => base.Die();
 }

@@ -126,9 +126,8 @@ public class Enemy : MonoBehaviour
     {
         if (targetBee == null) return;
 
-        targetBee.TakeDamage(1f);
+        targetBee.TakeDamage(1f, this);
     }
-
     // -------------------------
     // 🧠 THREAT SYSTEM
     // -------------------------

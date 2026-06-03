@@ -15,46 +15,24 @@ public class NurseBeeZone : Zone
     {
         zoneType = Bee.BeeType.Nurse;
         box = GetComponent<BoxCollider2D>();
-
-        SetupCapacity();
     }
 
     private void Start()
     {
-        // ✅ bind ONCE → permanent ownership
         foreach (QueueSlotUI slot in slots)
-        {
             slot.SetZone(this);
-        }
-    }
-
-    void SetupCapacity()
-    {
-        if (limits.Count == 0)
-        {
-            limits.Add(new BeeTypeLimit
-            {
-                type = Bee.BeeType.Nurse,
-                capacity = 5,
-                current = 0
-            });
-        }
     }
 
     public Vector2 GetRandomPoint()
     {
         Bounds bounds = box.bounds;
-
-        float x = Random.Range(bounds.min.x, bounds.max.x);
-        float y = Random.Range(bounds.min.y, bounds.max.y);
-
-        return new Vector2(x, y);
+        return new Vector2(
+            Random.Range(bounds.min.x, bounds.max.x),
+            Random.Range(bounds.min.y, bounds.max.y)
+        );
     }
 
-    public bool IsInside(Vector2 position)
-    {
-        return box.bounds.Contains(position);
-    }
+    public bool IsInside(Vector2 position) => box.bounds.Contains(position);
 
     public void Open()
     {

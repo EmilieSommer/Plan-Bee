@@ -5,8 +5,6 @@ public class DroneBee : Bee
     private Transform targetEnemy;
     private DroneZone currentZone;
 
-    private float attackTimer;
-
     [Header("Movement Settings")]
     public float zoneArrivalDistance = 1.5f;
 
@@ -26,6 +24,37 @@ public class DroneBee : Bee
         attackTimer = attackCooldown;
     }
 
+    // ======================================================
+    // JOB VALIDATION
+    // ======================================================
+
+    protected override bool HasWork()
+    {
+        // Drones always have a "job" — either hunt enemies or patrol their zone
+        return true;
+    }
+
+    protected override void OnJobFound()
+    {
+        // Kicked back to work by heartbeat — re-evaluate targeting
+        MarkAsWorking();
+        FindBestEnemy();
+
+        if (targetEnemy == null)
+        {
+            currentZone = FindDroneZone();
+            if (currentZone != null)
+            {
+                targetPosition = currentZone.transform.position;
+                currentState = BeeState.Moving;
+            }
+        }
+    }
+
+    // ======================================================
+    // UPDATE
+    // ======================================================
+
     protected override void Update()
     {
         base.Update();
@@ -37,23 +66,24 @@ public class DroneBee : Bee
             if (targetLockTimer <= 0f)
                 FindBestEnemy();
 
-            currentZone = null;
             return;
         }
 
         FindBestEnemy();
 
         if (targetEnemy == null && currentZone == null)
-        {
             currentZone = FindDroneZone();
-        }
     }
+
+    // ======================================================
+    // STATE UPDATE
+    // ======================================================
 
     protected override void StateUpdate()
     {
-        if (currentState == BeeState.Dead)
-            return;
+        if (currentState == BeeState.Dead) return;
 
+        // --- COMBAT MODE ---
         if (targetEnemy != null)
         {
             float dist = Vector2.Distance(transform.position, targetEnemy.position);
@@ -70,6 +100,7 @@ public class DroneBee : Bee
             return;
         }
 
+        // --- PATROL MODE ---
         if (currentZone != null)
         {
             float dist = Vector2.Distance(transform.position, currentZone.transform.position);
@@ -81,66 +112,124 @@ public class DroneBee : Bee
             }
             else
             {
+                // At zone, stand patrol
                 currentState = BeeState.Working;
-
-                currentVelocity = Vector2.zero;
-                rb.linearVelocity = Vector2.zero;
-                rb.angularVelocity = 0f;
+                StopMovementInstant();
             }
 
             base.StateUpdate();
             return;
         }
 
+        // No target, no zone → idle (base job system will call OnJobFound shortly)
         currentState = BeeState.Idle;
         base.StateUpdate();
     }
 
+    // ======================================================
+    // IDLE
+    // ======================================================
+
+    protected override void IdleBehavior()
+    {
+        // Don't roam — immediately try to find work
+        FindBestEnemy();
+
+        if (targetEnemy != null) return;
+
+        currentZone = FindDroneZone();
+        if (currentZone != null)
+        {
+            MarkAsWorking();
+            targetPosition = currentZone.transform.position;
+            currentState = BeeState.Moving;
+        }
+    }
+
+    // ======================================================
+    // WORK
+    // ======================================================
+
     protected override void WorkBehavior()
     {
-        if (targetEnemy == null)
+        // --- COMBAT ---
+        if (targetEnemy != null)
         {
-            StopMovement();
+            float dist = Vector2.Distance(transform.position, targetEnemy.position);
+
+            if (dist > attackRange)
+            {
+                currentState = BeeState.Moving;
+                return;
+            }
+
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0f)
+            {
+                Attack();
+                attackTimer = attackCooldown;
+            }
+
             return;
         }
 
-        float dist = Vector2.Distance(transform.position, targetEnemy.position);
-
-        if (dist > attackRange)
+        // --- PATROL ---
+        if (currentZone != null)
         {
-            currentState = BeeState.Moving;
+            float dist = Vector2.Distance(transform.position, currentZone.transform.position);
+
+            if (dist > zoneArrivalDistance)
+            {
+                targetPosition = currentZone.transform.position;
+                currentState = BeeState.Moving;
+            }
+
             return;
         }
 
-        attackTimer -= Time.deltaTime;
-
-        if (attackTimer <= 0f)
-        {
-            Attack();
-            attackTimer = attackCooldown;
-        }
+        // Nothing to do
+        currentState = BeeState.Idle;
     }
 
-    void StopMovement()
+    // ======================================================
+    // TARGET REACHED
+    // ======================================================
+
+    protected override void OnReachedTarget()
     {
-        currentVelocity = Vector2.zero;
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
+        if (targetEnemy != null)
+        {
+            currentState = BeeState.Working;
+            return;
+        }
+
+        if (currentZone != null)
+        {
+            currentState = BeeState.Working;
+            StopMovementInstant();
+            return;
+        }
+
+        base.OnReachedTarget();
     }
+
+    // ======================================================
+    // ATTACK
+    // ======================================================
 
     void Attack()
     {
         if (targetEnemy == null) return;
 
         Enemy enemy = targetEnemy.GetComponent<Enemy>();
-
         if (enemy != null)
             enemy.TakeDamage(attackDamage);
     }
 
     // ======================================================
-    // 🧠 TARGETING (WITH QUEEN DEFENSE SYSTEM)
+    // TARGETING
     // ======================================================
+
     void FindBestEnemy()
     {
         Enemy[] enemies = FindObjectsOfType<Enemy>();
@@ -151,21 +240,16 @@ public class DroneBee : Bee
         foreach (Enemy enemy in enemies)
         {
             if (enemy == null) continue;
+            if (!enemy.CanBeTargetedByDrone()) continue;
 
             float dist = Vector2.Distance(transform.position, enemy.transform.position);
             float threat = enemy.GetThreatLevel();
-
             float crowdPenalty = enemy.currentDroneAttackers * 50f;
 
-            // -------------------------
-            // 🐝 QUEEN DEFENSE PRIORITY
-            // -------------------------
             float queenBonus = 0f;
-
             if (QueenBee.Instance != null)
             {
                 float distToQueen = Vector2.Distance(enemy.transform.position, QueenBee.Instance.transform.position);
-
                 if (distToQueen < QueenBee.Instance.protectionRadius)
                 {
                     queenBonus = 120f - distToQueen * 10f;
@@ -173,13 +257,7 @@ public class DroneBee : Bee
                 }
             }
 
-            float score = threat
-                        - dist * 5f
-                        + queenBonus
-                        - crowdPenalty;
-
-            if (!enemy.CanBeTargetedByDrone())
-                continue;
+            float score = threat - dist * 5f + queenBonus - crowdPenalty;
 
             if (score > bestScore)
             {
@@ -188,17 +266,17 @@ public class DroneBee : Bee
             }
         }
 
-        // fallback if everything is crowded
+        // Fallback: ignore crowd penalty if nothing found
         if (best == null)
         {
+            bestScore = float.NegativeInfinity;
+
             foreach (Enemy enemy in enemies)
             {
                 if (enemy == null) continue;
 
                 float dist = Vector2.Distance(transform.position, enemy.transform.position);
-                float threat = enemy.GetThreatLevel();
-
-                float score = threat - dist * 5f;
+                float score = enemy.GetThreatLevel() - dist * 5f;
 
                 if (score > bestScore)
                 {
@@ -216,8 +294,7 @@ public class DroneBee : Bee
         if (targetEnemy != null)
         {
             Enemy old = targetEnemy.GetComponent<Enemy>();
-            if (old != null)
-                old.UnregisterDrone();
+            if (old != null) old.UnregisterDrone();
         }
 
         if (enemy != null)
@@ -232,20 +309,13 @@ public class DroneBee : Bee
         }
     }
 
-    protected void OnDestroy()
-    {
-        if (targetEnemy != null)
-        {
-            Enemy enemy = targetEnemy.GetComponent<Enemy>();
-            if (enemy != null)
-                enemy.UnregisterDrone();
-        }
-    }
+    // ======================================================
+    // ZONE SEARCH
+    // ======================================================
 
     DroneZone FindDroneZone()
     {
-        if (DroneZone.allZones == null || DroneZone.allZones.Count == 0)
-            return null;
+        if (DroneZone.allZones == null || DroneZone.allZones.Count == 0) return null;
 
         DroneZone best = null;
         float bestDist = Mathf.Infinity;
@@ -255,7 +325,6 @@ public class DroneBee : Bee
             if (zone == null) continue;
 
             float dist = Vector2.Distance(transform.position, zone.transform.position);
-
             if (dist < bestDist)
             {
                 bestDist = dist;
@@ -266,16 +335,18 @@ public class DroneBee : Bee
         return best;
     }
 
-    protected override void ReturnBehavior() { }
+    // ======================================================
+    // CLEANUP
+    // ======================================================
 
-    protected override void OnReachedTarget()
+    protected void OnDestroy()
     {
-        if (targetEnemy == null && currentZone != null)
+        if (targetEnemy != null)
         {
-            currentState = BeeState.Working;
-            return;
+            Enemy enemy = targetEnemy.GetComponent<Enemy>();
+            if (enemy != null) enemy.UnregisterDrone();
         }
-
-        base.OnReachedTarget();
     }
+
+    protected override void ReturnBehavior() { }
 }

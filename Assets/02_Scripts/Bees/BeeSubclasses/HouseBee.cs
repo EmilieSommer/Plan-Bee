@@ -17,9 +17,6 @@ public class HouseBee : Bee
     private float workTimer;
     private bool hasStartedWorking = false;
 
-    private float searchTimer = 0f;
-    public float searchInterval = 0.5f;
-
     public bool IsWorking => hasStartedWorking;
 
     protected override void Awake()
@@ -36,8 +33,6 @@ public class HouseBee : Bee
 
         if (zone != null)
             homePosition = zone.transform.position;
-
-        TryAcquireInitialTarget();
     }
 
     protected override void Update()
@@ -46,86 +41,85 @@ public class HouseBee : Bee
 
         if (zone == null)
             zone = assignedZone as HouseBeeZone;
-
-        CheckForWorkContinuously();
     }
 
-    // -------------------
-    // INITIAL TARGET
-    // -------------------
-    void TryAcquireInitialTarget()
-    {
-        target = FindAvailablePollen();
+    // ======================================================
+    // JOB VALIDATION
+    // ======================================================
 
-        if (target != null)
+    protected override bool HasWork()
+    {
+        // Already holding a valid target
+        if (target != null) return true;
+
+        // Check if any unclaimed pollen exists
+        if (Pollen.allPollen == null || Pollen.allPollen.Count == 0) return false;
+
+        foreach (Pollen p in Pollen.allPollen)
         {
-            target.isClaimed = true;
+            if (p != null && !p.isClaimed) return true;
+        }
+
+        return false;
+    }
+
+    protected override void OnJobFound()
+    {
+        // Heartbeat found work while idle — try to grab a target
+        if (target == null)
+        {
+            Pollen p = FindAvailablePollen();
+            if (p != null)
+            {
+                target = p;
+                target.isClaimed = true;
+                targetPosition = target.transform.position;
+                MarkAsWorking();
+                currentState = BeeState.Moving;
+            }
+        }
+        else
+        {
+            // Had a target but drifted idle — go back to it
+            MarkAsWorking();
             targetPosition = target.transform.position;
             currentState = BeeState.Moving;
         }
     }
 
-    // -------------------
+    // ======================================================
     // IDLE
-    // -------------------
+    // ======================================================
+
     protected override void IdleBehavior()
     {
-        if (hasStartedWorking)
-            return;
+        if (hasStartedWorking) return;
 
-        searchTimer -= Time.deltaTime;
-
-        if (searchTimer <= 0f)
-        {
-            searchTimer = searchInterval;
-
-            if (target == null)
-            {
-                target = FindAvailablePollen();
-
-                if (target != null)
-                {
-                    target.isClaimed = true;
-                    targetPosition = target.transform.position;
-                    currentState = BeeState.Moving;
-                    return;
-                }
-            }
-        }
-
-        // Smooth idle roaming like NurseBee
-        base.IdleBehavior();
-
-        // Keep roaming centered around house zone
-        if (zone != null)
-        {
-            homePosition = zone.transform.position;
-            roamRadius = zone.depositRadius;
-        }
-    }
-
-    void CheckForWorkContinuously()
-    {
-        if (currentState == BeeState.Dead || currentState == BeeState.Working)
-            return;
-
+        // Try to find pollen — if none, job system handles going home
         if (target == null)
         {
-            Pollen newTarget = FindAvailablePollen();
-
-            if (newTarget != null)
+            Pollen p = FindAvailablePollen();
+            if (p != null)
             {
-                target = newTarget;
+                target = p;
                 target.isClaimed = true;
                 targetPosition = target.transform.position;
+                MarkAsWorking();
                 currentState = BeeState.Moving;
             }
         }
+        else
+        {
+            targetPosition = target.transform.position;
+            MarkAsWorking();
+            currentState = BeeState.Moving;
+        }
     }
 
-    // -------------------
+    // ======================================================
     // WORK
-    // -------------------
+    // ======================================================
+
     protected override void WorkBehavior()
     {
         if (target == null)
@@ -137,10 +131,7 @@ public class HouseBee : Bee
         if (hasStartedWorking)
         {
             workTimer -= Time.deltaTime;
-
-            if (workTimer <= 0f)
-                Convert();
-
+            if (workTimer <= 0f) Convert();
             return;
         }
 
@@ -151,8 +142,7 @@ public class HouseBee : Bee
             hasStartedWorking = true;
             workTimer = convertTime;
 
-            if (rb != null)
-                rb.linearVelocity = Vector2.zero;
+            if (rb != null) rb.linearVelocity = Vector2.zero;
         }
         else
         {
@@ -164,14 +154,20 @@ public class HouseBee : Bee
     protected override void OnReachedTarget()
     {
         if (target != null)
+        {
             currentState = BeeState.Working;
+        }
         else
-            currentState = BeeState.Idle;
+        {
+            // Let base handle home freeze if no work
+            base.OnReachedTarget();
+        }
     }
 
-    // -------------------
+    // ======================================================
     // CONVERT
-    // -------------------
+    // ======================================================
+
     void Convert()
     {
         if (target == null) return;
@@ -180,7 +176,6 @@ public class HouseBee : Bee
             Instantiate(honeyPrefab, transform.position, Quaternion.identity);
 
         Destroy(target.gameObject);
-
         ResetBee();
     }
 
@@ -191,23 +186,22 @@ public class HouseBee : Bee
         currentState = BeeState.Idle;
     }
 
-    // -------------------
+    // ======================================================
     // POLLEN SEARCH
-    // -------------------
+    // ======================================================
+
     Pollen FindAvailablePollen()
     {
+        if (Pollen.allPollen == null || Pollen.allPollen.Count == 0) return null;
+
         Pollen best = null;
         float bestDist = Mathf.Infinity;
-
-        if (Pollen.allPollen == null || Pollen.allPollen.Count == 0)
-            return null;
 
         foreach (Pollen p in Pollen.allPollen)
         {
             if (p == null || p.isClaimed) continue;
 
             float dist = Vector2.Distance(transform.position, p.transform.position);
-
             if (dist < bestDist)
             {
                 bestDist = dist;
@@ -219,11 +213,7 @@ public class HouseBee : Bee
     }
 
     protected override void ReturnBehavior() { }
-
-    protected override void Die()
-    {
-        base.Die();
-    }
+    protected override void Die() => base.Die();
 
     public override void StopDragging()
     {
@@ -233,7 +223,29 @@ public class HouseBee : Bee
             target.isClaimed = false;
 
         target = null;
-
         base.StopDragging();
+    }
+
+    protected override void GoHome()
+    {
+        SleepZone sleep = FindNearestSleepZone();
+
+        Vector2 destination = sleep != null
+            ? (Vector2)sleep.transform.position
+            : homePosition;
+
+        float dist = Vector2.Distance(rb.position, destination);
+
+        if (dist < 0.3f)
+        {
+            isAtHome = true;
+            StopMovementInstant();
+            currentState = BeeState.Idle;
+        }
+        else
+        {
+            targetPosition = destination;
+            currentState = BeeState.Moving;
+        }
     }
 }
