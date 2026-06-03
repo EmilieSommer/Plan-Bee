@@ -7,8 +7,8 @@ using UnityEngine.Tilemaps;
 
 public static class RoomTileSetup
 {
-    static int THIS => RuleTile.TilingRuleOutput.Neighbor.This;
-    static int NOT  => RuleTile.TilingRuleOutput.Neighbor.NotThis;
+    static readonly int THIS = RuleTile.TilingRuleOutput.Neighbor.This;
+    static readonly int NOT  = RuleTile.TilingRuleOutput.Neighbor.NotThis;
 
     [MenuItem("Tools/Plan Bee/Setup All Room Tiles")]
     static void SetupAll()
