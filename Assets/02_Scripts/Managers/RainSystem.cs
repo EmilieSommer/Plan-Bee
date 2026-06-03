@@ -17,6 +17,7 @@ public class RainSystem : MonoBehaviour
     public float fadeDuration = 2f;
 
     private Coroutine fadeRoutine;
+    public bool IsRaining { get; private set; } = false;
 
     private void Awake()
     {
@@ -34,25 +35,28 @@ public class RainSystem : MonoBehaviour
         emission.rateOverTime = 0f;
     }
 
-    // -----------------------------
-    // START RAIN (FADE IN)
-    // -----------------------------
-// RainSystem
     public void StartRain()
     {
+        IsRaining = true;
         FadeTo(maxEmission);
         BeeDeathPopup.Instance.ShowMessage("Rainy weather — Forager bees move slower!", 4f);
     }
 
     public void StopRain()
     {
+        if (!IsRaining) return;
+
+        IsRaining = false;
         FadeTo(0f);
+        StartCoroutine(ShowStopMessageAfterFade());
+    }
+
+    IEnumerator ShowStopMessageAfterFade()
+    {
+        yield return new WaitForSeconds(fadeDuration);
         BeeDeathPopup.Instance.ShowMessage("Rain has stopped — Forager bees back to normal speed!", 4f);
     }
 
-    // -----------------------------
-    // SMOOTH FADE
-    // -----------------------------
     void FadeTo(float target)
     {
         if (fadeRoutine != null)
@@ -70,9 +74,7 @@ public class RainSystem : MonoBehaviour
         {
             t += Time.deltaTime;
             float lerp = t / fadeDuration;
-
             emission.rateOverTime = Mathf.Lerp(start, target, lerp);
-
             yield return null;
         }
 

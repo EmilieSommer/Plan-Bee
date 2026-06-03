@@ -23,6 +23,9 @@ public class BeeDeathPopup : MonoBehaviour
 
         if (canvasGroup == null)
             canvasGroup = panel.GetComponent<CanvasGroup>();
+
+        if (canvasGroup != null)
+            canvasGroup.blocksRaycasts = false;
     }
 
     public void ShowDeath(string beeType, string beeName, string killedBy, float duration = 3f)
@@ -43,6 +46,8 @@ public class BeeDeathPopup : MonoBehaviour
 
     private IEnumerator FadeRoutine(float duration)
     {
+        canvasGroup.blocksRaycasts = true;
+
         // Fade in
         float t = 0f;
         canvasGroup.alpha = 0f;
@@ -69,6 +74,7 @@ public class BeeDeathPopup : MonoBehaviour
         }
 
         canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
         panel.SetActive(false);
     }
 }
