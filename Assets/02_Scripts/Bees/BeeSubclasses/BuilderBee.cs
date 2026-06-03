@@ -5,6 +5,10 @@ public class BuilderBee : Bee
     [Header("Work Settings")]
     public float arrivalDistance = 0.5f;
 
+    [Header("Build Speed")]
+    public float buildTickInterval = 1f; // how often it contributes to building
+    private float buildTimer = 0f;
+
     private ConstructionSite currentSite;
 
     protected override void Awake()

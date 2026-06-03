@@ -14,6 +14,7 @@ public class VarroaMites : Enemy
     private bool isAttached = false;
 
     private float originalSpeed;
+    private float originalWorkSpeed;
 
     protected override void Update()
     {
@@ -28,7 +29,6 @@ public class VarroaMites : Enemy
                 return;
             }
 
-            // Keep locked on bee
             transform.localPosition = Vector3.zero;
             return;
         }
@@ -36,19 +36,26 @@ public class VarroaMites : Enemy
         // -----------------------
         // FREE STATE
         // -----------------------
+        bool droneNearby = IsDroneNearby();
 
-        Bee safeTarget = FindSafeBee();
-
-        if (safeTarget == null)
+        if (droneNearby)
         {
-            if (IsDroneNearby())
-                FleeFromDrone();
+            // While fleeing, still grab any bee we pass close to
+            Bee closeBee = FindBeeInAttachRange();
+            if (closeBee != null)
+            {
+                Attach(closeBee);
+                return;
+            }
 
+            FleeFromDrone();
             return;
         }
 
-        targetBee = safeTarget;
+        Bee safeTarget = FindSafeBee();
+        if (safeTarget == null) return;
 
+        targetBee = safeTarget;
         MoveTowardsBee();
         TryAttach();
     }
@@ -58,15 +65,11 @@ public class VarroaMites : Enemy
     // -----------------------
     void TryAttach()
     {
-        if (targetBee == null)
-            return;
+        if (targetBee == null) return;
 
         float dist = Vector2.Distance(transform.position, targetBee.transform.position);
-
         if (dist <= attachRange)
-        {
             Attach(targetBee);
-        }
     }
 
     void Attach(Bee bee)
@@ -74,29 +77,46 @@ public class VarroaMites : Enemy
         isAttached = true;
         targetBeeAttached = bee;
 
-        // slow bee
+        // Slow movement
         originalSpeed = bee.moveSpeed;
         bee.moveSpeed *= slowMultiplier;
 
-        // -----------------------
-        // FIX: attach to visual point instead of transform pivot
-        // -----------------------
-        Transform attachPoint = bee.transform.Find("MiteAttachPoint");
+        // Slow work
+        originalWorkSpeed = bee.workSpeedMultiplier;
+        bee.workSpeedMultiplier *= slowMultiplier;
 
+        // For forager specifically, also slow baseMoveSpeed
+        ForagerBee forager = bee as ForagerBee;
+        if (forager != null)
+            forager.ApplyMiteSlow(slowMultiplier);
+
+        Transform attachPoint = bee.transform.Find("MiteAttachPoint");
         transform.SetParent(attachPoint != null ? attachPoint : bee.transform);
         transform.localPosition = Vector3.zero;
     }
 
     // -----------------------
-    // MOVEMENT (FREE STATE)
+    // FIND BEE IN ATTACH RANGE (for fleeing grab)
+    // -----------------------
+    Bee FindBeeInAttachRange()
+    {
+        Bee[] bees = FindObjectsOfType<Bee>();
+        foreach (Bee bee in bees)
+        {
+            if (bee == null) continue;
+            if (Vector2.Distance(transform.position, bee.transform.position) <= attachRange)
+                return bee;
+        }
+        return null;
+    }
+
+    // -----------------------
+    // MOVEMENT
     // -----------------------
     void MoveTowardsBee()
     {
         if (targetBee == null) return;
-
-        Vector2 dir =
-            (targetBee.transform.position - transform.position).normalized;
-
+        Vector2 dir = (targetBee.transform.position - transform.position).normalized;
         transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
     }
 
@@ -106,24 +126,16 @@ public class VarroaMites : Enemy
     Bee FindSafeBee()
     {
         Bee[] bees = FindObjectsOfType<Bee>();
-
         Bee best = null;
         float bestDist = Mathf.Infinity;
 
         foreach (Bee bee in bees)
         {
             if (bee == null) continue;
-
-            if (IsDroneNearBee(bee))
-                continue;
+            if (IsDroneNearBee(bee)) continue;
 
             float dist = Vector2.Distance(transform.position, bee.transform.position);
-
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                best = bee;
-            }
+            if (dist < bestDist) { bestDist = dist; best = bee; }
         }
 
         return best;
@@ -132,17 +144,12 @@ public class VarroaMites : Enemy
     bool IsDroneNearBee(Bee bee)
     {
         DroneBee[] drones = FindObjectsOfType<DroneBee>();
-
         foreach (DroneBee d in drones)
         {
             if (d == null) continue;
-
-            float dist = Vector2.Distance(bee.transform.position, d.transform.position);
-
-            if (dist <= droneFearRange)
+            if (Vector2.Distance(bee.transform.position, d.transform.position) <= droneFearRange)
                 return true;
         }
-
         return false;
     }
 
@@ -152,17 +159,12 @@ public class VarroaMites : Enemy
     bool IsDroneNearby()
     {
         DroneBee[] drones = FindObjectsOfType<DroneBee>();
-
         foreach (DroneBee d in drones)
         {
             if (d == null) continue;
-
-            float dist = Vector2.Distance(transform.position, d.transform.position);
-
-            if (dist <= droneFearRange)
+            if (Vector2.Distance(transform.position, d.transform.position) <= droneFearRange)
                 return true;
         }
-
         return false;
     }
 
@@ -170,47 +172,34 @@ public class VarroaMites : Enemy
     {
         DroneBee closest = FindClosestDrone();
         if (closest == null) return;
-
-        Vector2 dir =
-            (transform.position - closest.transform.position).normalized;
-
+        Vector2 dir = (transform.position - closest.transform.position).normalized;
         transform.position += (Vector3)(dir * fleeSpeed * Time.deltaTime);
     }
 
     DroneBee FindClosestDrone()
     {
         DroneBee[] drones = FindObjectsOfType<DroneBee>();
-
         DroneBee best = null;
         float bestDist = Mathf.Infinity;
 
         foreach (DroneBee d in drones)
         {
             if (d == null) continue;
-
             float dist = Vector2.Distance(transform.position, d.transform.position);
-
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                best = d;
-            }
+            if (dist < bestDist) { bestDist = dist; best = d; }
         }
 
         return best;
     }
 
     // -----------------------
-    // DAMAGE
+    // DAMAGE / REMOVAL
     // -----------------------
     public override void TakeDamage(float amount)
     {
         base.TakeDamage(amount);
-
         if (currentHealth <= 0f)
-        {
             RemoveEffect();
-        }
     }
 
     void RemoveEffect()
@@ -218,11 +207,15 @@ public class VarroaMites : Enemy
         if (targetBeeAttached != null)
         {
             targetBeeAttached.moveSpeed = originalSpeed;
+            targetBeeAttached.workSpeedMultiplier = originalWorkSpeed;
+
+            ForagerBee forager = targetBeeAttached as ForagerBee;
+            if (forager != null)
+                forager.RemoveMiteSlow(originalSpeed);
         }
 
         isAttached = false;
         targetBeeAttached = null;
-
         transform.SetParent(null);
     }
 

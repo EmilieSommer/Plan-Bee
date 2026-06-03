@@ -72,6 +72,7 @@ public class ForagerBee : Bee
             return;
         }
 
+        // Apply weather slow on top of base speed
         float weatherSlow = IsRaining() ? rainSlowMultiplier : 1f;
         moveSpeed = baseMoveSpeed / weatherSlow;
 
@@ -201,6 +202,20 @@ public class ForagerBee : Bee
         }
 
         return closest;
+    }
+
+    // ======================================================
+    // MITE SLOW — affects baseMoveSpeed so weather calc respects it
+    // ======================================================
+
+    public void ApplyMiteSlow(float multiplier)
+    {
+        baseMoveSpeed *= multiplier;
+    }
+
+    public void RemoveMiteSlow(float restoredBaseSpeed)
+    {
+        baseMoveSpeed = restoredBaseSpeed;
     }
 
     // ======================================================
