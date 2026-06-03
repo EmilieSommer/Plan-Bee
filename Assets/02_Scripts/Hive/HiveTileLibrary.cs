@@ -14,9 +14,11 @@ public class HiveTileLibrary : ScriptableObject
     {
         public HiveTileType type;
 
-        [Tooltip("16 sprites indexed by bitmask (T=8 B=4 L=2 R=1). " +
-                 "Index 0 = no neighbours, index 15 = all neighbours.")]
-        public Sprite[] variants = new Sprite[16];
+        [Tooltip("RuleTile for the built zone — autotiles against same-type neighbors.")]
+        public TileBase builtTile;
+
+        [Tooltip("RuleTile for the overlay layer — transparent edges where zones meet.")]
+        public TileBase overlayTile;
 
         [Tooltip("Shown while tile is marked / under construction.")]
         public Sprite markedSprite;
@@ -36,13 +38,16 @@ public class HiveTileLibrary : ScriptableObject
             _lookup[s.type] = s;
     }
 
-    public Sprite GetSprite(HiveTileType type, int bitmask)
+    public TileBase GetBuiltTile(HiveTileType type)
     {
         if (_lookup == null) Init();
-        if (_lookup.TryGetValue(type, out var set) &&
-            bitmask >= 0 && bitmask < set.variants.Length)
-            return set.variants[bitmask];
-        return null;
+        return _lookup.TryGetValue(type, out var set) ? set.builtTile : null;
+    }
+
+    public TileBase GetOverlayTile(HiveTileType type)
+    {
+        if (_lookup == null) Init();
+        return _lookup.TryGetValue(type, out var set) ? set.overlayTile : null;
     }
 
     public Sprite GetMarkedSprite(HiveTileType type)
