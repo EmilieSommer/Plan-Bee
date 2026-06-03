@@ -33,15 +33,12 @@ public class SeasonManager : MonoBehaviour
 
     public Season currentSeason = Season.Spring;
     private Season previousSeason;
+    private SeasonProfile lastProfile;
 
-    private enum WeatherState
-    {
-        Dry,
-        Rain
-    }
+    private Coroutine sceneryCoroutine;
 
+    private enum WeatherState { Dry, Rain }
     private WeatherState weatherState;
-
     private float stateTimer;
 
     private void Awake()
@@ -63,10 +60,10 @@ public class SeasonManager : MonoBehaviour
     // -----------------------------
     // SEASON LOGIC
     // -----------------------------
+
     void UpdateSeason(bool force = false)
     {
         int day = DayCycleManager.Instance.currentDay;
-
         int seasonIndex = (day - 1) / daysPerSeason;
         int seasonEnumIndex = seasonIndex % 4;
 
@@ -74,6 +71,9 @@ public class SeasonManager : MonoBehaviour
 
         if (force || currentSeason != previousSeason)
         {
+            // Capture previous profile BEFORE updating previousSeason
+            lastProfile = GetSeasonProfile(previousSeason);
+
             previousSeason = currentSeason;
             OnSeasonChanged();
         }
@@ -83,17 +83,21 @@ public class SeasonManager : MonoBehaviour
 
     void OnSeasonChanged()
     {
-        StopAllCoroutines();
         StartCoroutine(ShowSeasonPopup());
 
         ApplyWeather();
-        ApplyScenery(); // Add this
         InitializeWeather();
+
+        if (sceneryCoroutine != null)
+            StopCoroutine(sceneryCoroutine);
+
+        sceneryCoroutine = StartCoroutine(FadeScenery());
     }
 
     // -----------------------------
     // WEATHER INIT
     // -----------------------------
+
     void InitializeWeather()
     {
         weatherState = WeatherState.Dry;
@@ -101,69 +105,66 @@ public class SeasonManager : MonoBehaviour
         RainSystem.Instance?.StopRain();
         WinterSystem.Instance?.StopWinter();
 
-        SetNextWeatherState();
+        // Delay first weather check so startup messages don't fire
+        stateTimer = 5f;
     }
 
     // -----------------------------
     // WEATHER LOOP
     // -----------------------------
+
     void UpdateWeatherLoop()
     {
         stateTimer -= Time.deltaTime;
 
         if (stateTimer <= 0f)
-        {
             SetNextWeatherState();
-        }
     }
 
     // -----------------------------
     // WEATHER STATE MACHINE
     // -----------------------------
+
     void SetNextWeatherState()
-{
-    WeatherSettings settings = GetWeatherSettings(currentSeason);
-
-    // ❄️ WINTER OVERRIDE
-    if (currentSeason == Season.Winter)
     {
-        WinterSystem.Instance?.StartWinter();
-        RainSystem.Instance?.StopRain();
+        WeatherSettings settings = GetWeatherSettings(currentSeason);
 
-        stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
-        return;
-    }
-
-    if (weatherState == WeatherState.Dry)
-    {
-        bool shouldRain = Random.value < settings.rainChance;
-
-        if (shouldRain)
+        if (currentSeason == Season.Winter)
         {
-            weatherState = WeatherState.Rain;
-            RainSystem.Instance?.StartRain();
+            WinterSystem.Instance?.StartWinter();
+            RainSystem.Instance?.StopRain();
+            stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
+            return;
+        }
 
-            // 🌧️ FIXED: now uses per-season settings
-            stateTimer = Random.Range(settings.rainMinTime, settings.rainMaxTime);
+        if (weatherState == WeatherState.Dry)
+        {
+            bool shouldRain = Random.value < settings.rainChance;
+
+            if (shouldRain)
+            {
+                weatherState = WeatherState.Rain;
+                RainSystem.Instance?.StartRain();
+                stateTimer = Random.Range(settings.rainMinTime, settings.rainMaxTime);
+            }
+            else
+            {
+                RainSystem.Instance?.StopRain();
+                stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
+            }
         }
         else
         {
+            weatherState = WeatherState.Dry;
             RainSystem.Instance?.StopRain();
             stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
         }
     }
-    else
-    {
-        weatherState = WeatherState.Dry;
-        RainSystem.Instance?.StopRain();
-
-        stateTimer = Random.Range(settings.dryMinTime, settings.dryMaxTime);
-    }
-}
 
     // -----------------------------
     // WEATHER SETTINGS
     // -----------------------------
+
     WeatherSettings GetWeatherSettings(Season season)
     {
         return season switch
@@ -179,20 +180,128 @@ public class SeasonManager : MonoBehaviour
     // -----------------------------
     // VISUAL WEATHER APPLY
     // -----------------------------
+
     void ApplyWeather()
     {
         RainSystem.Instance?.StopRain();
         WinterSystem.Instance?.StopWinter();
 
         if (currentSeason == Season.Winter)
-        {
             WinterSystem.Instance?.StartWinter();
+    }
+
+    // -----------------------------
+    // SCENERY CROSSFADE
+    // -----------------------------
+
+    SeasonProfile GetSeasonProfile(Season season)
+    {
+        return season switch
+        {
+            Season.Spring => spring,
+            Season.Summer => summer,
+            Season.Autumn => autumn,
+            Season.Winter => winter,
+            _ => null
+        };
+    }
+
+    IEnumerator FadeScenery()
+    {
+        SeasonProfile current = GetCurrentProfile();
+        SeasonProfile previous = lastProfile;
+
+        float duration = 2f;
+        float timer = 0f;
+
+        SpriteRenderer[] currentRenderers = current.scenery.GetComponentsInChildren<SpriteRenderer>(true);
+        SpriteRenderer[] previousRenderers = previous != null && previous != current
+            ? previous.scenery.GetComponentsInChildren<SpriteRenderer>(true)
+            : null;
+
+        // Start new scenery fully invisible
+        current.scenery.SetActive(true);
+        foreach (var sr in currentRenderers)
+        {
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = 0f;
+            sr.color = c;
         }
+
+        // Make sure previous is fully visible before fading out
+        if (previousRenderers != null)
+        {
+            foreach (var sr in previousRenderers)
+            {
+                if (sr == null) continue;
+                Color c = sr.color;
+                c.a = 1f;
+                sr.color = c;
+            }
+        }
+
+        // Crossfade simultaneously
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Clamp01(timer / duration);
+
+            // Fade in new
+            foreach (var sr in currentRenderers)
+            {
+                if (sr == null) continue;
+                Color c = sr.color;
+                c.a = alpha;
+                sr.color = c;
+            }
+
+            // Fade out old
+            if (previousRenderers != null)
+            {
+                foreach (var sr in previousRenderers)
+                {
+                    if (sr == null) continue;
+                    Color c = sr.color;
+                    c.a = 1f - alpha;
+                    sr.color = c;
+                }
+            }
+
+            yield return null;
+        }
+
+        // Finalize new — fully visible
+        foreach (var sr in currentRenderers)
+        {
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = 1f;
+            sr.color = c;
+        }
+
+        // Finalize old — fully hidden and disabled
+        if (previousRenderers != null)
+        {
+            foreach (var sr in previousRenderers)
+            {
+                if (sr == null) continue;
+                Color c = sr.color;
+                c.a = 0f;
+                sr.color = c;
+            }
+
+            if (previous.scenery != null)
+                previous.scenery.SetActive(false);
+        }
+
+        sceneryCoroutine = null;
     }
 
     // -----------------------------
     // POPUPS
     // -----------------------------
+
     IEnumerator ShowSeasonPopup()
     {
         GameObject popup = GetPopup(currentSeason);
@@ -221,6 +330,7 @@ public class SeasonManager : MonoBehaviour
     // -----------------------------
     // UI
     // -----------------------------
+
     void UpdateUI()
     {
         if (seasonText != null)
@@ -253,64 +363,4 @@ public class SeasonManager : MonoBehaviour
             _ => spring
         };
     }
-
-    void ApplyScenery()
-    {
-        StopCoroutine(nameof(FadeScenery));
-        StartCoroutine(FadeScenery());
-    }
-
-    IEnumerator FadeScenery()
-    {
-        SeasonProfile[] profiles = { spring, summer, autumn, winter };
-        SeasonProfile current = GetCurrentProfile();
-
-        float duration = 2f;
-        float timer = 0f;
-
-        // Get all renderers
-        SpriteRenderer[] currentRenderers = current.scenery.GetComponentsInChildren<SpriteRenderer>(true);
-
-        // Enable current scenery + make transparent
-        current.scenery.SetActive(true);
-
-        foreach (var sr in currentRenderers)
-        {
-            Color c = sr.color;
-            c.a = 0f;
-            sr.color = c;
-        }
-
-        // Fade out all others instantly
-        foreach (var profile in profiles)
-        {
-            if (profile != current && profile.scenery != null)
-                profile.scenery.SetActive(false);
-        }
-
-        // Fade in
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float alpha = timer / duration;
-
-            foreach (var sr in currentRenderers)
-            {
-                Color c = sr.color;
-                c.a = alpha;
-                sr.color = c;
-            }
-
-            yield return null;
-        }
-
-        // Ensure fully visible
-        foreach (var sr in currentRenderers)
-        {
-            Color c = sr.color;
-            c.a = 1f;
-            sr.color = c;
-        }
-    }
-    
 }

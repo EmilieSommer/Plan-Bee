@@ -90,7 +90,7 @@ public class CurrencyManager : MonoBehaviour
     void UpdateUI()
     {
         if (pollenText != null) pollenText.text = "Pollen: " + pollen;
-        if (honeyText != null) honeyText.text = "Honey: " + honey;
+        if (honeyText != null) honeyText.text = honey.ToString();
     }
 
     // -------------------------
