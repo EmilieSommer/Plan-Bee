@@ -27,6 +27,9 @@ public class HiveVisuals : MonoBehaviour
     [Header("Library")]
     [SerializeField] private HiveTileLibrary library;
 
+    [Header("Build Overlay")]
+    [SerializeField] private Sprite markedOverlaySprite;
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(this); return; }
@@ -48,11 +51,10 @@ public class HiveVisuals : MonoBehaviour
     /// <summary>Show the construction ghost (marked state).</summary>
     public void SetMarked(Vector3Int pos, HiveTileType type)
     {
-        var sprite = library.GetMarkedSprite(type);
-        if (sprite == null) return;
+        if (markedOverlaySprite == null) return;
 
         var tile = ScriptableObject.CreateInstance<Tile>();
-        tile.sprite = sprite;
+        tile.sprite = markedOverlaySprite;
         tile.colliderType = Tile.ColliderType.None;
         markedTilemap.SetTile(pos, tile);
     }

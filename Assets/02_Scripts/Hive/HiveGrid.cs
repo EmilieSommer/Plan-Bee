@@ -106,8 +106,9 @@ public class HiveGrid : MonoBehaviour
         OnTileBuilt?.Invoke(pos);
     }
 
-    public bool HasTile(Vector3Int pos)  => types.ContainsKey(pos);
-    public bool IsMarked(Vector3Int pos) => marked.TryGetValue(pos, out var m) && m;
+    public bool HasTile(Vector3Int pos)    => types.ContainsKey(pos);
+    public bool IsMarked(Vector3Int pos)   => marked.TryGetValue(pos, out var m) && m;
+    public bool CanBuildAt(Vector3Int pos) => !types.ContainsKey(pos) && IsAdjacentToAny(pos);
 
     public HiveTileType GetType(Vector3Int pos) =>
         types.TryGetValue(pos, out var t) ? t : HiveTileType.None;

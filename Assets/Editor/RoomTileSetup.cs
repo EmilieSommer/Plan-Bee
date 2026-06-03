@@ -152,10 +152,8 @@ public static class RoomTileSetup
     {
         return new RuleTile.TilingRule
         {
-            m_Sprites           = sprites.ToArray(),
-            m_Output            = sprites.Count > 1
-                                    ? RuleTile.TilingRuleOutput.OutputSprite.Random
-                                    : RuleTile.TilingRuleOutput.OutputSprite.Single,
+            m_Sprites           = new Sprite[] { sprites[0] },
+            m_Output            = RuleTile.TilingRuleOutput.OutputSprite.Single,
             m_NeighborPositions = new List<Vector3Int>
                                     { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right },
             m_Neighbors         = new List<int> { top, bot, left, right },
