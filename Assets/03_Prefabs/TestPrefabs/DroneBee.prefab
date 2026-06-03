@@ -111,6 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97cc014adea3598438b358ea19d171df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DroneBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 3
   acceleration: 8
@@ -124,6 +125,11 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
+  jobCheckInterval: 2
+  sleepDelayRange: 1.5
+  retaliationRange: 1.5
+  retaliationDamage: 1
+  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
@@ -131,6 +137,10 @@ MonoBehaviour:
   beeName: OG drone Bee
   zoneArrivalDistance: 1.5
   targetLockTime: 2
+  minX: -30
+  maxX: 30
+  minY: -30
+  maxY: 30
 --- !u!212 &4223563190110776065
 SpriteRenderer:
   serializedVersion: 2
