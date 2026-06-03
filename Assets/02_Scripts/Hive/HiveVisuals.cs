@@ -30,6 +30,7 @@ public class HiveVisuals : MonoBehaviour
     [SerializeField] private Tilemap builtTilemap;
     [SerializeField] private Tilemap overlayTilemap;
     [SerializeField] private Tilemap markedTilemap;
+    [SerializeField] private Tilemap indicatorTilemap;
 
     [Header("Library")]
     [SerializeField] private HiveTileLibrary library;
@@ -39,6 +40,7 @@ public class HiveVisuals : MonoBehaviour
 
     [Header("Build Overlay")]
     [SerializeField] private Sprite markedOverlaySprite;
+    [SerializeField] private Sprite indicatorSprite;
 
     // Cardinal direction order — must match the bit layout used by the library
     // bit 0 = top, 1 = bottom, 2 = left, 3 = right
@@ -75,6 +77,24 @@ public class HiveVisuals : MonoBehaviour
     public void ClearMarked(Vector3Int pos)
     {
         if (markedTilemap != null) markedTilemap.SetTile(pos, null);
+    }
+
+    /// <summary>Shows valid build locations for the player.</summary>
+    public void ShowIndicators(IEnumerable<Vector3Int> validCells)
+    {
+        if (indicatorTilemap == null || indicatorSprite == null) return;
+        indicatorTilemap.ClearAllTiles();
+        var tile = GetCachedTile(indicatorSprite);
+        foreach (var pos in validCells)
+        {
+            indicatorTilemap.SetTile(pos, tile);
+        }
+    }
+
+    /// <summary>Clears the valid build indicators.</summary>
+    public void ClearIndicators()
+    {
+        if (indicatorTilemap != null) indicatorTilemap.ClearAllTiles();
     }
 
     /// <summary>Remove all visual layers at pos and refresh neighbors.</summary>
@@ -136,9 +156,17 @@ public class HiveVisuals : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             var n = HiveGrid.Instance.GetType(pos + Dirs[i]);
-            bool counterpart = (self == HiveTileType.Hive)
-                ? n == HiveTileType.None
-                : n == HiveTileType.Hive;
+            bool counterpart;
+            if (self == HiveTileType.Hive)
+            {
+                // Hive dirt draws a wall against ANYTHING that isn't Hive dirt
+                counterpart = (n != HiveTileType.Hive);
+            }
+            else
+            {
+                // Rooms draw a wall against Hive dirt and Empty space
+                counterpart = (n == HiveTileType.Hive || n == HiveTileType.None);
+            }
             if (!counterpart) mask |= (1 << i);
         }
         return mask;

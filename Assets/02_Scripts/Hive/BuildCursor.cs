@@ -58,7 +58,7 @@ public class BuildCursor : MonoBehaviour
 
         if (_flashRoutine == null)
         {
-            bool valid = HiveGrid.Instance.CanBuildAt(cell);
+            bool valid = HiveGrid.Instance.CanBuildAt(cell, buildPanel.Selected);
             hoverTilemap.SetTile(cell, valid ? _validTile : _invalidTile);
         }
     }

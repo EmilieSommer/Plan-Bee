@@ -8,6 +8,10 @@ public class ConstructionSite : MonoBehaviour
 
     public BuildZone parentZone;
 
+    [Header("Tile Building Support")]
+    public bool isTileBuild = false;
+    public Vector3Int tilePos;
+
     private SpriteRenderer sr;
     private bool isBuilding = false;
 
@@ -91,20 +95,30 @@ public class ConstructionSite : MonoBehaviour
         if (col != null)
             col.enabled = true;
 
-        SleepZone sleep = GetComponent<SleepZone>();
-        if (sleep != null)
-            HiveManager.Instance.RegisterSleepZone(sleep);
+        if (isTileBuild)
+        {
+            HiveGrid.Instance.CompleteBuild(tilePos);
+        }
+        else
+        {
+            SleepZone sleep = GetComponent<SleepZone>();
+            if (sleep != null)
+                HiveManager.Instance.RegisterSleepZone(sleep);
 
-        DroneZone drone = GetComponent<DroneZone>();
-        if (drone != null)
-            drone.SetBuilt();
+            DroneZone drone = GetComponent<DroneZone>();
+            if (drone != null)
+                drone.SetBuilt();
 
-        if (parentZone != null)
-            parentZone.FinishBuild();
+            if (parentZone != null)
+                parentZone.FinishBuild();
+        }
 
         BuildManager.Instance.FinishCurrent();
 
-        Destroy(this);
+        if (isTileBuild)
+            Destroy(gameObject);
+        else
+            Destroy(this);
     }
 
     public void StartBuild()

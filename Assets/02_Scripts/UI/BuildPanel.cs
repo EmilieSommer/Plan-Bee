@@ -50,7 +50,13 @@ public class BuildPanel : MonoBehaviour
         world.z = 0f;
         Vector3Int cell = HiveGrid.Instance.WorldToCell(world);
         if (!HiveGrid.Instance.TryMark(cell, _selected))
+        {
             BuildCursor.Instance?.FlashInvalid(cell);
+        }
+        else
+        {
+            HiveGrid.Instance.ShowBuildIndicators(_selected);
+        }
     }
 
     // ── API ───────────────────────────────────────────────────────────────────
@@ -64,6 +70,15 @@ public class BuildPanel : MonoBehaviour
         _activeBtn = btn;
 
         if (_activeBtn) _activeBtn.image.color = selectedColor;
+
+        if (_selected != HiveTileType.None)
+        {
+            HiveGrid.Instance?.ShowBuildIndicators(_selected);
+        }
+        else
+        {
+            HiveGrid.Instance?.HideBuildIndicators();
+        }
     }
 
     public void Cancel()
@@ -71,6 +86,8 @@ public class BuildPanel : MonoBehaviour
         if (_activeBtn) _activeBtn.image.color = normalColor;
         _selected  = HiveTileType.None;
         _activeBtn = null;
+        
+        HiveGrid.Instance?.HideBuildIndicators();
     }
 
     public HiveTileType Selected => _selected;

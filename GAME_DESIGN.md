@@ -4,7 +4,7 @@
 
 **Genre:** 2D colony management strategy
 **Engine:** Unity (2D)
-**Reference:** Ant Colony (Android game) — use this as the primary UI/UX and gameplay feel reference
+**Reference:** Ant Colony: Wild Forest (Android game) — use this as the primary UI/UX and gameplay feel reference
 **Perspective:** Top-down, zoomable. Player never controls individual bees.
 
 The player manages a bee colony. Bees act autonomously based on their type. The player's job is to:
@@ -108,9 +108,16 @@ These are starting values — adjust through playtesting.
 
 - The hive is a **tile grid** (top-down).
 - Player selects **Build mode** → picks a room type → clicks/drags to mark tiles on the grid.
-- **Marked tiles must connect (be adjacent) to existing hive tiles.** Disconnected tiles cannot be built.
+- **Connection Rule:** You can ONLY build if the new tile is connected (adjacent) to an existing hive tile. Disconnected tiles cannot be built.
+- **Room Placement:** You can build different hive rooms (Brood, Storage, etc.) directly in the Hive material.
+- **Build Indicators:** When a build tool is selected, all valid tiles where you can currently click and build must be visually indicated/highlighted in some way.
 - Builders automatically path to marked tiles and construct them, consuming Beeswax per tile.
 - Construction progress is visible on the tile (e.g. progress bar or visual state).
+
+### Tile Rendering Rules
+- **Hive (Solid):** The base `Hive` tile is the `Center` tile. This should always be used if it is not bordering any other type of tile (do not use outer edges/tops for now).
+- **Inner Rooms vs Hive:** Any inside room (like Brood, Storage, or InsideHive) that borders the solid `Hive` material must draw its appropriate border on that side.
+- **Inner Rooms Merging:** Tile rooms should always use their `Center` tile unless they border `Hive` or border *another type* of zone. If they border a different zone type, they should use their **overlay** on that side so the two rooms merge smoothly together.
 
 ### Room Types
 
@@ -124,7 +131,9 @@ These are starting values — adjust through playtesting.
 New room types unlock via the upgrade/progression system.
 
 ### Starting hive
-- ~9 tiles (3×3) of Brood Chamber
+- Built mainly with **Hive** tiles.
+- An entrance formed by **2 Inside Hive** tiles.
+- A small **2x2 Brooding Chamber** inside the hive.
 - Small seed resources: ~100 Honey, ~50 Pollen, ~30 Beeswax
 
 ---
