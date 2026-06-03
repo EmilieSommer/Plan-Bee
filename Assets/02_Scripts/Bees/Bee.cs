@@ -58,6 +58,7 @@ public abstract class Bee : MonoBehaviour
     protected Vector2 targetPosition;
     protected Vector2 currentVelocity;
     protected Vector2 homePosition;
+    
 
     protected bool lockMovement = false;
 
@@ -72,6 +73,9 @@ public abstract class Bee : MonoBehaviour
     public float retaliationDamage = 1f;
     public float retaliationCooldown = 2f;
     private float retaliationTimer = 0f;
+
+    private Enemy lastAttacker;
+
 
     public enum BeeType
     {
@@ -573,6 +577,7 @@ public abstract class Bee : MonoBehaviour
     public void TakeDamage(float amount, Enemy attacker = null)
     {
         currentHealth -= amount;
+        if (attacker != null) lastAttacker = attacker;
         if (currentHealth <= 0f) { currentHealth = 0f; Die(); return; }
         if (attacker != null) TryRetaliate(attacker);
     }
@@ -606,6 +611,9 @@ public abstract class Bee : MonoBehaviour
     {
         currentState = BeeState.Dead;
         UnregisterSleep();
+
+      if (lastAttacker != null)
+        BeeDeathPopup.Instance.ShowDeath(beeType.ToString(), beeName, lastAttacker.enemyType.ToString());
 
         if (HiveManager.Instance != null) HiveManager.Instance.UnregisterBee(this);
         if (ZoneManager.Instance != null) ZoneManager.Instance.UnregisterBee(this);

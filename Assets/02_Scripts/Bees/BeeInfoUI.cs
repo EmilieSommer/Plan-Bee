@@ -41,6 +41,13 @@ public class BeeInfoUI : MonoBehaviour
 
     void Update()
     {
+        // Close if bee died or was destroyed
+        if (panel.activeSelf && (currentBee == null || currentBee.CurrentHealth <= 0f))
+        {
+            Close();
+            return;
+        }
+
         HandleAutoClose();
 
         if (!panel.activeSelf || currentBee == null)
@@ -53,7 +60,6 @@ public class BeeInfoUI : MonoBehaviour
             UpdateHearts(health);
         }
 
-        // refresh speed text if it changed
         if (currentBee.moveSpeed != lastSpeed)
         {
             lastSpeed = currentBee.moveSpeed;
