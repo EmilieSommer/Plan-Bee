@@ -17,6 +17,9 @@ public class BeeInfoUI : MonoBehaviour
     [Header("Hearts")]
     public Image[] hearts;
 
+    [Header("Speed Icons")]
+    public Image[] speedIcons; // assign 6 lightning sprites in Inspector
+
     [Header("Health Settings")]
     public int maxLives = 10;
 
@@ -26,7 +29,7 @@ public class BeeInfoUI : MonoBehaviour
 
     [Header("Speed Settings")]
     public int speedCost = 5;
-    public float speedUpgradeAmount = 0.5f;
+    public float speedUpgradeAmount = 1f;
     public float maxSpeed = 6f;
 
     private Bee currentBee;
@@ -41,7 +44,6 @@ public class BeeInfoUI : MonoBehaviour
 
     void Update()
     {
-        // Close if bee died or was destroyed
         if (panel.activeSelf && (currentBee == null || currentBee.CurrentHealth <= 0f))
         {
             Close();
@@ -64,6 +66,7 @@ public class BeeInfoUI : MonoBehaviour
         {
             lastSpeed = currentBee.moveSpeed;
             speedText.text = $"Speed: {currentBee.moveSpeed:F1}";
+            UpdateSpeedIcons(currentBee.moveSpeed);
         }
     }
 
@@ -83,6 +86,7 @@ public class BeeInfoUI : MonoBehaviour
         lastHealth = -1;
         lastSpeed  = -1f;
         UpdateHearts(Mathf.RoundToInt(bee.CurrentHealth));
+        UpdateSpeedIcons(bee.moveSpeed);
     }
 
     // ======================================================
@@ -126,6 +130,19 @@ public class BeeInfoUI : MonoBehaviour
     }
 
     // ======================================================
+    // SPEED ICONS UPDATE
+    // speed is an integer value (2-6)
+    // active icons = current moveSpeed (2 at start, up to 6)
+    // ======================================================
+    void UpdateSpeedIcons(float currentSpeed)
+    {
+        int filledCount = Mathf.RoundToInt(currentSpeed);
+
+        for (int i = 0; i < speedIcons.Length; i++)
+            speedIcons[i].enabled = i < filledCount;
+    }
+
+    // ======================================================
     // HEAL BUTTON
     // ======================================================
     public void BuyHeal()
@@ -159,5 +176,6 @@ public class BeeInfoUI : MonoBehaviour
         currentBee.UpgradeSpeed(speedUpgradeAmount, maxSpeed);
         speedText.text = $"Speed: {currentBee.moveSpeed:F1}";
         lastSpeed = currentBee.moveSpeed;
+        UpdateSpeedIcons(currentBee.moveSpeed);
     }
 }
