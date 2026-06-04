@@ -194,7 +194,69 @@ public class HiveGrid : MonoBehaviour
         Debug.Log("Library Fixed! The DeadEnds and Corners are now perfectly aligned! Now run Generate Starting Hive.");
     }
 
-    [ContextMenu("2. Generate Starting Hive")]
+    [ContextMenu("2. Setup Overlay Tilemaps")]
+    private void SetupOverlayTilemaps()
+    {
+        var visuals = GetComponent<HiveVisuals>();
+        if (visuals == null) return;
+
+        if (visuals.BuiltTilemap != null)
+        {
+            var builtRenderer = visuals.BuiltTilemap.GetComponent<UnityEngine.Tilemaps.TilemapRenderer>();
+            if (builtRenderer != null) builtRenderer.sortingOrder = 0;
+        }
+
+        var overlayMaps = new UnityEngine.Tilemaps.Tilemap[4];
+        for (int i = 0; i < 4; i++)
+        {
+            string layerName = "OverlayTilemap_" + i;
+            var overlayObj = transform.Find(layerName);
+            if (overlayObj == null)
+            {
+                var go = new GameObject(layerName);
+                go.transform.SetParent(this.transform);
+                go.transform.localPosition = Vector3.zero;
+                go.AddComponent<UnityEngine.Tilemaps.Tilemap>();
+                var renderer = go.AddComponent<UnityEngine.Tilemaps.TilemapRenderer>();
+                renderer.sortingOrder = 10 + i; // 10, 11, 12, 13
+                overlayObj = go.transform;
+            }
+            else
+            {
+                var renderer = overlayObj.GetComponent<UnityEngine.Tilemaps.TilemapRenderer>();
+                if (renderer != null) renderer.sortingOrder = 10 + i;
+            }
+            overlayMaps[i] = overlayObj.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+        }
+
+        var serializedObject = new UnityEditor.SerializedObject(visuals);
+        var arrayProp = serializedObject.FindProperty("overlayTilemaps");
+        arrayProp.arraySize = 4;
+        for (int i = 0; i < 4; i++)
+        {
+            arrayProp.GetArrayElementAtIndex(i).objectReferenceValue = overlayMaps[i];
+        }
+        serializedObject.ApplyModifiedProperties();
+        Debug.Log("4 Overlay Tilemaps setup and assigned to HiveVisuals!");
+    }
+
+    private UnityEngine.Tilemaps.Tile GetOrSavePersistentTile(Sprite sprite)
+    {
+        string path = UnityEditor.AssetDatabase.GetAssetPath(sprite);
+        string dir = System.IO.Path.GetDirectoryName(path);
+        string tilePath = System.IO.Path.Combine(dir, sprite.name + "_GeneratedTile.asset");
+        
+        var tile = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Tilemaps.Tile>(tilePath);
+        if (tile == null)
+        {
+            tile = UnityEngine.ScriptableObject.CreateInstance<UnityEngine.Tilemaps.Tile>();
+            tile.sprite = sprite;
+            UnityEditor.AssetDatabase.CreateAsset(tile, tilePath);
+        }
+        return tile;
+    }
+
+    [ContextMenu("3. Generate Starting Hive")]
     private void GenerateStartingHive()
     {
         Debug.Log("Starting generation...");
@@ -204,12 +266,15 @@ public class HiveGrid : MonoBehaviour
         if (visuals.BuiltTilemap == null) { Debug.LogError("BuiltTilemap is null!"); return; }
 
         var builtMap = visuals.BuiltTilemap;
-        var overlayMap = transform.Find("OverlayTilemap")?.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+        var overlayMaps = visuals.OverlayTilemaps;
         var library = visuals.Library;
         
         library.Init();
         builtMap.ClearAllTiles();
-        if (overlayMap != null) overlayMap.ClearAllTiles();
+        if (overlayMaps != null)
+        {
+            foreach (var map in overlayMaps) if (map != null) map.ClearAllTiles();
+        }
 
         var tempGrid = new System.Collections.Generic.Dictionary<Vector3Int, HiveTileType>();
 
@@ -258,33 +323,49 @@ public class HiveGrid : MonoBehaviour
             Sprite bSprite = library.GetBorderSprite(type, borderMask);
             if (bSprite != null)
             {
-                var t = UnityEngine.ScriptableObject.CreateInstance<UnityEngine.Tilemaps.Tile>();
-                t.sprite = bSprite;
+                var t = GetOrSavePersistentTile(bSprite);
                 builtMap.SetTile(pos, t);
             }
 
-            if (overlayMap != null && type != HiveTileType.Hive)
+            if (overlayMaps != null && type != HiveTileType.Hive && type != HiveTileType.None)
             {
-                int overlayMask = 0;
+                // Group neighbors by their room type
+                System.Collections.Generic.Dictionary<HiveTileType, int> neighborMasks = new System.Collections.Generic.Dictionary<HiveTileType, int>();
                 for (int i = 0; i < 4; i++)
                 {
                     var nType = tempGrid.ContainsKey(pos + Dirs[i]) ? tempGrid[pos + Dirs[i]] : HiveTileType.None;
-                    bool diff = nType != HiveTileType.None && nType != HiveTileType.Hive && nType != type;
-                    if (diff) overlayMask |= (1 << i);
+                    if (nType != HiveTileType.None && nType != HiveTileType.Hive && nType != type)
+                    {
+                        if (!neighborMasks.ContainsKey(nType)) neighborMasks[nType] = 0;
+                        neighborMasks[nType] |= (1 << i);
+                    }
                 }
 
-                Sprite oSprite = library.GetOverlaySprite(type, overlayMask);
-                if (oSprite != null)
+                int layerIndex = 0;
+                foreach (var nKvp in neighborMasks)
                 {
-                    var ot = UnityEngine.ScriptableObject.CreateInstance<UnityEngine.Tilemaps.Tile>();
-                    ot.sprite = oSprite;
-                    overlayMap.SetTile(pos, ot);
+                    var nType = nKvp.Key;
+                    var mask = nKvp.Value;
+                    var overlaySprite = library.GetOverlaySprite(nType, mask); // Fetch from neighbor's library!
+
+                    if (overlaySprite != null && layerIndex < overlayMaps.Length)
+                    {
+                        if (overlayMaps[layerIndex] != null)
+                        {
+                            var ot = GetOrSavePersistentTile(overlaySprite);
+                            overlayMaps[layerIndex].SetTile(pos, ot);
+                        }
+                        layerIndex++;
+                    }
                 }
             }
         }
 
         UnityEditor.EditorUtility.SetDirty(builtMap);
-        if (overlayMap != null) UnityEditor.EditorUtility.SetDirty(overlayMap);
+        if (overlayMaps != null)
+        {
+            foreach (var map in overlayMaps) if (map != null) UnityEditor.EditorUtility.SetDirty(map);
+        }
         Debug.Log("Starting Hive generated beautifully!");
     }
 #endif
@@ -318,8 +399,8 @@ public class HiveGrid : MonoBehaviour
         }
         else
         {
-            // Rooms can be built on empty space OR by digging out Hive dirt
-            if (currentType != HiveTileType.None && currentType != HiveTileType.Hive) return false;
+            // Rooms can ONLY be built by digging out existing Hive dirt
+            if (currentType != HiveTileType.Hive) return false;
             if (IsMarked(pos)) return false; // already marked
 
             // Must touch an existing room (not dirt or empty) to expand the hive interior

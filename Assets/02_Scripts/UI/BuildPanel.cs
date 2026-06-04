@@ -9,6 +9,10 @@ using UnityEngine.UI;
 /// </summary>
 public class BuildPanel : MonoBehaviour
 {
+    [Header("Main Menu")]
+    [SerializeField] private Button mainBuildBtn;
+    [SerializeField] private GameObject buildSubmenu;
+
     [Header("Toolbar Buttons (assign in Inspector)")]
     [SerializeField] private Button insideHiveBtn;
     [SerializeField] private Button solidBtn;
@@ -25,6 +29,9 @@ public class BuildPanel : MonoBehaviour
 
     void Start()
     {
+        if (mainBuildBtn)  mainBuildBtn.onClick.AddListener(ToggleMenu);
+        if (buildSubmenu)  buildSubmenu.SetActive(false); // Start hidden
+
         if (insideHiveBtn) insideHiveBtn.onClick.AddListener(() => SelectType(HiveTileType.InsideHive, insideHiveBtn));
         if (solidBtn)      solidBtn.onClick.AddListener(()      => SelectType(HiveTileType.Solid,      solidBtn));
         if (broodBtn)      broodBtn.onClick.AddListener(()      => SelectType(HiveTileType.Brood,      broodBtn));
@@ -61,6 +68,20 @@ public class BuildPanel : MonoBehaviour
 
     // ── API ───────────────────────────────────────────────────────────────────
 
+    public void ToggleMenu()
+    {
+        bool isActive = buildSubmenu != null && buildSubmenu.activeSelf;
+        if (isActive)
+        {
+            Cancel(); // Close and reset
+        }
+        else
+        {
+            if (buildSubmenu) buildSubmenu.SetActive(true);
+            if (mainBuildBtn) mainBuildBtn.image.color = selectedColor;
+        }
+    }
+
     public void SelectType(HiveTileType type, Button btn = null)
     {
         // Reset previous
@@ -84,8 +105,12 @@ public class BuildPanel : MonoBehaviour
     public void Cancel()
     {
         if (_activeBtn) _activeBtn.image.color = normalColor;
+        if (mainBuildBtn) mainBuildBtn.image.color = normalColor;
+
         _selected  = HiveTileType.None;
         _activeBtn = null;
+
+        if (buildSubmenu) buildSubmenu.SetActive(false);
         
         HiveGrid.Instance?.HideBuildIndicators();
     }

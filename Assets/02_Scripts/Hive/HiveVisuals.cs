@@ -28,7 +28,7 @@ public class HiveVisuals : MonoBehaviour
 
     [Header("Tilemaps")]
     [SerializeField] private Tilemap builtTilemap;
-    [SerializeField] private Tilemap overlayTilemap;
+    [SerializeField] private Tilemap[] overlayTilemaps = new Tilemap[4];
     [SerializeField] private Tilemap markedTilemap;
     [SerializeField] private Tilemap indicatorTilemap;
 
@@ -36,6 +36,7 @@ public class HiveVisuals : MonoBehaviour
     [SerializeField] private HiveTileLibrary library;
 
     public Tilemap BuiltTilemap     => builtTilemap;
+    public Tilemap[] OverlayTilemaps => overlayTilemaps;
     public HiveTileLibrary Library  => library;
 
     [Header("Build Overlay")]
@@ -101,7 +102,11 @@ public class HiveVisuals : MonoBehaviour
     public void ClearAll(Vector3Int pos)
     {
         if (builtTilemap != null)   builtTilemap.SetTile(pos, null);
-        if (overlayTilemap != null) overlayTilemap.SetTile(pos, null);
+        if (overlayTilemaps != null) {
+            for (int i = 0; i < overlayTilemaps.Length; i++) {
+                if (overlayTilemaps[i] != null) overlayTilemaps[i].SetTile(pos, null);
+            }
+        }
         if (markedTilemap != null)  markedTilemap.SetTile(pos, null);
         RefreshNeighbors(pos);
     }
@@ -116,7 +121,11 @@ public class HiveVisuals : MonoBehaviour
         if (type == HiveTileType.None)
         {
             if (builtTilemap != null)   builtTilemap.SetTile(pos, null);
-            if (overlayTilemap != null) overlayTilemap.SetTile(pos, null);
+            if (overlayTilemaps != null) {
+                for (int i = 0; i < overlayTilemaps.Length; i++) {
+                    if (overlayTilemaps[i] != null) overlayTilemaps[i].SetTile(pos, null);
+                }
+            }
             return;
         }
         RenderCell(pos, type);
@@ -129,15 +138,47 @@ public class HiveVisuals : MonoBehaviour
         if (library == null || builtTilemap == null) return;
 
         int borderMask  = ComputeBorderMask(pos, type);
-        int overlayMask = ComputeOverlayMask(pos, type);
-
         var borderSprite  = library.GetBorderSprite(type, borderMask);
-        var overlaySprite = library.GetOverlaySprite(type, overlayMask);
 
         builtTilemap.SetTile(pos, borderSprite ? GetCachedTile(borderSprite) : null);
 
-        if (overlayTilemap != null)
-            overlayTilemap.SetTile(pos, overlaySprite ? GetCachedTile(overlaySprite) : null);
+        // Clear existing overlays
+        if (overlayTilemaps != null) {
+            for (int i = 0; i < overlayTilemaps.Length; i++) {
+                if (overlayTilemaps[i] != null) overlayTilemaps[i].SetTile(pos, null);
+            }
+        }
+
+        if (type == HiveTileType.Hive || type == HiveTileType.None) return;
+
+        // Group neighbors by their room type
+        Dictionary<HiveTileType, int> neighborMasks = new Dictionary<HiveTileType, int>();
+        for (int i = 0; i < 4; i++)
+        {
+            var n = HiveGrid.Instance.GetType(pos + Dirs[i]);
+            if (n != HiveTileType.None && n != HiveTileType.Hive && n != type)
+            {
+                if (!neighborMasks.ContainsKey(n)) neighborMasks[n] = 0;
+                neighborMasks[n] |= (1 << i);
+            }
+        }
+
+        int layerIndex = 0;
+        foreach (var kvp in neighborMasks)
+        {
+            var nType = kvp.Key;
+            var mask = kvp.Value;
+            var overlaySprite = library.GetOverlaySprite(nType, mask); // Fetch from neighbor's library!
+
+            if (overlaySprite != null && overlayTilemaps != null && layerIndex < overlayTilemaps.Length)
+            {
+                if (overlayTilemaps[layerIndex] != null)
+                {
+                    overlayTilemaps[layerIndex].SetTile(pos, GetCachedTile(overlaySprite));
+                }
+                layerIndex++;
+            }
+        }
     }
 
     void RefreshNeighbors(Vector3Int pos)
@@ -168,26 +209,6 @@ public class HiveVisuals : MonoBehaviour
                 counterpart = (n == HiveTileType.Hive || n == HiveTileType.None);
             }
             if (!counterpart) mask |= (1 << i);
-        }
-        return mask;
-    }
-
-    /// <summary>
-    /// Mask bit set if that side faces a different room type.
-    /// Hive has no overlay.
-    /// </summary>
-    int ComputeOverlayMask(Vector3Int pos, HiveTileType self)
-    {
-        if (self == HiveTileType.Hive) return 0;
-        int mask = 0;
-        for (int i = 0; i < 4; i++)
-        {
-            var n = HiveGrid.Instance.GetType(pos + Dirs[i]);
-            bool differentRoom =
-                n != HiveTileType.None &&
-                n != HiveTileType.Hive &&
-                n != self;
-            if (differentRoom) mask |= (1 << i);
         }
         return mask;
     }
