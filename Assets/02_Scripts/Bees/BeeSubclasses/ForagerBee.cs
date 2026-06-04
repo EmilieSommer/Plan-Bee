@@ -177,7 +177,8 @@ public class ForagerBee : Bee
         if (pollenPrefab != null && currentZone != null)
             Instantiate(pollenPrefab, currentZone.GetDepositPoint(), Quaternion.identity);
 
-        CurrencyManager.Instance.pollen += pollenPerTrip;
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.AddPollen(pollenPerTrip);
 
         StartForaging();
     }

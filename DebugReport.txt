@@ -1,0 +1,12 @@
+=== GRID DEBUG REPORT ===
+HiveVisuals is attached.
+BuiltTilemap: BuiltTilemap
+
+Found 7 Tilemaps under Grid:
+- BuiltTilemap (69 tiles)
+- HoverTilemap (0 tiles)
+- MarkedTilemap (0 tiles)
+- OverlayTilemap_0 (2 tiles)
+- OverlayTilemap_1 (0 tiles)
+- OverlayTilemap_2 (0 tiles)
+- OverlayTilemap_3 (0 tiles)

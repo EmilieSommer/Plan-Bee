@@ -21,12 +21,12 @@ public class HiveUI : MonoBehaviour
             " / " +
             HiveManager.Instance.GetHiveCapacity();
 
-        queenText.text = GetCount(Bee.BeeType.Queen).ToString();
-        houseText.text = GetCount(Bee.BeeType.House).ToString();
-        nurseText.text = GetCount(Bee.BeeType.Nurse).ToString();
-        foragerText.text = GetCount(Bee.BeeType.Forager).ToString();
-        droneText.text = GetCount(Bee.BeeType.Drone).ToString();
-        builderText.text = GetCount(Bee.BeeType.Builder).ToString();
+        if (queenText != null) queenText.text = GetCount(Bee.BeeType.Queen).ToString();
+        if (houseText != null) houseText.text = GetCount(Bee.BeeType.House).ToString();
+        if (nurseText != null) nurseText.text = GetCount(Bee.BeeType.Nurse).ToString();
+        if (foragerText != null) foragerText.text = GetCount(Bee.BeeType.Forager).ToString();
+        if (droneText != null) droneText.text = GetCount(Bee.BeeType.Drone).ToString();
+        if (builderText != null) builderText.text = GetCount(Bee.BeeType.Builder).ToString();
     }
 
     int GetCount(Bee.BeeType type)

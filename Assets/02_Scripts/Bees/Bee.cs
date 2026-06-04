@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -55,7 +56,22 @@ public abstract class Bee : MonoBehaviour
     private bool waitingForSleep = false;
 
     protected Vector2 moveDirection;
-    protected Vector2 targetPosition;
+    
+    private Vector2 _targetPosition;
+    protected List<Vector2> currentPath;
+    protected int currentPathIndex;
+
+    protected Vector2 targetPosition
+    {
+        get => _targetPosition;
+        set
+        {
+            _targetPosition = value;
+            currentPath = AStar.FindPathWorld(rb.position, value);
+            currentPathIndex = 0;
+        }
+    }
+
     protected Vector2 currentVelocity;
     protected Vector2 homePosition;
     
@@ -118,6 +134,9 @@ public abstract class Bee : MonoBehaviour
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         rb.bodyType = RigidbodyType2D.Kinematic;
+
+        // Resize bee to perfectly fit inside a 32x32 tile at 25x25 size
+        transform.localScale = new Vector3(25f/32f, 25f/32f, 1f);
 
         currentHealth = maxHealth;
         currentState = BeeState.Idle;
@@ -382,22 +401,42 @@ public abstract class Bee : MonoBehaviour
 
     protected void MoveToTarget()
     {
-        Vector2 toTarget = targetPosition - rb.position;
-        float distance = toTarget.magnitude;
-
-        if (distance < 0.05f)
+        if (currentPath == null || currentPath.Count == 0 || currentPathIndex >= currentPath.Count)
         {
             currentVelocity = Vector2.zero;
             OnReachedTarget();
             return;
         }
 
+        Vector2 currentWaypoint = currentPath[currentPathIndex];
+        Vector2 toTarget = currentWaypoint - rb.position;
+        float distance = toTarget.magnitude;
+
+        if (distance < 0.15f)
+        {
+            currentPathIndex++;
+            if (currentPathIndex >= currentPath.Count)
+            {
+                currentVelocity = Vector2.zero;
+                OnReachedTarget();
+                return;
+            }
+            currentWaypoint = currentPath[currentPathIndex];
+            toTarget = currentWaypoint - rb.position;
+            distance = toTarget.magnitude;
+        }
+
         Vector2 desiredDirection = toTarget.normalized;
         moveDirection = Vector2.Lerp(moveDirection, desiredDirection, turnSpeed * Time.deltaTime).normalized;
 
-        float speedFactor = Mathf.Clamp01(distance / slowRadius);
+        float speedFactor = 1f;
+        if (currentPathIndex == currentPath.Count - 1)
+        {
+            float distToFinalTarget = Vector2.Distance(rb.position, targetPosition);
+            speedFactor = Mathf.Clamp01(distToFinalTarget / slowRadius);
+        }
+        
         float adjustedSpeed = moveSpeed * Mathf.Lerp(0.3f, 1f, speedFactor);
-
         currentVelocity = moveDirection * adjustedSpeed;
     }
 

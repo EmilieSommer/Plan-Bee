@@ -25,6 +25,7 @@ public class QueenBee : Bee
         base.Awake();
         beeType = BeeType.Queen;
         Instance = this;
+        transform.localScale = new Vector3(35f/32f, 35f/32f, 1f);
     }
 
     protected override void Start()
@@ -147,12 +148,26 @@ public class QueenBee : Bee
 
     protected override void AssignZone()
     {
-        QueenZone queenZone = FindObjectOfType<QueenZone>();
-        if (queenZone == null) return;
+        // Snap to the nearest Brood (NurseBeeZone)
+        NurseBeeZone[] zones = FindObjectsOfType<NurseBeeZone>();
+        if (zones.Length == 0) return;
 
-        assignedZone = queenZone;
-        homePosition = queenZone.transform.position;
-        queenZone.RegisterBee(this);
+        NurseBeeZone best = zones[0];
+        float bestDist = Vector2.Distance(transform.position, best.transform.position);
+        foreach (var z in zones)
+        {
+            float d = Vector2.Distance(transform.position, z.transform.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = z;
+            }
+        }
+
+        assignedZone = best;
+        homePosition = best.transform.position;
+        transform.position = homePosition; // Snap perfectly into the tile!
+        best.RegisterBee(this);
 
         if (ZoneManager.Instance != null)
             ZoneManager.Instance.RegisterBee(this);

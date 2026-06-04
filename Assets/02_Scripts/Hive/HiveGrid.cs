@@ -63,10 +63,28 @@ public class HiveGrid : MonoBehaviour
 
         foreach (var pos in tilemap.cellBounds.allPositionsWithin)
         {
+            var tileBase = tilemap.GetTile(pos);
+            if (tileBase == null) continue;
+            
             var sprite = tilemap.GetSprite(pos);
-            if (sprite == null) continue;
-            var type = library.GetTypeFromSprite(sprite);
-            if (type == HiveTileType.None) continue;
+            var type = HiveTileType.None;
+            
+            if (sprite != null)
+            {
+                type = library.GetTypeFromSprite(sprite);
+            }
+
+            // Fallback: If the library didn't recognize the sprite (or if it's a custom tile), guess from the name!
+            if (type == HiveTileType.None)
+            {
+                string tileName = tileBase.name.ToLower();
+                string spriteName = sprite != null ? sprite.name.ToLower() : "";
+                
+                if (tileName.Contains("inside") || spriteName.Contains("inside") || tileName.Contains("tunnel")) type = HiveTileType.InsideHive;
+                else if (tileName.Contains("brood") || spriteName.Contains("brood")) type = HiveTileType.Brood;
+                else if (tileName.Contains("storage") || spriteName.Contains("storage") || tileName.Contains("honey")) type = HiveTileType.Storage;
+                else type = HiveTileType.Hive; // Default to dirt walls!
+            }
 
             types[pos]  = type;
             marked[pos] = false;
@@ -90,6 +108,17 @@ public class HiveGrid : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
+    private int GetTileCost(HiveTileType type)
+    {
+        switch (type)
+        {
+            case HiveTileType.InsideHive: return 5;
+            case HiveTileType.Brood: return 10;
+            case HiveTileType.Storage: return 10;
+            default: return 0;
+        }
+    }
+
     /// <summary>
     /// Called by BuildPanel when the player clicks a grid cell.
     /// Returns true if the tile was accepted (adjacent to any existing tile).
@@ -97,6 +126,15 @@ public class HiveGrid : MonoBehaviour
     public bool TryMark(Vector3Int pos, HiveTileType type)
     {
         if (!CanBuildAt(pos, type))           return false;   // invalid location or already built
+
+        int cost = GetTileCost(type);
+        if (cost > 0)
+        {
+            if (CurrencyManager.Instance != null && !CurrencyManager.Instance.UseHoney(cost))
+            {
+                return false; // Not enough honey, popup is handled by CurrencyManager
+            }
+        }
 
         types[pos]  = type;
         marked[pos] = true;
@@ -120,6 +158,66 @@ public class HiveGrid : MonoBehaviour
 
         OnTileMarked?.Invoke(pos);
         return true;
+    }
+
+    /// <summary>
+    /// Spawns a Zone prefab and paints the visual tiles underneath it when construction finishes!
+    /// </summary>
+    public bool TryMarkZone(Vector3Int pos, GameObject prefab, HiveTileType visualType, int cost, float buildTime)
+    {
+        if (!CanBuildAt(pos, visualType)) return false;
+
+        if (cost > 0)
+        {
+            if (CurrencyManager.Instance != null && !CurrencyManager.Instance.UseHoney(cost))
+            {
+                return false;
+            }
+        }
+
+        types[pos]  = visualType;
+        marked[pos] = true;
+        visuals?.SetMarked(pos, visualType);
+
+        GameObject siteObj = new GameObject("ZoneConstruction_" + pos);
+        siteObj.transform.position = CellToWorld(pos);
+        
+        BoxCollider2D col = siteObj.AddComponent<BoxCollider2D>();
+        col.size = new Vector2(1, 1);
+        col.isTrigger = true;
+        
+        ConstructionSite site = siteObj.AddComponent<ConstructionSite>();
+        site.buildTime = buildTime;
+        site.isTileBuild = true; // Wait! If it's true, it just paints the tile. We need to instantiate the prefab!
+        site.tilePos = pos;
+        
+        // Let's pass the prefab to the Grid to spawn it on completion.
+        // We will store it in a dictionary to spawn when CompleteBuild is called.
+        if (pendingZones == null) pendingZones = new System.Collections.Generic.Dictionary<Vector3Int, GameObject>();
+        pendingZones[pos] = prefab;
+
+        site.StartBuild();
+        BuildManager.Instance.AddToQueue(site);
+
+        OnTileMarked?.Invoke(pos);
+        return true;
+    }
+    
+    private System.Collections.Generic.Dictionary<Vector3Int, GameObject> pendingZones;
+
+    public void ShowAllBuildableIndicators()
+    {
+        var validCells = new System.Collections.Generic.HashSet<Vector3Int>();
+        foreach (var pos in types.Keys)
+        {
+            foreach (var d in Dirs)
+            {
+                var n = pos + d;
+                // Check if any room can be built here
+                if (CanBuildAt(n, HiveTileType.Brood)) validCells.Add(n);
+            }
+        }
+        visuals?.ShowIndicators(validCells);
     }
 
 #if UNITY_EDITOR
@@ -380,6 +478,16 @@ public class HiveGrid : MonoBehaviour
         marked[pos] = false;
         visuals?.ClearMarked(pos);
         Place(pos, types[pos]);
+        
+        if (pendingZones != null && pendingZones.ContainsKey(pos))
+        {
+            if (pendingZones[pos] != null)
+            {
+                Instantiate(pendingZones[pos], CellToWorld(pos), Quaternion.identity);
+            }
+            pendingZones.Remove(pos);
+        }
+
         OnTileBuilt?.Invoke(pos);
     }
 
@@ -444,6 +552,14 @@ public class HiveGrid : MonoBehaviour
 
     public Vector3 CellToWorld(Vector3Int cell) =>
         GetComponent<Grid>()?.GetCellCenterWorld(cell) ?? Vector3.zero;
+
+    public bool IsBlockingAt(Vector3 worldPos)
+    {
+        var cell = WorldToCell(worldPos);
+        if (!types.TryGetValue(cell, out var t)) return false;
+        if (marked.TryGetValue(cell, out var m) && m) return false;
+        return t == HiveTileType.Solid || t == HiveTileType.Hive;
+    }
 
     // ── Internals ─────────────────────────────────────────────────────────────
 

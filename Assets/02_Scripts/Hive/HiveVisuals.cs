@@ -140,7 +140,16 @@ public class HiveVisuals : MonoBehaviour
         int borderMask  = ComputeBorderMask(pos, type);
         var borderSprite  = library.GetBorderSprite(type, borderMask);
 
-        builtTilemap.SetTile(pos, borderSprite ? GetCachedTile(borderSprite) : null);
+        if (borderSprite != null)
+        {
+            builtTilemap.SetTile(pos, GetCachedTile(borderSprite));
+        }
+        else if (type == HiveTileType.None)
+        {
+            builtTilemap.SetTile(pos, null);
+        }
+        // If type != None but borderSprite is null, we safely do NOTHING! 
+        // This preserves Kristoffer's original hand-painted tiles instead of deleting them.
 
         // Clear existing overlays
         if (overlayTilemaps != null) {

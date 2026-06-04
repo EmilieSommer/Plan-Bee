@@ -7,7 +7,7 @@ public class SeasonManager : MonoBehaviour
     public static SeasonManager Instance;
 
     [Header("Season Settings")]
-    public int daysPerSeason = 5;
+    public int daysPerSeason = DayCycleManager.DaysPerSeason;
 
     [Header("UI")]
     public TextMeshProUGUI seasonText;

@@ -19,6 +19,9 @@ public class Enemy : MonoBehaviour
     public int currentDroneAttackers = 0;
     public int maxDroneAttackers = 2;
 
+    [Header("Queen Targeting")]
+    [SerializeField] protected bool prefersQueen = false;
+
     protected float attackTimer;
     protected Bee targetBee;
 
@@ -66,6 +69,16 @@ public class Enemy : MonoBehaviour
     // -------------------------
     protected virtual void FindNearestBee()
     {
+        if (prefersQueen)
+        {
+            var queen = FindObjectOfType<QueenBee>();
+            if (queen != null && IsReachable(queen.transform.position))
+            {
+                targetBee = queen;
+                return;
+            }
+        }
+
         Bee[] bees = FindObjectsOfType<Bee>();
 
         Bee closest = null;
@@ -87,6 +100,22 @@ public class Enemy : MonoBehaviour
         targetBee = closest;
     }
 
+    protected bool IsReachable(Vector3 target)
+    {
+        if (HiveGrid.Instance == null) return true;
+
+        Vector3 from = transform.position;
+        float dist = Vector3.Distance(from, target);
+        int samples = Mathf.Max(2, Mathf.CeilToInt(dist * 2f));
+
+        for (int i = 1; i <= samples; i++)
+        {
+            Vector3 p = Vector3.Lerp(from, target, i / (float)samples);
+            if (HiveGrid.Instance.IsBlockingAt(p)) return false;
+        }
+        return true;
+    }
+
     // -------------------------
     // MOVEMENT
     // -------------------------
@@ -99,7 +128,13 @@ public class Enemy : MonoBehaviour
         if (dist <= attackRange) return;
 
         Vector2 dir = (targetBee.transform.position - transform.position).normalized;
-        transform.position += (Vector3)(dir * moveSpeed * Time.deltaTime);
+        Vector3 step = (Vector3)(dir * moveSpeed * Time.deltaTime);
+        Vector3 nextPos = transform.position + step;
+
+        if (HiveGrid.Instance != null && HiveGrid.Instance.IsBlockingAt(nextPos))
+            return;
+
+        transform.position = nextPos;
     }
 
     // -------------------------
