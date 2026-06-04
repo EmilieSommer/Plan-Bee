@@ -82,7 +82,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_MaskInteraction: 0
   m_Sprite: {fileID: -5574144679516609091, guid: 5a1be3c6388d54e15bd288fe5f37a5f8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -169,4 +169,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionSite
   buildTime: 30
   parentZone: {fileID: 4829339963523079310, guid: 37908f8a570106540b518978bc5c023d, type: 3}
+  isTileBuild: 0
+  tilePos: {x: 0, y: 0, z: 0}
   maxBuilders: 2

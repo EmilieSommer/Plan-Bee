@@ -5,15 +5,18 @@ public class RobberBee : Enemy
     [Header("Robber Settings")]
     public float stealRange = 1f;
 
+    [Header("Honey Carry Settings")]
+    public Vector2 honeyCarryOffset = new Vector2(0.3f, 0f);
+
     [Header("Flee Settings")]
     public float fleeDroneRange = 4f;
     public float fleeSpeed = 3.5f;
 
     [Header("World Bounds")]
-    public float minX = -15f;
-    public float maxX = 15f;
-    public float minY = -15f;
-    public float maxY = 15f;
+    public float minX = -30f;
+    public float maxX = 30f;
+    public float minY = -20f;
+    public float maxY = 20f;
 
     private Honey targetHoney;
     private bool carryingHoney = false;
@@ -36,12 +39,9 @@ public class RobberBee : Enemy
             return;
         }
 
-        // No honey — flee from drones if nearby
         DroneBee closestDrone = FindClosestDroneInRange();
         if (closestDrone != null)
-        {
             FleeFromDrone(closestDrone);
-        }
     }
 
     // -------------------------
@@ -49,8 +49,7 @@ public class RobberBee : Enemy
     // -------------------------
     void FindHoney()
     {
-        if (targetHoney != null)
-            return;
+        if (targetHoney != null) return;
 
         Honey[] honeyObjects = FindObjectsOfType<Honey>();
 
@@ -62,7 +61,6 @@ public class RobberBee : Enemy
             if (honey == null) continue;
 
             float dist = Vector2.Distance(transform.position, honey.transform.position);
-
             if (dist < closestDist)
             {
                 closestDist = dist;
@@ -105,9 +103,6 @@ public class RobberBee : Enemy
         escapeDirection = ((Vector2)transform.position).normalized;
         if (escapeDirection == Vector2.zero)
             escapeDirection = Vector2.right;
-
-        targetHoney.transform.SetParent(transform);
-        targetHoney.transform.localPosition = new Vector3(0.5f, 0f, 0f);
     }
 
     // -------------------------
@@ -116,7 +111,8 @@ public class RobberBee : Enemy
     void CarryHoney()
     {
         if (targetHoney == null) return;
-        targetHoney.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+        // Follow in world space — unaffected by parent scale
+        targetHoney.transform.position = (Vector2)transform.position + honeyCarryOffset;
     }
 
     // -------------------------
@@ -198,9 +194,7 @@ public class RobberBee : Enemy
     {
         if (!carryingHoney || targetHoney == null) return;
 
-        targetHoney.transform.SetParent(null);
         targetHoney.SetCarried(false);
-
         carryingHoney = false;
         targetHoney = null;
     }

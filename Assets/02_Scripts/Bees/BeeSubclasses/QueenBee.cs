@@ -10,9 +10,9 @@ public class QueenBee : Bee
     [Header("UI")]
     public Slider healthSlider;
 
-    [Header("Regeneration")]
+    /*[Header("Regeneration")]
     public float regenRate = 0.5f;
-    public float regenDelay = 3f;
+    public float regenDelay = 3f;*/
 
     [Header("Defense")]
     public float protectionRadius = 8f;
@@ -63,7 +63,7 @@ public class QueenBee : Bee
     protected override void Update()
     {
         base.Update();
-        HandleRegeneration();
+        //HandleRegeneration();
         UpdateHealthUI();
     }
 
@@ -91,7 +91,7 @@ public class QueenBee : Bee
     // REGENERATION
     // ======================================================
 
-    void HandleRegeneration()
+    /*void HandleRegeneration()
     {
         if (currentState == BeeState.Dead) return;
 
@@ -109,7 +109,7 @@ public class QueenBee : Bee
         {
             regenTimer = 0f;
         }
-    }
+    }*/
 
     // ======================================================
     // WORK / RETURN — Queen never moves
