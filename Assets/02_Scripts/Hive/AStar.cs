@@ -17,9 +17,8 @@ public static class AStar
         }
     }
 
-    private static readonly Vector3Int[] Dirs8 = {
-        new Vector3Int(0, 1, 0), new Vector3Int(1, 0, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0),
-        new Vector3Int(1, 1, 0), new Vector3Int(1, -1, 0), new Vector3Int(-1, -1, 0), new Vector3Int(-1, 1, 0)
+    private static readonly Vector3Int[] Dirs4 = {
+        new Vector3Int(0, 1, 0), new Vector3Int(1, 0, 0), new Vector3Int(0, -1, 0), new Vector3Int(-1, 0, 0)
     };
 
     public static List<Vector2> FindPathWorld(Vector2 startWorld, Vector2 targetWorld)
@@ -33,8 +32,8 @@ public static class AStar
 
         if (cellPath == null || cellPath.Count == 0)
         {
-            // Fallback: direct line if no path
-            return new List<Vector2> { targetWorld };
+            // If no path is found, do NOT fallback to a direct line! Just stay put.
+            return new List<Vector2>();
         }
 
         List<Vector2> worldPath = new List<Vector2>();
@@ -43,9 +42,7 @@ public static class AStar
             worldPath.Add(HiveGrid.Instance.CellToWorld(cellPath[i]));
         }
 
-        // We want the exact world target as the final waypoint so we don't snap to cell center
-        worldPath[worldPath.Count - 1] = targetWorld;
-
+        // Force the final waypoint to be the exact center of the cell, so they don't wander off-grid!
         return worldPath;
     }
 
@@ -89,21 +86,11 @@ public static class AStar
                 return RetracePath(startNode, currentNode);
             }
 
-            foreach (Vector3Int dir in Dirs8)
+            foreach (Vector3Int dir in Dirs4)
             {
                 Vector3Int neighborPos = currentNode.pos + dir;
 
                 if (closedSet.Contains(neighborPos)) continue;
-
-                // For diagonals, ensure we don't clip through corners!
-                if (Mathf.Abs(dir.x) == 1 && Mathf.Abs(dir.y) == 1)
-                {
-                    if (!IsWalkable(currentNode.pos + new Vector3Int(dir.x, 0, 0)) ||
-                        !IsWalkable(currentNode.pos + new Vector3Int(0, dir.y, 0)))
-                    {
-                        continue; // Corner is blocked
-                    }
-                }
 
                 if (!IsWalkable(neighborPos))
                 {
@@ -158,7 +145,7 @@ public static class AStar
         return 14 * dstX + 10 * (dstY - dstX);
     }
 
-    private static bool IsWalkable(Vector3Int cell)
+    public static bool IsWalkable(Vector3Int cell)
     {
         HiveTileType type = HiveGrid.Instance.GetType(cell);
         
@@ -169,7 +156,7 @@ public static class AStar
     private static Vector3Int GetNearestWalkable(Vector3Int start)
     {
         // Simple 1-radius check
-        foreach (var dir in Dirs8)
+        foreach (var dir in Dirs4)
         {
             if (IsWalkable(start + dir)) return start + dir;
         }

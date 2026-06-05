@@ -16,29 +16,37 @@ public class EnemySpawner : MonoBehaviour
     [Header("Spawn Points")]
     public Transform[] spawnPoints;
 
-    [Header("Base Spawn")]
-    public float baseSpawnInterval = 3f;
+    [Header("Grace Period")]
+    public int gracePeriodDays = 3; // No enemies for the first 3 days!
 
-    [Header("Limits")]
-    public float minInterval = 0.5f;
+    [Header("Spawn Interval")]
+    public float minSpawnTime = 60f;
+    public float maxSpawnTime = 180f;
 
     private float timer;
 
+    private void Start()
+    {
+        timer = Random.Range(minSpawnTime, maxSpawnTime);
+    }
+
     private void Update()
     {
-        SeasonProfile profile = SeasonManager.Instance.GetCurrentProfile();
+        if (DayCycleManager.Instance != null && DayCycleManager.Instance.currentDay <= gracePeriodDays)
+        {
+            return; // Grace period active!
+        }
 
-        float difficulty = DayCycleManager.Instance.DifficultyMultiplier;
+        SeasonProfile profile = SeasonManager.Instance.GetCurrentProfile();
+        float difficulty = DayCycleManager.Instance != null ? DayCycleManager.Instance.DifficultyMultiplier : 1f;
         float seasonMultiplier = profile != null ? profile.spawnMultiplier : 1f;
 
-        float interval = Mathf.Max(minInterval, baseSpawnInterval / (difficulty * seasonMultiplier));
-
-        timer -= Time.deltaTime;
+        timer -= Time.deltaTime * difficulty * seasonMultiplier;
 
         if (timer <= 0f)
         {
             SpawnEnemy(profile);
-            timer = interval;
+            timer = Random.Range(minSpawnTime, maxSpawnTime);
         }
     }
 
@@ -55,6 +63,15 @@ public class EnemySpawner : MonoBehaviour
         Vector2 spawnPos = GetRandomSpawnPosition();
 
         Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        if (UIMessagePopup.Instance != null)
+        {
+            UIMessagePopup.Instance.ShowMessage($"WARNING: A wild {type} has appeared!", 5f);
+        }
+        else
+        {
+            Debug.LogWarning($"WARNING: A wild {type} has appeared!");
+        }
     }
 
     Vector2 GetRandomSpawnPosition()

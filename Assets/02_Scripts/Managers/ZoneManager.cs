@@ -41,6 +41,11 @@ public class ZoneManager : MonoBehaviour
             zoneAssignments[zone.zoneType].Remove(zone);
     }
 
+    public bool HasZone(Bee.BeeType type)
+    {
+        return zonesByType.ContainsKey(type) && zonesByType[type].Count > 0;
+    }
+
     // ------------------------
     // BEE TRACKING
     // ------------------------

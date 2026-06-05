@@ -32,6 +32,15 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             return;
         }
 
+        // 🧠 PREREQUISITE CHECK: Do we have the required zone?
+        Bee.BeeType requiredType = EggToBeeType(egg.eggType);
+        if (ZoneManager.Instance != null && !ZoneManager.Instance.HasZone(requiredType))
+        {
+            egg.ResetToStartPosition();
+            UIMessagePopup.Instance.ShowMessage($"You must build a {requiredType} Zone first!");
+            return;
+        }
+
         int cost = egg.honeyCost;
 
         if (!CurrencyManager.Instance.UseHoney(cost))
@@ -112,5 +121,18 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
 
         isFilled = false;
         currentEgg = null;
+    }
+
+    private Bee.BeeType EggToBeeType(EggType eggType)
+    {
+        switch (eggType)
+        {
+            case EggType.Builder: return Bee.BeeType.Builder;
+            case EggType.Nurse: return Bee.BeeType.Nurse;
+            case EggType.House: return Bee.BeeType.House;
+            case EggType.Forager: return Bee.BeeType.Forager;
+            case EggType.Drone: return Bee.BeeType.Drone;
+            default: return Bee.BeeType.House;
+        }
     }
 }

@@ -31,6 +31,8 @@ public class CurrencyManager : MonoBehaviour
 
     private void Start()
     {
+        pollen = 50;
+        honey = 200;
         UpdateUI();
 
         if (warningPanel != null)

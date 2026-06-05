@@ -81,7 +81,6 @@ public class ForagerBee : Bee
             timer -= Time.deltaTime / weatherSlow;
             if (timer <= 0f)
                 StartReturning();
-            return;
         }
 
         base.Update();

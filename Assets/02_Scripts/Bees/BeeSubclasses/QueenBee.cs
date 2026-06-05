@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class QueenBee : Bee
 {
@@ -25,11 +26,28 @@ public class QueenBee : Bee
         base.Awake();
         beeType = BeeType.Queen;
         Instance = this;
-        transform.localScale = new Vector3(35f/32f, 35f/32f, 1f);
+        
+        // Automatically scale Queen to exactly 35/32 of a tile
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            float targetSize = 35f / 32f;
+            float currentSize = sr.sprite.bounds.size.x;
+            if (currentSize > 0)
+            {
+                float scale = targetSize / currentSize;
+                transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+        else
+        {
+            transform.localScale = Vector3.one;
+        }
     }
 
     protected override void Start()
     {
+        // Snap to the Brood now that HiveGrid has finished waking up!
         AssignZone();
 
         // Queen starts frozen at home immediately
@@ -148,29 +166,58 @@ public class QueenBee : Bee
 
     protected override void AssignZone()
     {
-        // Snap to the nearest Brood (NurseBeeZone)
+        // 1. Check if there is an actual NurseBeeZone prefab
         NurseBeeZone[] zones = FindObjectsOfType<NurseBeeZone>();
-        if (zones.Length == 0) return;
-
-        NurseBeeZone best = zones[0];
-        float bestDist = Vector2.Distance(transform.position, best.transform.position);
-        foreach (var z in zones)
+        if (zones.Length > 0)
         {
-            float d = Vector2.Distance(transform.position, z.transform.position);
-            if (d < bestDist)
+            NurseBeeZone best = zones[0];
+            float bestDist = Vector2.Distance(transform.position, best.transform.position);
+            foreach (var z in zones)
             {
-                bestDist = d;
-                best = z;
+                float d = Vector2.Distance(transform.position, z.transform.position);
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    best = z;
+                }
             }
+            assignedZone = best;
+            homePosition = best.transform.position;
+            transform.position = homePosition;
+            best.RegisterBee(this);
+            if (ZoneManager.Instance != null) ZoneManager.Instance.RegisterBee(this);
+            return;
         }
 
-        assignedZone = best;
-        homePosition = best.transform.position;
-        transform.position = homePosition; // Snap perfectly into the tile!
-        best.RegisterBee(this);
+        // 2. If no prefab exists (e.g. starting hand-painted hive), scan the Grid directly!
+        HiveGrid grid = HiveGrid.Instance != null ? HiveGrid.Instance : FindObjectOfType<HiveGrid>();
+        if (grid != null)
+        {
+            Vector3Int bestCell = Vector3Int.zero;
+            float bestDist = float.MaxValue;
+            bool found = false;
 
-        if (ZoneManager.Instance != null)
-            ZoneManager.Instance.RegisterBee(this);
+            foreach (var kvp in grid.GetAllTiles())
+            {
+                if (kvp.Value == HiveTileType.Brood)
+                {
+                    Vector3 cellWorldPos = grid.CellToWorld(kvp.Key);
+                    float d = Vector2.Distance(transform.position, cellWorldPos);
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        bestCell = kvp.Key;
+                        found = true;
+                    }
+                }
+            }
+
+            if (found)
+            {
+                homePosition = grid.CellToWorld(bestCell);
+                transform.position = homePosition; // Snap perfectly into the tile!
+            }
+        }
     }
 
     // Queen cannot be dragged

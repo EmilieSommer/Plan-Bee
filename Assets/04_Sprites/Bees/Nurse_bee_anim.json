@@ -1,0 +1,84 @@
+{ "frames": {
+   "Nurse_bee_anim 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 120
+   },
+   "Nurse_bee_anim 1.aseprite": {
+    "frame": { "x": 25, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 120
+   },
+   "Nurse_bee_anim 2.aseprite": {
+    "frame": { "x": 50, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 120
+   },
+   "Nurse_bee_anim 3.aseprite": {
+    "frame": { "x": 75, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 120
+   },
+   "Nurse_bee_anim 4.aseprite": {
+    "frame": { "x": 100, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 60
+   },
+   "Nurse_bee_anim 5.aseprite": {
+    "frame": { "x": 125, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 60
+   },
+   "Nurse_bee_anim 6.aseprite": {
+    "frame": { "x": 150, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 60
+   },
+   "Nurse_bee_anim 7.aseprite": {
+    "frame": { "x": 175, "y": 0, "w": 25, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 25, "h": 25 },
+    "sourceSize": { "w": 25, "h": 25 },
+    "duration": 60
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.x-dev",
+  "image": "Nurse_bee_anim.png",
+  "format": "RGBA8888",
+  "size": { "w": 200, "h": 25 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "walk", "from": 0, "to": 3, "direction": "forward", "color": "#000000ff" },
+   { "name": "hover", "from": 4, "to": 7, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Body", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

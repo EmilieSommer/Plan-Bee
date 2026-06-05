@@ -26,8 +26,8 @@ public abstract class Bee : MonoBehaviour
     public float moveSpeed = 2f;
 
     [Header("Steering")]
-    public float acceleration = 8f;
-    public float turnSpeed = 5f;
+    public float acceleration = 20f;
+    public float turnSpeed = 20f;
     public float slowRadius = 0.5f;
 
     [Header("Avoidance")]
@@ -124,8 +124,13 @@ public abstract class Bee : MonoBehaviour
     private SleepZone currentSleepZone;
     private SleepZone pendingSleepZone;
 
+    protected Animator animator;
+
     protected virtual void Awake()
     {
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+
         if (HiveManager.Instance != null)
             HiveManager.Instance.RegisterBee(this);
 
@@ -135,8 +140,28 @@ public abstract class Bee : MonoBehaviour
         rb.freezeRotation = true;
         rb.bodyType = RigidbodyType2D.Kinematic;
 
-        // Resize bee to perfectly fit inside a 32x32 tile at 25x25 size
-        transform.localScale = new Vector3(25f/32f, 25f/32f, 1f);
+        // Disable collisions with each other so they can walk past each other freely
+        avoidanceStrength = 0f;
+        separationStrength = 0f;
+
+        // Automatically scale the bee to be EXACTLY 25/32 of a tile, ignoring PPU issues!
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
+
+        if (sr != null && sr.sprite != null)
+        {
+            float targetSize = 25f / 32f;
+            float currentSize = sr.sprite.bounds.size.x; // width in Unity units
+            if (currentSize > 0)
+            {
+                float scale = targetSize / currentSize;
+                transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+        else
+        {
+            transform.localScale = Vector3.one;
+        }
 
         currentHealth = maxHealth;
         currentState = BeeState.Idle;
@@ -149,6 +174,20 @@ public abstract class Bee : MonoBehaviour
     protected virtual void Start()
     {
         AssignZone();
+        
+        // Wait 1 frame so the Queen is guaranteed to have finished her Start() and snapped to the Brood!
+        StartCoroutine(SnapToQueenNextFrame());
+    }
+
+    private System.Collections.IEnumerator SnapToQueenNextFrame()
+    {
+        yield return null;
+        if (QueenBee.Instance != null && beeType != BeeType.Queen)
+        {
+            transform.position = QueenBee.Instance.transform.position;
+            rb.position = transform.position;
+            homePosition = transform.position;
+        }
     }
 
     public void SetName(string newName)
@@ -156,6 +195,8 @@ public abstract class Bee : MonoBehaviour
         beeName = string.IsNullOrWhiteSpace(newName) ? "Unnamed Bee" : newName;
         gameObject.name = beeName;
     }
+
+    private float overlapCheckTimer = 0f;
 
     protected virtual void Update()
     {
@@ -183,8 +224,86 @@ public abstract class Bee : MonoBehaviour
             ValidateJob();
         }
 
+        CheckTileOverlap();
         CheckIfStuck();
         StateUpdate();
+        UpdateAnimator();
+    }
+
+    void CheckTileOverlap()
+    {
+        if (currentState != BeeState.Idle) return;
+        if (isBeingDragged || lockMovement) return;
+
+        overlapCheckTimer += Time.deltaTime;
+        if (overlapCheckTimer < 0.5f) return;
+        overlapCheckTimer = 0f;
+
+        if (HiveGrid.Instance == null) return;
+        Vector3Int myCell = HiveGrid.Instance.WorldToCell(transform.position);
+        
+        Collider2D[] others = Physics2D.OverlapCircleAll(transform.position, 0.4f);
+        foreach (var col in others)
+        {
+            if (col.gameObject == gameObject) continue;
+            if (col.CompareTag("Bee"))
+            {
+                Bee otherBee = col.GetComponent<Bee>();
+                // Only bump if BOTH are idle (don't bump someone who's actively working or moving!)
+                if (otherBee != null && otherBee.currentState == BeeState.Idle)
+                {
+                    Vector3Int otherCell = HiveGrid.Instance.WorldToCell(otherBee.transform.position);
+                    if (myCell == otherCell)
+                    {
+                        // We are sharing a cell and both idle!
+                        // The one with the lower Instance ID yields.
+                        if (gameObject.GetInstanceID() < otherBee.gameObject.GetInstanceID())
+                        {
+                            BumpToAdjacentCell();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void BumpToAdjacentCell()
+    {
+        Vector3Int myCell = HiveGrid.Instance.WorldToCell(transform.position);
+        Vector3Int[] dirs = { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right };
+        
+        // Shuffle dirs to pick randomly
+        for (int i = 0; i < dirs.Length; i++)
+        {
+            Vector3Int temp = dirs[i];
+            int randomIndex = Random.Range(i, dirs.Length);
+            dirs[i] = dirs[randomIndex];
+            dirs[randomIndex] = temp;
+        }
+
+        foreach (var dir in dirs)
+        {
+            Vector3Int neighbor = myCell + dir;
+            if (AStar.IsWalkable(neighbor))
+            {
+                targetPosition = HiveGrid.Instance.CellToWorld(neighbor);
+                currentState = BeeState.Moving;
+                isAtHome = false; // Force it to act like it's moving intentionally
+                return;
+            }
+        }
+    }
+
+    protected virtual void UpdateAnimator()
+    {
+        if (animator != null)
+        {
+            bool isMoving = currentVelocity.sqrMagnitude > 0.01f;
+            animator.SetBool("IsMoving", isMoving);
+            animator.SetBool("IsWorking", currentState == BeeState.Working);
+            animator.SetBool("IsIdle", currentState == BeeState.Idle && !isMoving);
+        }
     }
 
     // ======================================================
@@ -412,8 +531,12 @@ public abstract class Bee : MonoBehaviour
         Vector2 toTarget = currentWaypoint - rb.position;
         float distance = toTarget.magnitude;
 
-        if (distance < 0.15f)
+        if (distance < 0.05f)
         {
+            // SNAP exactly to the tile center so the next movement is a PERFECT cardinal line!
+            rb.position = currentWaypoint;
+            transform.position = currentWaypoint;
+
             currentPathIndex++;
             if (currentPathIndex >= currentPath.Count)
             {
@@ -426,8 +549,8 @@ public abstract class Bee : MonoBehaviour
             distance = toTarget.magnitude;
         }
 
-        Vector2 desiredDirection = toTarget.normalized;
-        moveDirection = Vector2.Lerp(moveDirection, desiredDirection, turnSpeed * Time.deltaTime).normalized;
+        // Snap direction instantly, no curving!
+        moveDirection = toTarget.normalized;
 
         float speedFactor = 1f;
         if (currentPathIndex == currentPath.Count - 1)
@@ -546,10 +669,13 @@ public abstract class Bee : MonoBehaviour
 
     void ResolveStuck()
     {
-        Vector2 randomDir = Random.insideUnitCircle.normalized;
-        moveDirection = (moveDirection + randomDir).normalized;
+        Vector2[] dirs = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+        Vector2 randomDir = dirs[Random.Range(0, 4)];
+        
+        moveDirection = randomDir;
         rb.MovePosition(rb.position + moveDirection * 0.2f);
-        targetPosition += randomDir * 0.5f;
+        
+        // Don't modify targetPosition because that triggers a completely new AStar path calculation!
     }
 
     // ======================================================
@@ -561,13 +687,14 @@ public abstract class Bee : MonoBehaviour
         if (currentVelocity.sqrMagnitude > 0.01f)
         {
             float angle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg;
-            rb.rotation = angle;
+            rb.rotation = angle - 90f;
         }
     }
 
     protected void PickRandomDirection()
     {
-        moveDirection = Random.insideUnitCircle.normalized;
+        Vector2[] dirs = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
+        moveDirection = dirs[Random.Range(0, 4)];
     }
 
     // ======================================================
@@ -710,6 +837,18 @@ public abstract class Bee : MonoBehaviour
         UnregisterSleep();
         PickRandomDirection();
         currentState = BeeState.Idle;
+
+        // If dropped on dirt, snap them back to their home so they don't get stuck in the walls!
+        if (HiveGrid.Instance != null)
+        {
+            Vector3Int cell = HiveGrid.Instance.WorldToCell(transform.position);
+            HiveTileType type = HiveGrid.Instance.GetType(cell);
+            if (type == HiveTileType.Hive || type == HiveTileType.Solid)
+            {
+                transform.position = homePosition;
+                rb.position = homePosition;
+            }
+        }
     }
 
     public virtual void UpgradeSpeed(float amount, float max)

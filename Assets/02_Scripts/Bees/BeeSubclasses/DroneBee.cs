@@ -12,12 +12,6 @@ public class DroneBee : Bee
     public float targetLockTime = 2f;
     private float targetLockTimer;
 
-    [Header("Patrol Boundary")]
-    public float minX = -20f;
-    public float maxX = 20f;
-    public float minY = -15f;
-    public float maxY = 15f;
-
     protected override void Awake()
     {
         base.Awake();
@@ -29,10 +23,6 @@ public class DroneBee : Bee
         base.Start();
         attackTimer = attackCooldown;
     }
-
-    // ======================================================
-    // JOB VALIDATION
-    // ======================================================
 
     protected override bool HasWork() => true;
 
@@ -52,40 +42,12 @@ public class DroneBee : Bee
         }
     }
 
-    // ======================================================
-    // BOUNDS CHECK
-    // ======================================================
-
-    bool IsWithinBounds(Vector2 pos)
-    {
-        return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Vector3 center = new Vector3((minX + maxX) / 2f, (minY + maxY) / 2f, 0f);
-        Vector3 size = new Vector3(maxX - minX, maxY - minY, 0f);
-        Gizmos.DrawWireCube(center, size);
-    }
-
-    // ======================================================
-    // UPDATE
-    // ======================================================
-
     protected override void Update()
     {
         base.Update();
 
         if (targetEnemy != null)
         {
-            if (!IsWithinBounds(targetEnemy.position))
-            {
-                SetTarget(null);
-                ReturnToZone();
-                return;
-            }
-
             targetLockTimer -= Time.deltaTime;
             if (targetLockTimer <= 0f)
                 FindBestEnemy();
@@ -170,20 +132,17 @@ public class DroneBee : Bee
 
     protected override void WorkBehavior()
     {
+        if (targetEnemy == null)
+            FindBestEnemy();
+
         if (targetEnemy != null)
         {
-            if (!IsWithinBounds(targetEnemy.position))
-            {
-                SetTarget(null);
-                ReturnToZone();
-                return;
-            }
-
             float dist = Vector2.Distance(transform.position, targetEnemy.position);
 
             if (dist > attackRange)
             {
                 currentState = BeeState.Moving;
+                targetPosition = targetEnemy.position;
                 return;
             }
 
@@ -277,7 +236,6 @@ public class DroneBee : Bee
         {
             if (enemy == null) continue;
             if (!enemy.CanBeTargetedByDrone()) continue;
-            if (!IsWithinBounds(enemy.transform.position)) continue;
 
             float dist = Vector2.Distance(transform.position, enemy.transform.position);
             float threat = enemy.GetThreatLevel();
@@ -303,7 +261,7 @@ public class DroneBee : Bee
             }
         }
 
-        // Fallback: ignore crowd penalty but still respect boundary
+        // Fallback: ignore crowd penalty but still respect threat/distance
         if (best == null)
         {
             bestScore = float.NegativeInfinity;
@@ -311,7 +269,6 @@ public class DroneBee : Bee
             foreach (Enemy enemy in enemies)
             {
                 if (enemy == null) continue;
-                if (!IsWithinBounds(enemy.transform.position)) continue;
 
                 float dist = Vector2.Distance(transform.position, enemy.transform.position);
                 float score = enemy.GetThreatLevel() - dist * 5f;

@@ -35,10 +35,8 @@ public class HiveGrid : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (visuals == null) visuals = GetComponent<HiveVisuals>();
-    }
-
-    void Start()
-    {
+        
+        // Scan tiles immediately in Awake so the Grid is ready before any bees run Start()
         ScanPaintedTiles();
     }
 
@@ -560,6 +558,8 @@ public class HiveGrid : MonoBehaviour
         if (marked.TryGetValue(cell, out var m) && m) return false;
         return t == HiveTileType.Solid || t == HiveTileType.Hive;
     }
+
+    public IEnumerable<KeyValuePair<Vector3Int, HiveTileType>> GetAllTiles() => types;
 
     // ── Internals ─────────────────────────────────────────────────────────────
 

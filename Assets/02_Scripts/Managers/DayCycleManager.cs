@@ -9,7 +9,7 @@ public class DayCycleManager : MonoBehaviour
     public const int DaysPerYear = DaysPerSeason * 4;
 
     [Header("Day Settings")]
-    public float dayLength = 180f; // 3 minutes full day
+    public float dayLength = 600f; // 10 minutes full day
     public int currentDay = 1;
 
     [Header("Game Mode")]
