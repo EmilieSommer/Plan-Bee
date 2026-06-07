@@ -14,6 +14,8 @@ public class GameSceneFader : MonoBehaviour
     IEnumerator FadeIn()
     {
         fadePanel.alpha = 1f;
+        fadePanel.blocksRaycasts = true;   // block during fade in
+
         float t = 0f;
         while (t < fadeDuration)
         {
@@ -21,6 +23,8 @@ public class GameSceneFader : MonoBehaviour
             fadePanel.alpha = 1f - (t / fadeDuration);
             yield return null;
         }
+
         fadePanel.alpha = 0f;
+        fadePanel.blocksRaycasts = false;  // ⭐ THIS fixes your issue
     }
 }
