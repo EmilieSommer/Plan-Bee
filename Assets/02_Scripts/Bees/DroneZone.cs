@@ -5,6 +5,12 @@ public class DroneZone : MonoBehaviour
 {
     public static List<DroneZone> allZones = new List<DroneZone>();
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        allZones.Clear();
+    }
+
     public bool isBuilt = false;
 
     private void OnEnable()

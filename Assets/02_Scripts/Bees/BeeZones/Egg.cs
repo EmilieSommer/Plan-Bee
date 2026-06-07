@@ -5,6 +5,12 @@ public class Egg : MonoBehaviour
 {
     public static List<Egg> allEggs = new List<Egg>();
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        allEggs.Clear();
+    }
+
     public System.Action OnHatched;
 
     [Header("Egg Settings")]

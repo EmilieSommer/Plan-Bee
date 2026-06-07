@@ -61,7 +61,7 @@ public static class AStar
         List<Node> openList = new List<Node> { startNode };
         HashSet<Vector3Int> closedSet = new HashSet<Vector3Int>();
 
-        int maxIterations = 1000;
+        int maxIterations = 5000;
         int iterations = 0;
 
         while (openList.Count > 0)

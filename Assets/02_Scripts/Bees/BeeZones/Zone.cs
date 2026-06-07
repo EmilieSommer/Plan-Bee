@@ -16,9 +16,18 @@ public class Zone : MonoBehaviour
     [Header("Capacity")]
     public List<BeeTypeLimit> limits = new List<BeeTypeLimit>();
 
+    [Header("Storage Options")]
+    public float depositRadius = 1.5f;
+    public bool isStorageZone = false; // true if it acts as a storage target
+
     private Dictionary<Bee.BeeType, BeeTypeLimit> lookup;
 
-    private void Awake()
+    public Vector2 GetDepositPoint()
+    {
+        return (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
+    }
+
+    protected virtual void Awake()
     {
         lookup = new Dictionary<Bee.BeeType, BeeTypeLimit>();
 

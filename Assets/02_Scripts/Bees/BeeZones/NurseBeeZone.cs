@@ -11,16 +11,30 @@ public class NurseBeeZone : Zone
     [Header("Slots (assign per zone in Inspector)")]
     [SerializeField] private QueueSlotUI[] slots;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         zoneType = Bee.BeeType.Nurse;
+        isStorageZone = true; // Act as a small storage drop-off
+        depositRadius = 1.0f; // tighter radius for brood
         box = GetComponent<BoxCollider2D>();
     }
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
         foreach (QueueSlotUI slot in slots)
             slot.SetZone(this);
+            
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.AddCapacity(5, 5);
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.RemoveCapacity(5, 5);
     }
 
     public Vector2 GetRandomPoint()

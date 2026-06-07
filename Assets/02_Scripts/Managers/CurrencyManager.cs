@@ -8,7 +8,9 @@ public class CurrencyManager : MonoBehaviour
 
     [Header("Resources")]
     public int pollen;
+    public int maxPollen;
     public int honey;
+    public int maxHoney;
 
     [Header("UI")]
     public TextMeshProUGUI pollenText;
@@ -31,8 +33,12 @@ public class CurrencyManager : MonoBehaviour
 
     private void Start()
     {
-        pollen = 50;
-        honey = 200;
+        // Start with empty max capacities, zones will register themselves
+        pollen = 0;
+        maxPollen = 0;
+        honey = 0;
+        maxHoney = 0;
+        
         UpdateUI();
 
         if (warningPanel != null)
@@ -41,6 +47,26 @@ public class CurrencyManager : MonoBehaviour
             warningPanel.gameObject.SetActive(false);
         }
     }
+
+    public void AddCapacity(int pollenCap, int honeyCap)
+    {
+        maxPollen += pollenCap;
+        maxHoney += honeyCap;
+        UpdateUI();
+    }
+
+    public void RemoveCapacity(int pollenCap, int honeyCap)
+    {
+        maxPollen = Mathf.Max(0, maxPollen - pollenCap);
+        maxHoney = Mathf.Max(0, maxHoney - honeyCap);
+        
+        pollen = Mathf.Min(pollen, maxPollen);
+        honey = Mathf.Min(honey, maxHoney);
+        UpdateUI();
+    }
+
+    public bool HasPollenSpace() => pollen < maxPollen;
+    public bool HasHoneySpace() => honey < maxHoney;
 
     // -------------------------
     // HONEY
@@ -60,7 +86,7 @@ public class CurrencyManager : MonoBehaviour
 
     public void AddHoney(int amount)
     {
-        honey += amount;
+        honey = Mathf.Min(honey + amount, maxHoney);
         UpdateUI();
     }
 
@@ -82,7 +108,7 @@ public class CurrencyManager : MonoBehaviour
 
     public void AddPollen(int amount)
     {
-        pollen += amount;
+        pollen = Mathf.Min(pollen + amount, maxPollen);
         UpdateUI();
     }
 
@@ -91,8 +117,8 @@ public class CurrencyManager : MonoBehaviour
     // -------------------------
     void UpdateUI()
     {
-        if (pollenText != null) pollenText.text = "Pollen: " + pollen;
-        if (honeyText != null) honeyText.text = honey.ToString();
+        if (pollenText != null) pollenText.text = $"Pollen: {pollen} / {maxPollen}";
+        if (honeyText != null) honeyText.text = $"{honey} / {maxHoney}";
     }
 
     // -------------------------

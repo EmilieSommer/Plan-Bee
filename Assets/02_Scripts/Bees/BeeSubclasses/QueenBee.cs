@@ -43,7 +43,21 @@ public class QueenBee : Bee
         {
             transform.localScale = Vector3.one;
         }
+
+#if UNITY_EDITOR
+        if (foragerPrefab == null)
+            foragerPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/ForagerBee.prefab");
+        if (nursePrefab == null)
+            nursePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/NurseBee.prefab");
+        if (housePrefab == null)
+            housePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/HouseBee.prefab");
+#endif
     }
+
+    [Header("Starting Bees")]
+    public GameObject foragerPrefab;
+    public GameObject nursePrefab;
+    public GameObject housePrefab; // Worker
 
     protected override void Start()
     {
@@ -57,6 +71,27 @@ public class QueenBee : Bee
         {
             healthSlider.maxValue = maxHealth;
             healthSlider.value = currentHealth;
+        }
+
+        SpawnStartingBees();
+    }
+
+    private void SpawnStartingBees()
+    {
+        if (foragerPrefab != null)
+        {
+            Instantiate(foragerPrefab, transform.position, Quaternion.identity);
+            Instantiate(foragerPrefab, transform.position, Quaternion.identity);
+        }
+        
+        if (nursePrefab != null)
+        {
+            Instantiate(nursePrefab, transform.position, Quaternion.identity);
+        }
+
+        if (housePrefab != null)
+        {
+            Instantiate(housePrefab, transform.position, Quaternion.identity);
         }
     }
 
@@ -152,10 +187,17 @@ public class QueenBee : Bee
 
     protected override void Die()
     {
-        if (gameOverCanvas != null)
-            gameOverCanvas.SetActive(true);
+        if (GameLoopManager.Instance != null)
+        {
+            GameLoopManager.Instance.TriggerGameOver("The Queen has been killed by an enemy! The colony has fallen.");
+        }
+        else
+        {
+            if (gameOverCanvas != null)
+                gameOverCanvas.SetActive(true);
+            Time.timeScale = 0f;
+        }
 
-        Time.timeScale = 0f;
         currentState = BeeState.Dead;
         Destroy(gameObject);
     }

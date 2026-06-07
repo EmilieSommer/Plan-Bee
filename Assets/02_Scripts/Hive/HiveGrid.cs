@@ -336,7 +336,7 @@ public class HiveGrid : MonoBehaviour
         Debug.Log("4 Overlay Tilemaps setup and assigned to HiveVisuals!");
     }
 
-    private UnityEngine.Tilemaps.Tile GetOrSavePersistentTile(Sprite sprite)
+    private UnityEngine.Tilemaps.Tile GetOrSavePersistentTile(Sprite sprite, HiveTileType type)
     {
         string path = UnityEditor.AssetDatabase.GetAssetPath(sprite);
         string dir = System.IO.Path.GetDirectoryName(path);
@@ -347,7 +347,26 @@ public class HiveGrid : MonoBehaviour
         {
             tile = UnityEngine.ScriptableObject.CreateInstance<UnityEngine.Tilemaps.Tile>();
             tile.sprite = sprite;
+
+            if (type == HiveTileType.Hive || type == HiveTileType.Solid)
+                tile.colliderType = UnityEngine.Tilemaps.Tile.ColliderType.Grid;
+            else
+                tile.colliderType = UnityEngine.Tilemaps.Tile.ColliderType.None;
+
             UnityEditor.AssetDatabase.CreateAsset(tile, tilePath);
+        }
+        else
+        {
+            // Update existing tile in case it was generated with wrong collider before
+            var expectedCollider = (type == HiveTileType.Hive || type == HiveTileType.Solid) 
+                ? UnityEngine.Tilemaps.Tile.ColliderType.Grid 
+                : UnityEngine.Tilemaps.Tile.ColliderType.None;
+                
+            if (tile.colliderType != expectedCollider)
+            {
+                tile.colliderType = expectedCollider;
+                UnityEditor.EditorUtility.SetDirty(tile);
+            }
         }
         return tile;
     }
@@ -398,6 +417,12 @@ public class HiveGrid : MonoBehaviour
         tempGrid[new Vector3Int(0, -1, 0)] = HiveTileType.Brood;
         tempGrid[new Vector3Int(1, -1, 0)] = HiveTileType.Brood;
 
+        // 2x2 Storage Zone next to Brood Chamber (4 slots total)
+        tempGrid[new Vector3Int(2, 0, 0)] = HiveTileType.Storage;
+        tempGrid[new Vector3Int(2, -1, 0)] = HiveTileType.Storage;
+        tempGrid[new Vector3Int(3, 0, 0)] = HiveTileType.Storage;
+        tempGrid[new Vector3Int(3, -1, 0)] = HiveTileType.Storage;
+
         foreach (var kvp in tempGrid)
         {
             var pos = kvp.Key;
@@ -409,7 +434,7 @@ public class HiveGrid : MonoBehaviour
                 var nType = tempGrid.ContainsKey(pos + Dirs[i]) ? tempGrid[pos + Dirs[i]] : HiveTileType.None;
                 bool counterpart;
                 if (type == HiveTileType.Hive) {
-                    counterpart = (nType != HiveTileType.Hive);
+                    counterpart = (nType == HiveTileType.None);
                 } else {
                     counterpart = (nType == HiveTileType.Hive || nType == HiveTileType.None);
                 }
@@ -419,7 +444,7 @@ public class HiveGrid : MonoBehaviour
             Sprite bSprite = library.GetBorderSprite(type, borderMask);
             if (bSprite != null)
             {
-                var t = GetOrSavePersistentTile(bSprite);
+                var t = GetOrSavePersistentTile(bSprite, type);
                 builtMap.SetTile(pos, t);
             }
 
@@ -448,7 +473,7 @@ public class HiveGrid : MonoBehaviour
                     {
                         if (overlayMaps[layerIndex] != null)
                         {
-                            var ot = GetOrSavePersistentTile(overlaySprite);
+                            var ot = GetOrSavePersistentTile(overlaySprite, nType);
                             overlayMaps[layerIndex].SetTile(pos, ot);
                         }
                         layerIndex++;
@@ -462,7 +487,55 @@ public class HiveGrid : MonoBehaviour
         {
             foreach (var map in overlayMaps) if (map != null) UnityEditor.EditorUtility.SetDirty(map);
         }
-        Debug.Log("Starting Hive generated beautifully!");
+
+#if UNITY_EDITOR
+        // Clear existing zones
+        var existingZones = FindObjectsOfType<Zone>();
+        foreach (var z in existingZones) DestroyImmediate(z.gameObject);
+
+        // Instantiate prefabs
+        var broodPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/BroodZone.prefab");
+        var storagePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/StorageZone.prefab");
+        
+        if (broodPrefab != null)
+        {
+            var go1 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(broodPrefab);
+            go1.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(0, 0, 0));
+            var go2 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(broodPrefab);
+            go2.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(1, 0, 0));
+            var go3 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(broodPrefab);
+            go3.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(0, -1, 0));
+            var go4 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(broodPrefab);
+            go4.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(1, -1, 0));
+        }
+
+        if (storagePrefab != null)
+        {
+            var go1 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(storagePrefab);
+            go1.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(2, 0, 0));
+            var go2 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(storagePrefab);
+            go2.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(2, -1, 0));
+            var go3 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(storagePrefab);
+            go3.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(3, 0, 0));
+            var go4 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(storagePrefab);
+            go4.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(3, -1, 0));
+        }
+
+        var existingQueen = FindObjectOfType<QueenBee>();
+        if (existingQueen == null)
+        {
+            var queenPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/Bees/QueenBee.prefab");
+            if (queenPrefab != null)
+            {
+                var q = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(queenPrefab);
+                q.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(0, 0, 0));
+            }
+        }
+
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+#endif
+
+        Debug.Log("Starting hive generated perfectly!");
     }
 #endif
 

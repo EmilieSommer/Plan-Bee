@@ -23,6 +23,11 @@ public class HouseBee : Bee
     {
         base.Awake();
         beeType = BeeType.House;
+
+#if UNITY_EDITOR
+        if (honeyPrefab == null)
+            honeyPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/Honey.prefab");
+#endif
     }
 
     protected override void Start()
@@ -49,6 +54,9 @@ public class HouseBee : Bee
 
     protected override bool HasWork()
     {
+        if (CurrencyManager.Instance != null && !CurrencyManager.Instance.HasHoneySpace())
+            return false; // Cannot make more honey!
+
         if (target != null) return true;
 
         if (Pollen.allPollen == null || Pollen.allPollen.Count == 0) return false;
@@ -184,6 +192,12 @@ public class HouseBee : Bee
 
         if (honeyPrefab != null)
             Instantiate(honeyPrefab, transform.position, Quaternion.identity);
+
+        if (CurrencyManager.Instance != null)
+        {
+            CurrencyManager.Instance.UsePollen(1);
+            CurrencyManager.Instance.AddHoney(honeyAmount);
+        }
 
         Destroy(target.gameObject);
         ResetBee();

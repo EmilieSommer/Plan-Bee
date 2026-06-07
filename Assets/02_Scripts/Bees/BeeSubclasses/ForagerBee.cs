@@ -18,13 +18,18 @@ public class ForagerBee : Bee
     private bool isOutForaging = false;
     private bool shelteringFromSnow = false;
 
-    private HouseBeeZone currentZone;
+    private Zone currentZone;
 
     protected override void Awake()
     {
         base.Awake();
         beeType = BeeType.Forager;
         baseMoveSpeed = moveSpeed;
+
+#if UNITY_EDITOR
+        if (pollenPrefab == null)
+            pollenPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/Pollen.prefab");
+#endif
     }
 
     protected override void Start()
@@ -44,6 +49,9 @@ public class ForagerBee : Bee
 
     protected override void OnJobFound()
     {
+        if (CurrencyManager.Instance != null && !CurrencyManager.Instance.HasPollenSpace())
+            return; // Wait until there is space for pollen!
+
         if (!isOutForaging && !shelteringFromSnow)
             StartForaging();
     }
@@ -139,10 +147,12 @@ public class ForagerBee : Bee
 
         MarkAsWorking();
 
-        currentZone = FindNearestHouseZone();
+        currentZone = FindNearestStorageZone();
 
         Vector2 randomDir = Random.insideUnitCircle.normalized;
         targetPosition = (Vector2)transform.position + randomDir * 20f;
+        
+        Debug.Log($"[{beeName}] StartForaging: targetPosition={targetPosition}. Path count={(currentPath != null ? currentPath.Count : 0)}");
 
         currentState = BeeState.Moving;
     }
@@ -150,8 +160,12 @@ public class ForagerBee : Bee
     void StartReturning()
     {
         isOutForaging = false;
-        currentZone = FindNearestHouseZone();
+
+        currentZone = FindNearestStorageZone();
         targetPosition = currentZone != null ? currentZone.transform.position : homePosition;
+        
+        Debug.Log($"[{beeName}] StartReturning: targetPosition={targetPosition}. Zone={(currentZone != null ? currentZone.name : "null")}. Path count={(currentPath != null ? currentPath.Count : 0)}");
+        
         currentState = BeeState.Returning;
     }
 
@@ -167,14 +181,40 @@ public class ForagerBee : Bee
                 return;
             }
 
+            Debug.Log($"[{beeName}] Reached hive! Depositing pollen.");
             DepositPollen();
+        }
+        else
+        {
+            MoveToTarget();
+            if (currentVelocity.sqrMagnitude == 0)
+            {
+                // Fallback: If pathfinding fails, fly in a straight line back!
+                Vector2 dir = (targetPosition - (Vector2)transform.position).normalized;
+                rb.MovePosition(rb.position + dir * moveSpeed * Time.fixedDeltaTime);
+                RotateTowardsMovement(dir);
+            }
+        }
+    }
+
+    void RotateTowardsMovement(Vector2 dir)
+    {
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
         }
     }
 
     void DepositPollen()
     {
+        Debug.Log($"[{beeName}] DepositPollen called. prefab: {(pollenPrefab != null ? "EXISTS" : "NULL")}, zone: {(currentZone != null ? currentZone.name : "NULL")}");
+
         if (pollenPrefab != null && currentZone != null)
+        {
             Instantiate(pollenPrefab, currentZone.GetDepositPoint(), Quaternion.identity);
+            Debug.Log($"[{beeName}] Instantiated Pollen!");
+        }
 
         if (CurrencyManager.Instance != null)
             CurrencyManager.Instance.AddPollen(pollenPerTrip);
@@ -182,16 +222,16 @@ public class ForagerBee : Bee
         StartForaging();
     }
 
-    HouseBeeZone FindNearestHouseZone()
+    Zone FindNearestStorageZone()
     {
-        HouseBeeZone[] zones = FindObjectsOfType<HouseBeeZone>();
+        Zone[] zones = FindObjectsOfType<Zone>();
 
         float closestDist = Mathf.Infinity;
-        HouseBeeZone closest = null;
+        Zone closest = null;
 
         foreach (var zone in zones)
         {
-            if (!zone.IsActive) continue;
+            if (!zone.isStorageZone) continue;
 
             float dist = Vector2.Distance(transform.position, zone.transform.position);
             if (dist < closestDist)

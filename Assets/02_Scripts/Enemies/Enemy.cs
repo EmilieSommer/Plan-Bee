@@ -25,12 +25,17 @@ public class Enemy : MonoBehaviour
     protected float attackTimer;
     protected Bee targetBee;
 
+    private Vector3 baseScale;
+    private Vector3 lastPos;
+
     // -------------------------
     // INIT
     // -------------------------
     protected virtual void Awake()
     {
         currentHealth = maxHealth;
+        baseScale = transform.localScale;
+        lastPos = transform.position;
     }
 
     protected virtual void Start()
@@ -46,6 +51,50 @@ public class Enemy : MonoBehaviour
         FindNearestBee();
         MoveTowardsBee();
         HandleAttack();
+        UpdateAnimator();
+    }
+
+    protected virtual void UpdateAnimator()
+    {
+        if (baseScale == Vector3.zero) baseScale = transform.localScale;
+
+        bool isMoving = Vector3.Distance(transform.position, lastPos) > 0.001f;
+        lastPos = transform.position;
+
+        if (enemyType == EnemyType.VarroaMite)
+        {
+            if (isMoving)
+            {
+                // Fast bounce and slight forward lean
+                float bounce = Mathf.Abs(Mathf.Sin(Time.time * 30f)) * 0.15f;
+                transform.localScale = baseScale + new Vector3(-bounce * 0.5f, bounce, 0f);
+                transform.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(Time.time * 20f) * 15f);
+            }
+            else
+            {
+                // Idle bounce
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.identity, Time.deltaTime * 10f);
+                float bounce = Mathf.Abs(Mathf.Sin(Time.time * 15f)) * 0.08f;
+                transform.localScale = baseScale + new Vector3(-bounce * 0.5f, bounce, 0f);
+            }
+        }
+        else
+        {
+            // Generic enemy animation
+            if (isMoving)
+            {
+                float waddle = Mathf.Sin(Time.time * 20f) * 10f;
+                transform.localRotation = Quaternion.Euler(0, 0, waddle);
+                
+                float bob = Mathf.Abs(Mathf.Sin(Time.time * 20f)) * 0.05f;
+                transform.localScale = baseScale + new Vector3(bob, bob, 0f);
+            }
+            else
+            {
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.identity, Time.deltaTime * 10f);
+                transform.localScale = Vector3.Lerp(transform.localScale, baseScale, Time.deltaTime * 10f);
+            }
+        }
     }
 
     // -------------------------

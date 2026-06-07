@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class HouseBeeZone : Zone
 {
-    [Header("Zone Settings")]
-    public float depositRadius = 2f;
-
     private bool isActive = false;
     public bool IsActive => isActive;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         zoneType = Bee.BeeType.House;
+        isStorageZone = true; // Act as a valid drop-off for Foragers!
+        depositRadius = 2f; // specific radius for house
 
         // Ensure this zone accepts BOTH House + Forager bees
         SetupCapacities();
@@ -53,6 +53,20 @@ public class HouseBeeZone : Zone
         }
     }
 
+    protected override void Start()
+    {
+        base.Start();
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.AddCapacity(25, 25);
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.RemoveCapacity(25, 25);
+    }
+
     public void SetInactive()
     {
         isActive = false;
@@ -61,11 +75,6 @@ public class HouseBeeZone : Zone
     public void ActivateZone()
     {
         isActive = true;
-    }
-
-    public Vector2 GetDepositPoint()
-    {
-        return (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
     }
 
     private void OnDrawGizmos()

@@ -128,6 +128,14 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void Awake()
     {
+        gameObject.tag = "Bee";
+        int beeLayerIndex = LayerMask.NameToLayer("Bee");
+        if (beeLayerIndex != -1) 
+        {
+            gameObject.layer = beeLayerIndex;
+            Physics2D.IgnoreLayerCollision(beeLayerIndex, beeLayerIndex, true); // Bees pass through each other seamlessly
+        }
+
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
@@ -136,16 +144,19 @@ public abstract class Bee : MonoBehaviour
 
         attackTimer = 0f;
         rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0f;
         rb.freezeRotation = true;
-        rb.bodyType = RigidbodyType2D.Kinematic;
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        Collider2D col = GetComponent<Collider2D>();
 
-        // Disable collisions with each other so they can walk past each other freely
-        avoidanceStrength = 0f;
-        separationStrength = 0f;
+        // Ensure dynamic physics so bees hit walls, but ignore bee-bee collision (set above)
+        if (rb != null)
+        {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.gravityScale = 0f;
+            rb.freezeRotation = true;
+        }
 
         // Automatically scale the bee to be EXACTLY 25/32 of a tile, ignoring PPU issues!
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
 
         if (sr != null && sr.sprite != null)
@@ -236,7 +247,7 @@ public abstract class Bee : MonoBehaviour
         if (isBeingDragged || lockMovement) return;
 
         overlapCheckTimer += Time.deltaTime;
-        if (overlapCheckTimer < 0.5f) return;
+        if (overlapCheckTimer < 2.0f) return;
         overlapCheckTimer = 0f;
 
         if (HiveGrid.Instance == null) return;
@@ -268,6 +279,7 @@ public abstract class Bee : MonoBehaviour
         }
     }
 
+
     void BumpToAdjacentCell()
     {
         Vector3Int myCell = HiveGrid.Instance.WorldToCell(transform.position);
@@ -295,6 +307,8 @@ public abstract class Bee : MonoBehaviour
         }
     }
 
+    private Vector3 baseScale;
+
     protected virtual void UpdateAnimator()
     {
         if (animator != null)
@@ -303,6 +317,30 @@ public abstract class Bee : MonoBehaviour
             animator.SetBool("IsMoving", isMoving);
             animator.SetBool("IsWorking", currentState == BeeState.Working);
             animator.SetBool("IsIdle", currentState == BeeState.Idle && !isMoving);
+        }
+
+        // Procedural Animation
+        if (baseScale == Vector3.zero) baseScale = transform.localScale;
+
+        bool moving = currentVelocity.sqrMagnitude > 0.01f;
+
+        if (moving)
+        {
+            // Walk: Waddle rotation and slight uniform scale bobbing
+            float waddle = Mathf.Sin(Time.time * 25f) * 12f;
+            transform.localRotation = Quaternion.Euler(0, 0, waddle);
+
+            float bob = Mathf.Abs(Mathf.Sin(Time.time * 25f)) * 0.08f;
+            transform.localScale = baseScale + new Vector3(bob, bob, 0f);
+        }
+        else
+        {
+            // Idle: Reset rotation, soft breathing scale
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.identity, Time.deltaTime * 10f);
+            
+            float breathX = Mathf.Sin(Time.time * 3f) * 0.03f;
+            float breathY = Mathf.Cos(Time.time * 3f) * 0.03f;
+            transform.localScale = baseScale + new Vector3(breathX, breathY, 0f);
         }
     }
 
@@ -441,24 +479,22 @@ public abstract class Bee : MonoBehaviour
         if (isBeingDragged || lockMovement)
         {
             currentVelocity = Vector2.zero;
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
             return;
         }
 
-        if (currentState == BeeState.Working || currentState == BeeState.Dead)
+        if (currentState == BeeState.Working || currentState == BeeState.Dead || (currentState == BeeState.Idle && isAtHome))
         {
             currentVelocity = Vector2.zero;
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
-            return;
-        }
-
-        if (currentState == BeeState.Idle && isAtHome)
-        {
-            currentVelocity = Vector2.zero;
-            rb.linearVelocity = Vector2.zero;
-            rb.angularVelocity = 0f;
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
             return;
         }
 
@@ -466,10 +502,7 @@ public abstract class Bee : MonoBehaviour
 
         if (currentState == BeeState.Moving || currentState == BeeState.Returning)
         {
-            Vector2 steering = moveDirection * moveSpeed;
-            steering += GetForwardAvoidance();
-            steering += GetSeparationForce() * separationStrength;
-            desiredVelocity = steering;
+            desiredVelocity = moveDirection * moveSpeed;
         }
 
         currentVelocity = Vector2.Lerp(
@@ -522,6 +555,15 @@ public abstract class Bee : MonoBehaviour
     {
         if (currentPath == null || currentPath.Count == 0 || currentPathIndex >= currentPath.Count)
         {
+            // Fallback for Foragers/Enemies flying off the tilemap!
+            Vector2 directToTarget = targetPosition - rb.position;
+            if (directToTarget.sqrMagnitude > 0.05f)
+            {
+                moveDirection = directToTarget.normalized;
+                currentVelocity = moveDirection * moveSpeed;
+                return;
+            }
+
             currentVelocity = Vector2.zero;
             OnReachedTarget();
             return;

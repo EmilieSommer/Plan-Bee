@@ -6,6 +6,12 @@ public class Honey : MonoBehaviour
 
     private bool isCarried = false;
 
+    private void Start()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) sr.sortingOrder = 1000;
+    }
+
     public void SetCarried(bool state)
     {
         isCarried = state;

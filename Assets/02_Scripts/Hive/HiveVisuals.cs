@@ -209,8 +209,9 @@ public class HiveVisuals : MonoBehaviour
             bool counterpart;
             if (self == HiveTileType.Hive)
             {
-                // Hive dirt draws a wall against ANYTHING that isn't Hive dirt
-                counterpart = (n != HiveTileType.Hive);
+                // Hive dirt ONLY draws a wall against Empty space. 
+                // It treats internal rooms as solid ground, preventing internal corners!
+                counterpart = (n == HiveTileType.None);
             }
             else
             {

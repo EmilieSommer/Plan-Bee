@@ -35,6 +35,8 @@ public class SeasonManager : MonoBehaviour
     private Season previousSeason;
     private SeasonProfile lastProfile;
 
+    public static event System.Action<Season> OnSeasonChangedEvent;
+
     private Coroutine sceneryCoroutine;
 
     private enum WeatherState { Dry, Rain }
@@ -83,6 +85,8 @@ public class SeasonManager : MonoBehaviour
 
     void OnSeasonChanged()
     {
+        OnSeasonChangedEvent?.Invoke(currentSeason);
+
         StartCoroutine(ShowSeasonPopup());
 
         ApplyWeather();
