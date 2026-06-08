@@ -1023,7 +1023,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
   fadePanel: {fileID: 69881929}
   fadeDuration: 1
-  gameSceneName: K-MainScene
+  gameSceneName: Merged_MainScene
 --- !u!4 &1568036581
 Transform:
   m_ObjectHideFlags: 0

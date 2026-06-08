@@ -551,13 +551,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 39447096}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 798d536e519832f4ca7d22b9aa871563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeeTypeHoverUI
-  hoverPanel: {fileID: 1548664969}
-  iconCountTextObj: {fileID: 0}
+  hoverPanel: {fileID: 0}
+  iconCountTextObj: {fileID: 2071226422}
   hoverCountTextObj: {fileID: 0}
   iconCountText: {fileID: 2071226424}
   hoverCountText: {fileID: 2013745796}
@@ -779,7 +779,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -48.838303, y: 0, z: -125.88451, w: 0}
+  m_margin: {x: 35.24666, y: 0, z: -42.53389, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -3498,7 +3498,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 798d536e519832f4ca7d22b9aa871563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeeTypeHoverUI
-  hoverPanel: {fileID: 1847809995}
+  hoverPanel: {fileID: 0}
   iconCountTextObj: {fileID: 1943128105}
   hoverCountTextObj: {fileID: 0}
   iconCountText: {fileID: 1943128107}
@@ -13100,7 +13100,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -163.61143, y: -180.30513}
+  m_AnchoredPosition: {x: -163.61143, y: 130}
   m_SizeDelta: {x: -305.2119, y: -426.5399}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1350578786
@@ -15458,7 +15458,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 798d536e519832f4ca7d22b9aa871563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeeTypeHoverUI
-  hoverPanel: {fileID: 512436289}
+  hoverPanel: {fileID: 0}
   iconCountTextObj: {fileID: 476366126}
   hoverCountTextObj: {fileID: 0}
   iconCountText: {fileID: 476366128}
@@ -16737,7 +16737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 798d536e519832f4ca7d22b9aa871563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeeTypeHoverUI
-  hoverPanel: {fileID: 184738573}
+  hoverPanel: {fileID: 0}
   iconCountTextObj: {fileID: 1202007744}
   hoverCountTextObj: {fileID: 0}
   iconCountText: {fileID: 1202007746}
@@ -17920,12 +17920,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1909443075}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 798d536e519832f4ca7d22b9aa871563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BeeTypeHoverUI
-  hoverPanel: {fileID: 279613458}
+  hoverPanel: {fileID: 0}
   iconCountTextObj: {fileID: 1587002839}
   hoverCountTextObj: {fileID: 0}
   iconCountText: {fileID: 1587002841}
@@ -18851,7 +18851,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2014993029
 RectTransform:
   m_ObjectHideFlags: 0

@@ -2932,11 +2932,18 @@ MonoBehaviour:
   - type: 2
     capacity: 1
     current: 0
+  depositRadius: 1.5
+  isStorageZone: 0
   nurseCanvas: {fileID: 3040297141966562466}
   slots:
   - {fileID: 2879359856423169550}
   - {fileID: 8770563302417467611}
   - {fileID: 4858288723565428659}
+  foragerCost: 5
+  nurseCost: 2
+  houseCost: 1
+  builderCost: 5
+  droneCost: 10
 --- !u!1 &4700276772599572744
 GameObject:
   m_ObjectHideFlags: 0

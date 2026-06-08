@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc15f5c616ae64e449464bc90dd0aa86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SleepZone
-  capacityPerZone: 1
+  capacityPerZone: 2
 --- !u!114 &-2214563520536479670
 MonoBehaviour:
   m_ObjectHideFlags: 0
