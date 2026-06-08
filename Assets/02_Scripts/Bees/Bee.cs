@@ -324,25 +324,31 @@ public abstract class Bee : MonoBehaviour
 
         // Procedural Animation
         if (baseScale == Vector3.zero) baseScale = transform.localScale;
-
-        if (currentVelocity.x > 0.01f) baseScale.x = Mathf.Abs(baseScale.x);
-        else if (currentVelocity.x < -0.01f) baseScale.x = -Mathf.Abs(baseScale.x);
+        baseScale.x = Mathf.Abs(baseScale.x); // Ensure it's not flipped anymore
 
         bool moving = currentVelocity.sqrMagnitude > 0.01f;
 
         if (moving)
         {
+            // Point "forward" towards velocity. Assuming sprite faces UP natively.
+            float targetAngle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg - 90f;
+            
             // Walk: Waddle rotation and slight uniform scale bobbing
             float waddle = Mathf.Sin(Time.time * 25f) * 12f;
-            transform.localRotation = Quaternion.Euler(0, 0, waddle);
+            
+            Quaternion targetRot = Quaternion.Euler(0, 0, targetAngle + waddle);
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRot, Time.deltaTime * 15f);
 
             float bob = Mathf.Abs(Mathf.Sin(Time.time * 25f)) * 0.08f;
             transform.localScale = baseScale + new Vector3(bob, bob, 0f);
         }
         else
         {
-            // Idle: Reset rotation, soft breathing scale
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.identity, Time.deltaTime * 10f);
+            // Idle: Maintain current facing direction but remove waddle, soft breathing scale
+            // Instead of resetting to Quaternion.identity, we just remove the waddle.
+            Vector3 euler = transform.localRotation.eulerAngles;
+            Quaternion idleRot = Quaternion.Euler(0, 0, euler.z); 
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, idleRot, Time.deltaTime * 10f);
             
             float breathX = Mathf.Sin(Time.time * 3f) * 0.03f;
             float breathY = Mathf.Cos(Time.time * 3f) * 0.03f;

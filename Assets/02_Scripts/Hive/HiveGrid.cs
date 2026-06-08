@@ -448,7 +448,7 @@ public class HiveGrid : MonoBehaviour
                 builtMap.SetTile(pos, t);
             }
 
-            if (overlayMaps != null && type != HiveTileType.None)
+            if (overlayMaps != null && type != HiveTileType.None && type != HiveTileType.Hive)
             {
                 // Group neighbors by their room type
                 System.Collections.Generic.Dictionary<HiveTileType, int> neighborMasks = new System.Collections.Generic.Dictionary<HiveTileType, int>();
@@ -466,8 +466,8 @@ public class HiveGrid : MonoBehaviour
                 foreach (var nKvp in neighborMasks)
                 {
                     var nType = nKvp.Key;
-                    var mask = nKvp.Value;
-                    var overlaySprite = library.GetOverlaySprite(nType, mask); // Fetch from neighbor's library!
+                    var invertedMask = 15 - nKvp.Value; // Invert mask so graphic appears on connected side
+                    var overlaySprite = library.GetOverlaySprite(nType, invertedMask); // Fetch from neighbor's library!
 
                     if (overlaySprite != null && layerIndex < overlayMaps.Length)
                     {

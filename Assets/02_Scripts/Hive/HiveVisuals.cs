@@ -176,8 +176,8 @@ public class HiveVisuals : MonoBehaviour
         foreach (var kvp in neighborMasks)
         {
             var nType = kvp.Key;
-            var mask = kvp.Value;
-            var overlaySprite = library.GetOverlaySprite(nType, mask); // Fetch from neighbor's library!
+            var invertedMask = 15 - kvp.Value; // Invert mask so the graphic appears on the connected side!
+            var overlaySprite = library.GetOverlaySprite(nType, invertedMask); // Fetch from neighbor's library!
 
             if (overlaySprite != null && overlayTilemaps != null && layerIndex < overlayTilemaps.Length)
             {

@@ -14,6 +14,9 @@ public class HiveManager : MonoBehaviour
     // NEW: queued eggs reserve capacity
     private int queuedEggs = 0;
 
+    [Header("UI")]
+    public TMPro.TextMeshProUGUI totalBeesText;
+
     private void Awake()
     {
         Instance = this;
@@ -36,6 +39,29 @@ public class HiveManager : MonoBehaviour
         foreach (SleepZone zone in zones)
         {
             RegisterSleepZone(zone);
+        }
+
+        // Auto-link UI if it's missing in the inspector
+        if (totalBeesText == null)
+        {
+            TMPro.TextMeshProUGUI[] allTexts = FindObjectsOfType<TMPro.TextMeshProUGUI>();
+            foreach(var t in allTexts)
+            {
+                string n = t.name.ToLower();
+                if (n.Contains("total") || n.Contains("capacity") || n.Contains("bee") && n.Contains("text"))
+                {
+                    totalBeesText = t;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (totalBeesText != null)
+        {
+            totalBeesText.text = totalBees + " / " + GetHiveCapacity();
         }
     }
 

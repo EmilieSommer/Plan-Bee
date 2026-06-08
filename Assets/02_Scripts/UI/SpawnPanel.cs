@@ -12,6 +12,27 @@ public class SpawnPanel : MonoBehaviour
     public int builderCost = 15;
     public int droneCost = 20;
 
+    private void Start()
+    {
+        // Auto-sync button text to match the costs
+        UnityEngine.UI.Button[] buttons = GetComponentsInChildren<UnityEngine.UI.Button>(true);
+        foreach (var b in buttons)
+        {
+            string n = b.gameObject.name.ToLower();
+            if (n.Contains("forager")) UpdateBtnText(b, foragerCost, "Forager");
+            else if (n.Contains("nurse")) UpdateBtnText(b, nurseCost, "Nurse");
+            else if (n.Contains("house")) UpdateBtnText(b, houseCost, "House");
+            else if (n.Contains("builder")) UpdateBtnText(b, builderCost, "Builder");
+            else if (n.Contains("drone")) UpdateBtnText(b, droneCost, "Drone");
+        }
+    }
+
+    private void UpdateBtnText(UnityEngine.UI.Button btn, int cost, string label)
+    {
+        var txt = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        if (txt != null) txt.text = $"{label}\n({cost} Honey)";
+    }
+
     public void TogglePanel()
     {
         NurseBeeZone zone = FindObjectOfType<NurseBeeZone>();

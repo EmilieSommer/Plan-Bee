@@ -6,7 +6,7 @@ public class MainMenu : MonoBehaviour
 {
     public CanvasGroup fadePanel;
     public float fadeDuration = 1f;
-    public string gameSceneName = "Game";
+    public string gameSceneName = "K-MainScene";
 
     private void Start()
     {

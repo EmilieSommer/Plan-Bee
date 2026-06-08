@@ -31,10 +31,10 @@ public class BuildPanel : MonoBehaviour
     public GameObject dronePrefab;
 
     [Header("Zone Costs")]
-    public int broodCost = 5;
-    public int storageCost = 10;
+    public int broodCost = 4;
+    public int storageCost = 6;
     public int insideHiveCost = 1;
-    public int droneCost = 10;
+    public int droneCost = 8;
 
     [Header("Zone Build Times")]
     public float broodBuildTime = 10f;

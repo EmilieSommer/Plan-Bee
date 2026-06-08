@@ -36,7 +36,7 @@ public static class RoomTileSetup
             "Assets/05_Tiles/Storage/Storage_Border",
             "Assets/05_Tiles/Storage/Storage_Overlay"),
         (HiveTileType.Hive,
-            "Assets/05_Tiles/Hive/Hive_Outside_Border",
+            "Assets/05_Tiles/Hive/Hive_Borders",
             null),
     };
 
@@ -53,13 +53,28 @@ public static class RoomTileSetup
         var sets = new List<HiveTileLibrary.TileSet>();
         foreach (var (type, borderFolder, overlayFolder) in Map)
         {
+            var borderSprites = new Sprite[16];
+            foreach (var bf in borderFolder.Split('|'))
+            {
+                var loaded = LoadByMask(bf, isOverlay: false);
+                for (int i = 0; i < 16; i++) if (loaded[i] != null) borderSprites[i] = loaded[i];
+            }
+
+            var overlaySprites = new Sprite[16];
+            if (overlayFolder != null)
+            {
+                foreach (var of in overlayFolder.Split('|'))
+                {
+                    var loaded = LoadByMask(of, isOverlay: true);
+                    for (int i = 0; i < 16; i++) if (loaded[i] != null) overlaySprites[i] = loaded[i];
+                }
+            }
+
             sets.Add(new HiveTileLibrary.TileSet
             {
                 type    = type,
-                border  = LoadByMask(borderFolder, isOverlay: false),
-                overlay = overlayFolder != null
-                    ? LoadByMask(overlayFolder, isOverlay: true)
-                    : new Sprite[16],
+                border  = borderSprites,
+                overlay = overlaySprites,
             });
         }
         library.sets = sets.ToArray();
@@ -116,10 +131,28 @@ public static class RoomTileSetup
             }
 
             int mask = 0;
-            if (name.Contains('t')) mask |= 1;
-            if (name.Contains('b')) mask |= 2;
-            if (name.Contains('l')) mask |= 4;
-            if (name.Contains('r')) mask |= 8;
+            
+            // Check if name uses the exact string names (e.g. "Corner_BottomLeft")
+            string[] borderNames = {
+                "Isolated", "DeadEnd_Top", "DeadEnd_Bottom", "Tunnel_Vertical",
+                "DeadEnd_Left", "Corner_BottomRight", "Corner_TopRight", "Wall_Right",
+                "DeadEnd_Right", "Corner_BottomLeft", "Corner_TopLeft", "Wall_Left",
+                "Tunnel_Horizontal", "Wall_Bottom", "Wall_Top", "Center"
+            };
+            
+            int foundIndex = System.Array.IndexOf(borderNames, name);
+            if (foundIndex >= 0)
+            {
+                mask = foundIndex;
+            }
+            else
+            {
+                // Fallback to t-b-l-r parsing for Hive_Outside_Border
+                if (name.Contains("t")) mask |= 1;
+                if (name.Contains("b")) mask |= 2;
+                if (name.Contains("l")) mask |= 4;
+                if (name.Contains("r")) mask |= 8;
+            }
 
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
             if (sprite == null) continue;
