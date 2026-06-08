@@ -146,6 +146,7 @@ public abstract class Bee : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) sr.sortingOrder = 10;
         Collider2D col = GetComponent<Collider2D>();
 
         // Ensure dynamic physics so bees hit walls, but ignore bee-bee collision (set above)
@@ -158,6 +159,8 @@ public abstract class Bee : MonoBehaviour
 
         // Automatically scale the bee to be EXACTLY 25/32 of a tile, ignoring PPU issues!
         if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
+
+        if (sr != null) sr.sortingOrder = 10;
 
         if (sr != null && sr.sprite != null)
         {
@@ -321,6 +324,9 @@ public abstract class Bee : MonoBehaviour
 
         // Procedural Animation
         if (baseScale == Vector3.zero) baseScale = transform.localScale;
+
+        if (currentVelocity.x > 0.01f) baseScale.x = Mathf.Abs(baseScale.x);
+        else if (currentVelocity.x < -0.01f) baseScale.x = -Mathf.Abs(baseScale.x);
 
         bool moving = currentVelocity.sqrMagnitude > 0.01f;
 
@@ -889,6 +895,13 @@ public abstract class Bee : MonoBehaviour
             {
                 transform.position = homePosition;
                 rb.position = homePosition;
+            }
+            else
+            {
+                // Walk to the center of the tile they were dropped on!
+                targetPosition = HiveGrid.Instance.CellToWorld(cell);
+                currentState = BeeState.Moving;
+                isAtHome = false;
             }
         }
     }

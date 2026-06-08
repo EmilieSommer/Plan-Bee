@@ -448,7 +448,7 @@ public class HiveGrid : MonoBehaviour
                 builtMap.SetTile(pos, t);
             }
 
-            if (overlayMaps != null && type != HiveTileType.Hive && type != HiveTileType.None)
+            if (overlayMaps != null && type != HiveTileType.None)
             {
                 // Group neighbors by their room type
                 System.Collections.Generic.Dictionary<HiveTileType, int> neighborMasks = new System.Collections.Generic.Dictionary<HiveTileType, int>();

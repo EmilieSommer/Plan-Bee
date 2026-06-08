@@ -19,6 +19,10 @@ public class SeasonManager : MonoBehaviour
     public GameObject autumnPopup;
     public GameObject winterPopup;
 
+    [Header("Season Settings")]
+    [Tooltip("How long each season lasts in seconds.")]
+    public float seasonDuration = 180f;
+
     [Header("Season Profiles")]
     public SeasonProfile spring;
     public SeasonProfile summer;

@@ -32,12 +32,12 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             return;
         }
 
-        // 🧠 PREREQUISITE CHECK: Do we have the required zone?
+        // 🧠 PREREQUISITE CHECK: Only require a zone for Drones
         Bee.BeeType requiredType = EggToBeeType(egg.eggType);
-        if (ZoneManager.Instance != null && !ZoneManager.Instance.HasZone(requiredType))
+        if (requiredType == Bee.BeeType.Drone && ZoneManager.Instance != null && !ZoneManager.Instance.HasZone(requiredType))
         {
             egg.ResetToStartPosition();
-            UIMessagePopup.Instance.ShowMessage($"You must build a {requiredType} Zone first!");
+            UIMessagePopup.Instance.ShowMessage("You must build a Drone Post first!");
             return;
         }
 

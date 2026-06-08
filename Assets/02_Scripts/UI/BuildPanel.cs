@@ -20,6 +20,10 @@ public class BuildPanel : MonoBehaviour
     [SerializeField] private Button droneBtn;
     [SerializeField] private Button cancelBtn;
 
+    [Header("Price Info Section")]
+    public GameObject priceSection;
+    public TMPro.TextMeshProUGUI priceText;
+
     [Header("Zone Prefabs")]
     public GameObject broodPrefab;
     public GameObject storagePrefab;
@@ -27,10 +31,10 @@ public class BuildPanel : MonoBehaviour
     public GameObject dronePrefab;
 
     [Header("Zone Costs")]
-    public int broodCost = 10;
-    public int storageCost = 20;
-    public int insideHiveCost = 15;
-    public int droneCost = 25;
+    public int broodCost = 5;
+    public int storageCost = 10;
+    public int insideHiveCost = 1;
+    public int droneCost = 10;
 
     [Header("Zone Build Times")]
     public float broodBuildTime = 10f;
@@ -62,6 +66,22 @@ public class BuildPanel : MonoBehaviour
         if (droneBtn)      droneBtn.onClick.AddListener(()      => SelectZone(dronePrefab, HiveTileType.InsideHive, droneCost, droneBuildTime, droneBtn));
         
         if (cancelBtn)     cancelBtn.onClick.AddListener(Cancel);
+
+        UpdateUIButtonText();
+    }
+
+    private void UpdateUIButtonText()
+    {
+        if (broodBtn) UpdateBtnText(broodBtn, $"Brood\n({broodCost} Honey)");
+        if (storageBtn) UpdateBtnText(storageBtn, $"Storage\n({storageCost} Honey)");
+        if (insideHiveBtn) UpdateBtnText(insideHiveBtn, $"Space\n({insideHiveCost} Honey)");
+        if (droneBtn) UpdateBtnText(droneBtn, $"Drone Post\n({droneCost} Honey)");
+    }
+
+    private void UpdateBtnText(Button btn, string newText)
+    {
+        TMPro.TextMeshProUGUI txt = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        if (txt != null) txt.text = newText;
     }
 
     void Update()
@@ -84,8 +104,8 @@ public class BuildPanel : MonoBehaviour
             Cancel(); return;
         }
 
-        // Place on left-click, skip if over UI
-        if (!Input.GetMouseButtonDown(0)) return;
+        // Place on left-click (hold to paint), skip if over UI
+        if (!Input.GetMouseButton(0)) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         Vector3 world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -140,6 +160,27 @@ public class BuildPanel : MonoBehaviour
         _selectedTime = time;
         _activeBtn = btn;
         if (_activeBtn) _activeBtn.image.color = selectedColor;
+
+        if (priceSection != null) priceSection.SetActive(true);
+        if (priceText != null)
+        {
+            string zoneName = "Zone";
+            if (visualType == HiveTileType.Brood) zoneName = "Brood Chamber";
+            else if (visualType == HiveTileType.Storage) zoneName = "Storage Area";
+            else if (btn == droneBtn) zoneName = "Drone Post";
+            else if (visualType == HiveTileType.InsideHive) zoneName = "Space";
+
+            string desc = "";
+            switch (zoneName)
+            {
+                case "Brood Chamber": desc = "Hatch new bees here to expand your colony."; break;
+                case "Storage Area": desc = "A safe place for Foragers to drop off precious pollen and honey."; break;
+                case "Drone Post": desc = "Drones defend the hive but need a post!"; break;
+                case "Space": desc = "Expand your hive! Bees need solid space to walk on."; break;
+            }
+
+            priceText.text = $"<size=120%><b>{zoneName.ToUpper()}</b></size>\n{desc}\nPrice: {cost}";
+        }
     }
 
     private void ClearSelection()
@@ -148,6 +189,8 @@ public class BuildPanel : MonoBehaviour
         _selectedTile = HiveTileType.None;
         _selectedPrefab = null;
         _selectedVisualForPrefab = HiveTileType.None;
+
+        if (priceSection != null) priceSection.SetActive(false);
     }
 
     public void Cancel()

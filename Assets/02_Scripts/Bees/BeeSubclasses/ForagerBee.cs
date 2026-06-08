@@ -210,14 +210,23 @@ public class ForagerBee : Bee
     {
         Debug.Log($"[{beeName}] DepositPollen called. prefab: {(pollenPrefab != null ? "EXISTS" : "NULL")}, zone: {(currentZone != null ? currentZone.name : "NULL")}");
 
+        Vector2 pos = transform.position;
         if (pollenPrefab != null && currentZone != null)
         {
-            Instantiate(pollenPrefab, currentZone.GetDepositPoint(), Quaternion.identity);
+            pos = currentZone.GetDepositPoint();
+            GameObject p = Instantiate(pollenPrefab, pos, Quaternion.identity);
+            p.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
+            SpriteRenderer sr = p.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = 4; // Above hive (0-3), below bees (10)
+            
             Debug.Log($"[{beeName}] Instantiated Pollen!");
         }
 
         if (CurrencyManager.Instance != null)
+        {
             CurrencyManager.Instance.AddPollen(pollenPerTrip);
+            FloatingText.Create(pos, $"+{pollenPerTrip}", new Color(1f, 0.4f, 0f)); // Pollen Orange
+        }
 
         StartForaging();
     }

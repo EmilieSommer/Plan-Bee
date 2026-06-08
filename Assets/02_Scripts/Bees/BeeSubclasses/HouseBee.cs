@@ -188,19 +188,50 @@ public class HouseBee : Bee
 
     void Convert()
     {
-        if (target == null) return;
-
-        if (honeyPrefab != null)
-            Instantiate(honeyPrefab, transform.position, Quaternion.identity);
-
-        if (CurrencyManager.Instance != null)
+        if (target != null)
         {
-            CurrencyManager.Instance.UsePollen(1);
-            CurrencyManager.Instance.AddHoney(honeyAmount);
+            if (CurrencyManager.Instance != null && CurrencyManager.Instance.pollen > 0)
+                CurrencyManager.Instance.UsePollen(1);
+
+            Vector2 spawnPos = target.transform.position;
+            Destroy(target.gameObject);
+
+            if (honeyPrefab != null)
+            {
+                GameObject h = Instantiate(honeyPrefab, spawnPos, Quaternion.identity);
+                h.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
+                SpriteRenderer sr = h.GetComponent<SpriteRenderer>();
+                if (sr != null) sr.sortingOrder = 4; // Above hive (0-3), below bees (10)
+
+                // Auto-pickup after 1 second
+                StartCoroutine(PickupHoneyCoroutine(h, honeyAmount));
+            }
+            else
+            {
+                Debug.LogWarning("Honey Prefab is NULL!");
+                if (CurrencyManager.Instance != null)
+                    CurrencyManager.Instance.AddHoney(honeyAmount);
+            }
         }
 
-        Destroy(target.gameObject);
         ResetBee();
+    }
+
+    private System.Collections.IEnumerator PickupHoneyCoroutine(GameObject honeyObj, int amount)
+    {
+        yield return new WaitForSeconds(1f);
+        Vector2 pos = transform.position;
+        if (honeyObj != null)
+        {
+            pos = honeyObj.transform.position;
+            Destroy(honeyObj);
+        }
+            
+        if (CurrencyManager.Instance != null)
+        {
+            CurrencyManager.Instance.AddHoney(amount);
+            FloatingText.Create(pos, $"+{amount}", new Color(1f, 0.8f, 0.2f)); // Honey Yellow
+        }
     }
 
     void ResetBee()

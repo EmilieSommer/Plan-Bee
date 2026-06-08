@@ -29,16 +29,16 @@ public class CurrencyManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
-    }
 
-    private void Start()
-    {
-        // Start with empty max capacities, zones will register themselves
+        // Start with empty max capacities, zones will register themselves in Start()
         pollen = 0;
         maxPollen = 0;
         honey = 0;
         maxHoney = 0;
-        
+    }
+
+    private void Start()
+    {
         UpdateUI();
 
         if (warningPanel != null)
@@ -97,7 +97,7 @@ public class CurrencyManager : MonoBehaviour
     {
         if (pollen < amount)
         {
-            TriggerNotEnoughResource("Not enough pollen!");
+            // Silently fail, as HouseBees check this automatically
             return false;
         }
 
@@ -117,6 +117,18 @@ public class CurrencyManager : MonoBehaviour
     // -------------------------
     void UpdateUI()
     {
+        if (pollenText == null || honeyText == null)
+        {
+            var allTexts = FindObjectsOfType<TextMeshProUGUI>(true);
+            foreach (var t in allTexts)
+            {
+                if (pollenText == null && t.name.ToLower().Contains("pollen"))
+                    pollenText = t;
+                if (honeyText == null && t.name.ToLower().Contains("honey"))
+                    honeyText = t;
+            }
+        }
+
         if (pollenText != null) pollenText.text = $"Pollen: {pollen} / {maxPollen}";
         if (honeyText != null) honeyText.text = $"{honey} / {maxHoney}";
     }

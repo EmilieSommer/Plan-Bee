@@ -95,6 +95,7 @@ MonoBehaviour:
   zoneType: 0
   limits: []
   depositRadius: 2
+  isStorageZone: 1
 --- !u!114 &-3257511840042143829
 MonoBehaviour:
   m_ObjectHideFlags: 0

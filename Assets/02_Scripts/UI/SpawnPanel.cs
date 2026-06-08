@@ -2,12 +2,34 @@ using UnityEngine;
 
 public class SpawnPanel : MonoBehaviour
 {
+    [Header("UI Structure")]
+    public GameObject spawnSubmenu;
+
     [Header("Costs")]
     public int foragerCost = 10;
     public int nurseCost = 5;
     public int houseCost = 5;
     public int builderCost = 15;
     public int droneCost = 20;
+
+    public void TogglePanel()
+    {
+        NurseBeeZone zone = FindObjectOfType<NurseBeeZone>();
+        if (zone != null && zone.nurseCanvas != null)
+        {
+            GameObject panel = zone.nurseCanvas;
+            panel.SetActive(!panel.activeSelf);
+
+            if (panel.activeSelf && ClickManager.Instance != null)
+            {
+                ClickManager.Instance.RegisterCanvas(panel);
+            }
+        }
+        else
+        {
+            UIMessagePopup.Instance.ShowMessage("You need a Brood Chamber to breed bees!");
+        }
+    }
 
     public void SpawnForager() => TrySpawn(EggType.Forager, Bee.BeeType.Forager, foragerCost);
     public void SpawnNurse()   => TrySpawn(EggType.Nurse, Bee.BeeType.Nurse, nurseCost);

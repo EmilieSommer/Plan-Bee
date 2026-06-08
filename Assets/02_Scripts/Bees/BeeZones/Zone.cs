@@ -24,7 +24,7 @@ public class Zone : MonoBehaviour
 
     public Vector2 GetDepositPoint()
     {
-        return (Vector2)transform.position + Random.insideUnitCircle * depositRadius;
+        return (Vector2)transform.position;
     }
 
     protected virtual void Awake()

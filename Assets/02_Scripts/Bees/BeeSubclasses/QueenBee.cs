@@ -51,6 +51,8 @@ public class QueenBee : Bee
             nursePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/NurseBee.prefab");
         if (housePrefab == null)
             housePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/HouseBee.prefab");
+        if (builderPrefab == null)
+            builderPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/BuilderBee.prefab");
 #endif
     }
 
@@ -58,6 +60,7 @@ public class QueenBee : Bee
     public GameObject foragerPrefab;
     public GameObject nursePrefab;
     public GameObject housePrefab; // Worker
+    public GameObject builderPrefab;
 
     protected override void Start()
     {
@@ -81,7 +84,6 @@ public class QueenBee : Bee
         if (foragerPrefab != null)
         {
             Instantiate(foragerPrefab, transform.position, Quaternion.identity);
-            Instantiate(foragerPrefab, transform.position, Quaternion.identity);
         }
         
         if (nursePrefab != null)
@@ -92,6 +94,11 @@ public class QueenBee : Bee
         if (housePrefab != null)
         {
             Instantiate(housePrefab, transform.position, Quaternion.identity);
+        }
+
+        if (builderPrefab != null)
+        {
+            Instantiate(builderPrefab, transform.position, Quaternion.identity);
         }
     }
 

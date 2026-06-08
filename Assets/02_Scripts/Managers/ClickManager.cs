@@ -37,6 +37,13 @@ public class ClickManager : MonoBehaviour
     private GameObject activeCanvas;
     private bool uiOpen;
 
+    public static ClickManager Instance;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     void Update()
     {
         HandleUIClose();
@@ -53,6 +60,12 @@ public class ClickManager : MonoBehaviour
 
         BeeInfoUI.Instance.Close();
         CloseUI();
+    }
+
+    public void RegisterCanvas(GameObject canvas)
+    {
+        activeCanvas = canvas;
+        uiOpen = true;
     }
 
    void HandleMouseDown()
@@ -179,12 +192,6 @@ public class ClickManager : MonoBehaviour
             {
                 pendingBuildZone.Open();
                 activeCanvas = pendingBuildZone.buildCanvas;
-                uiOpen = true;
-            }
-            else if (pendingNurseZone != null)
-            {
-                pendingNurseZone.Open();
-                activeCanvas = pendingNurseZone.nurseCanvas;
                 uiOpen = true;
             }
         }

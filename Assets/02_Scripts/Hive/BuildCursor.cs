@@ -32,6 +32,9 @@ public class BuildCursor : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(this); return; }
         Instance = this;
 
+        // Keep it underneath the bees (10), but above the other grid visuals (0-3)
+        if (hoverTilemap != null) hoverTilemap.GetComponent<UnityEngine.Tilemaps.TilemapRenderer>().sortingOrder = 5;
+
         _validTile   = MakeTile(validHoverSprite);
         _invalidTile = MakeTile(invalidHoverSprite);
         _pressedTile = MakeTile(invalidPressedSprite);
