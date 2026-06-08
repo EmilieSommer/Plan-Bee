@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1079180897246114489}
   - component: {fileID: 1651795618840441434}
   - component: {fileID: 4650341212704890403}
+  - component: {fileID: 6384574465614595612}
   m_Layer: 0
   m_Name: ForagerBeeEgg
   m_TagString: Untagged
@@ -80,9 +81,9 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 11
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_Sprite: {fileID: 4646649027328027380, guid: da229e8a6366248e1aef0c25a34c2464, type: 3}
   m_Color: {r: 1, g: 0.81376696, b: 0.04705882, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -107,3 +108,50 @@ MonoBehaviour:
   hatchTime: 10
   beePrefab: {fileID: 855451739703458334, guid: e803a512b1d1f4b43b7c78e8ba079172, type: 3}
   tendSpeedMultiplier: 1
+  eggName: 
+--- !u!61 &6384574465614595612
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8741626978872023058}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2.15625, y: 1.84375}
+    newSize: {x: 1, y: 2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 2}
+  m_EdgeRadius: 0

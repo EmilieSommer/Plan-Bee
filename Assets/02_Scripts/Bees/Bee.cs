@@ -330,14 +330,13 @@ public abstract class Bee : MonoBehaviour
 
         if (moving)
         {
-            // Point "forward" towards velocity. Assuming sprite faces RIGHT natively.
-            float targetAngle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg;
+            // Point "forward" towards velocity. The sprite natively faces UP, so subtract 90 degrees.
+            float targetAngle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg - 90f;
             
             // Walk: Waddle rotation and slight uniform scale bobbing
             float waddle = Mathf.Sin(Time.time * 25f) * 12f;
             
-            Quaternion targetRot = Quaternion.Euler(0, 0, targetAngle + waddle);
-            transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRot, Time.deltaTime * 15f);
+            transform.localRotation = Quaternion.Euler(0, 0, targetAngle + waddle);
 
             float bob = Mathf.Abs(Mathf.Sin(Time.time * 25f)) * 0.08f;
             transform.localScale = baseScale + new Vector3(bob, bob, 0f);

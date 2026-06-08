@@ -31,13 +31,6 @@ public class Enemy : MonoBehaviour
     // -------------------------
     // INIT
     // -------------------------
-    protected virtual void Awake()
-    {
-        currentHealth = maxHealth;
-        baseScale = transform.localScale;
-        lastPos = transform.position;
-    }
-
     protected virtual void Start()
     {
         currentHealth = maxHealth;
@@ -55,13 +48,29 @@ public class Enemy : MonoBehaviour
     }
 
     private float findTargetTimer = 0f;
+    protected Animator animator;
+
+    protected virtual void Awake()
+    {
+        currentHealth = maxHealth;
+        baseScale = transform.localScale;
+        lastPos = transform.position;
+        animator = GetComponent<Animator>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+    }
 
     protected virtual void UpdateAnimator()
     {
         if (baseScale == Vector3.zero) baseScale = transform.localScale;
 
         bool isMoving = Vector3.Distance(transform.position, lastPos) > 0.001f;
+        Vector2 velocity = (transform.position - lastPos).normalized;
         lastPos = transform.position;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsMoving", isMoving);
+        }
 
         if (enemyType == EnemyType.VarroaMite)
         {
@@ -80,12 +89,32 @@ public class Enemy : MonoBehaviour
                 transform.localScale = baseScale + new Vector3(-bounce * 0.5f, bounce, 0f);
             }
         }
-        else
+        else if (enemyType == EnemyType.Wasp || enemyType == EnemyType.RobberBee)
         {
-            // Generic enemy animation
+            // Flying enemies (Wasp, Robber Bee)
+            float targetAngle = 0f;
             if (isMoving)
             {
-                Vector2 velocity = (transform.position - lastPos).normalized;
+                targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg - 90f;
+            }
+            else
+            {
+                targetAngle = transform.localRotation.eulerAngles.z;
+            }
+
+            // Rapid buzzing rotation and smooth hovering scale
+            float buzz = Mathf.Sin(Time.time * 50f) * 4f; // Fast, small buzz
+            transform.localRotation = Quaternion.Euler(0, 0, targetAngle + buzz);
+
+            // Subtle pulsing/hovering scale
+            float hover = Mathf.Sin(Time.time * 8f) * 0.05f;
+            transform.localScale = baseScale + new Vector3(hover, hover, 0f);
+        }
+        else
+        {
+            // Generic ground enemy animation
+            if (isMoving)
+            {
                 float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg - 90f;
                 
                 float waddle = Mathf.Sin(Time.time * 20f) * 10f;
@@ -98,8 +127,10 @@ public class Enemy : MonoBehaviour
             {
                 // Just remove waddle but keep facing direction
                 Vector3 euler = transform.localRotation.eulerAngles;
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(0, 0, euler.z), Time.deltaTime * 10f);
-                transform.localScale = Vector3.Lerp(transform.localScale, baseScale, Time.deltaTime * 10f);
+                transform.localRotation = Quaternion.Euler(0, 0, euler.z);
+                
+                float bob = Mathf.Abs(Mathf.Sin(Time.time * 10f)) * 0.02f;
+                transform.localScale = baseScale + new Vector3(bob, bob, 0f);
             }
         }
     }

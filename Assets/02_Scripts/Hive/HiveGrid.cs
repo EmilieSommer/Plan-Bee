@@ -125,6 +125,8 @@ public class HiveGrid : MonoBehaviour
         }
     }
 
+    private Dictionary<Vector3Int, HiveTileType> pendingTypes = new Dictionary<Vector3Int, HiveTileType>();
+
     /// <summary>
     /// Called by BuildPanel when the player clicks a grid cell.
     /// Returns true if the tile was accepted (adjacent to any existing tile).
@@ -142,11 +144,10 @@ public class HiveGrid : MonoBehaviour
             }
         }
 
-        types[pos]  = type;
+        pendingTypes[pos] = type;
         marked[pos] = true;
 
         visuals?.SetMarked(pos, type);
-        visuals?.RefreshNeighbors(pos);
 
         GameObject siteObj = new GameObject("TileConstruction_" + pos);
         siteObj.transform.position = CellToWorld(pos);
@@ -182,10 +183,9 @@ public class HiveGrid : MonoBehaviour
             }
         }
 
-        types[pos]  = visualType;
+        pendingTypes[pos] = visualType;
         marked[pos] = true;
         visuals?.SetMarked(pos, visualType);
-        visuals?.RefreshNeighbors(pos);
 
         GameObject siteObj = new GameObject("ZoneConstruction_" + pos);
         siteObj.transform.position = CellToWorld(pos);
@@ -608,7 +608,12 @@ public class HiveGrid : MonoBehaviour
     /// </summary>
     public void CompleteBuild(Vector3Int pos)
     {
-        if (!types.ContainsKey(pos)) return;
+        if (pendingTypes.TryGetValue(pos, out var type))
+        {
+            types[pos] = type;
+            pendingTypes.Remove(pos);
+        }
+        else if (!types.ContainsKey(pos)) return;
 
         marked[pos] = false;
         visuals?.ClearMarked(pos);

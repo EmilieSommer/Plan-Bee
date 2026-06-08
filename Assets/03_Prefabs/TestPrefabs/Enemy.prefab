@@ -155,3 +155,7 @@ MonoBehaviour:
   moveSpeed: 2
   attackRange: 1.2
   attackCooldown: 1
+  enemyType: 0
+  currentDroneAttackers: 0
+  maxDroneAttackers: 2
+  prefersQueen: 0
