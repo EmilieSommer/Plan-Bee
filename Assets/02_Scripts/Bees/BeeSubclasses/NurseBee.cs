@@ -15,6 +15,8 @@ public class NurseBee : Bee
     protected override void Start()
     {
         base.Start();
+        // Scale down Nurse bees so they are physically smaller and fit better around eggs
+        transform.localScale *= 0.65f;
     }
 
     protected override void Update()
@@ -179,7 +181,7 @@ public class NurseBee : Bee
     {
         if (!IsEggValid(egg)) return;
 
-        Vector2 offset = Random.insideUnitCircle.normalized * 0.3f;
+        Vector2 offset = Random.insideUnitCircle.normalized * 0.6f;
         targetPosition = (Vector2)egg.transform.position + offset;
         currentState = BeeState.Moving;
     }
@@ -231,7 +233,7 @@ public class NurseBee : Bee
         Vector2 offset = new Vector2(
             Mathf.Cos(orbitAngle),
             Mathf.Sin(orbitAngle)
-        ) * 0.4f;
+        ) * 0.7f;
 
         // Move directly — bypasses the state machine movement system
         rb.MovePosition((Vector2)assignedEgg.transform.position + offset);

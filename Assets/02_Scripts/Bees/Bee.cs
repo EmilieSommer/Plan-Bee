@@ -139,8 +139,7 @@ public abstract class Bee : MonoBehaviour
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
-        if (HiveManager.Instance != null)
-            HiveManager.Instance.RegisterBee(this);
+
 
         attackTimer = 0f;
         rb = GetComponent<Rigidbody2D>();
@@ -155,6 +154,7 @@ public abstract class Bee : MonoBehaviour
             rb.bodyType = RigidbodyType2D.Dynamic;
             rb.gravityScale = 0f;
             rb.freezeRotation = true;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         }
 
         // Automatically scale the bee to be EXACTLY 25/32 of a tile, ignoring PPU issues!
@@ -187,6 +187,9 @@ public abstract class Bee : MonoBehaviour
 
     protected virtual void Start()
     {
+        if (HiveManager.Instance != null)
+            HiveManager.Instance.RegisterBee(this);
+
         AssignZone();
         
         // Wait 1 frame so the Queen is guaranteed to have finished her Start() and snapped to the Brood!

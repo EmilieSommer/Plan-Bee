@@ -7,8 +7,12 @@ public class BeeTypeHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [Header("UI")]
     public GameObject hoverPanel;
 
-    public TMP_Text iconCountText;   // number on main image
-    public TMP_Text hoverCountText;  // number inside hover panel
+    [Header("Text Objects (Drag dit GameObject herind!)")]
+    public GameObject iconCountTextObj;
+    public GameObject hoverCountTextObj;
+
+    [HideInInspector] public TMP_Text iconCountText;   // number on main image
+    [HideInInspector] public TMP_Text hoverCountText;  // number inside hover panel
 
     [Header("Data")]
     public Bee.BeeType beeType;
@@ -32,11 +36,20 @@ public class BeeTypeHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         string count = HiveManager.Instance.GetBeeCount(beeType).ToString();
 
-        if (iconCountText != null)
-            iconCountText.text = count;
+        if (iconCountText != null) iconCountText.text = count;
+        if (hoverCountText != null) hoverCountText.text = count;
 
-        if (hoverCountText != null)
-            hoverCountText.text = count;
+        UpdateText(iconCountTextObj, count);
+        UpdateText(hoverCountTextObj, count);
+    }
+
+    void UpdateText(GameObject obj, string value)
+    {
+        if (obj == null) return;
+        var tmp = obj.GetComponentInChildren<TMP_Text>();
+        if (tmp != null) { tmp.text = value; return; }
+        var txt = obj.GetComponentInChildren<UnityEngine.UI.Text>();
+        if (txt != null) { txt.text = value; }
     }
 
     public void OnPointerEnter(PointerEventData eventData)

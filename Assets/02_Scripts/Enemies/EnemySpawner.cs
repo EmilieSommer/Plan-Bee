@@ -64,14 +64,7 @@ public class EnemySpawner : MonoBehaviour
 
         Instantiate(prefab, spawnPos, Quaternion.identity);
 
-        if (UIMessagePopup.Instance != null)
-        {
-            UIMessagePopup.Instance.ShowMessage($"WARNING: A wild {type} has appeared!", 5f);
-        }
-        else
-        {
-            Debug.LogWarning($"WARNING: A wild {type} has appeared!");
-        }
+        // WARNING removed per user request
     }
 
     Vector2 GetRandomSpawnPosition()

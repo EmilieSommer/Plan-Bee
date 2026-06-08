@@ -305,12 +305,23 @@ public class QueenBee : Bee
         }
     }
 
-    // Queen cannot be dragged
     public override void StopDragging()
     {
         isBeingDragged = false;
         StopMovementInstant();
         lockMovement = true;
         currentState = BeeState.Idle;
+
+        // If dropped on dirt, snap them back to their home so they don't get stuck in the walls!
+        if (HiveGrid.Instance != null)
+        {
+            Vector3Int cell = HiveGrid.Instance.WorldToCell(transform.position);
+            HiveTileType type = HiveGrid.Instance.GetType(cell);
+            if (type == HiveTileType.Hive || type == HiveTileType.Solid)
+            {
+                transform.position = homePosition;
+                if (rb != null) rb.position = homePosition;
+            }
+        }
     }
 }

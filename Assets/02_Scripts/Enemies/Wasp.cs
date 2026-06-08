@@ -9,7 +9,6 @@ public class Wasp : Enemy
     {
         base.Awake();
         moveSpeed = 3.5f; // faster than default enemies
-        prefersQueen = true;
     }
 
     protected override void Update()

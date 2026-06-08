@@ -81,6 +81,26 @@ public class ClickManager : MonoBehaviour
 
         Vector2 world = Camera.main.ScreenToWorldPoint(mouseStart);
 
+        // Honey (checked first so honey always has absolute priority over bees and zones)
+        RaycastHit2D honeyHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, honeyLayer);
+        if (honeyHit.collider != null)
+        {
+            // Support both Honey and ClickableHoney scripts
+            Honey honey = honeyHit.collider.GetComponent<Honey>();
+            if (honey != null)
+            {
+                honey.Collect();
+                return;
+            }
+
+            ClickableHoney clickableHoney = honeyHit.collider.GetComponent<ClickableHoney>();
+            if (clickableHoney != null)
+            {
+                clickableHoney.Collect();
+                return;
+            }
+        }
+
         // Bee hit
         RaycastHit2D beeHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, beeLayer);
         if (beeHit.collider != null)
@@ -92,15 +112,6 @@ public class ClickManager : MonoBehaviour
             Bee bee = draggedBee.GetComponent<Bee>();
             if (bee != null) bee.StartDragging();
 
-            return;
-        }
-
-        // Honey (checked before zones so honey on top of a zone is always collectable)
-        RaycastHit2D honeyHit = Physics2D.Raycast(world, Vector2.zero, Mathf.Infinity, honeyLayer);
-        if (honeyHit.collider != null)
-        {
-            Honey honey = honeyHit.collider.GetComponent<Honey>();
-            if (honey != null) honey.Collect();
             return;
         }
 
@@ -147,12 +158,38 @@ public class ClickManager : MonoBehaviour
             if (offset.magnitude > maxBeeDragDistance)
                 offset = offset.normalized * maxBeeDragDistance;
 
-            draggedBee.transform.position = Vector3.SmoothDamp(
+            Rigidbody2D rb = draggedBee.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                ContactFilter2D filter = new ContactFilter2D();
+                filter.useTriggers = false;
+                filter.SetLayerMask(~beeLayer); // Ignore other bees
+                
+                RaycastHit2D[] hits = new RaycastHit2D[1];
+                int hitCount = rb.Cast(offset.normalized, filter, hits, offset.magnitude);
+
+                if (hitCount > 0)
+                {
+                    float safeDist = Mathf.Max(0f, hits[0].distance - 0.05f);
+                    offset = offset.normalized * safeDist;
+                }
+            }
+
+            Vector3 newPos = Vector3.SmoothDamp(
                 draggedBee.transform.position,
                 beeStartWorld + offset,
                 ref beeDragVelocity,
                 beeDragSmoothTime
             );
+
+            if (rb != null)
+            {
+                rb.MovePosition(newPos);
+            }
+            else
+            {
+                draggedBee.transform.position = newPos;
+            }
 
             return;
         }

@@ -20,28 +20,32 @@ public class MainMenu : MonoBehaviour
 
     IEnumerator FadeIn()
     {
+        fadePanel.blocksRaycasts = true;
         fadePanel.alpha = 1f;
         float t = 0f;
         while (t < fadeDuration)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             fadePanel.alpha = 1f - (t / fadeDuration);
             yield return null;
         }
         fadePanel.alpha = 0f;
+        fadePanel.blocksRaycasts = false;
     }
 
     IEnumerator FadeOutAndLoad()
     {
+        fadePanel.blocksRaycasts = true;
         fadePanel.alpha = 0f;
         float t = 0f;
         while (t < fadeDuration)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             fadePanel.alpha = t / fadeDuration;
             yield return null;
         }
         fadePanel.alpha = 1f;
+        Time.timeScale = 1f;
         SceneManager.LoadScene(gameSceneName);
     }
 }

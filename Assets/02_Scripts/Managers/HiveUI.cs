@@ -3,30 +3,45 @@ using TMPro;
 
 public class HiveUI : MonoBehaviour
 {
-    public TextMeshProUGUI totalText;
-    public TextMeshProUGUI queenText;
-    public TextMeshProUGUI houseText;
-    public TextMeshProUGUI nurseText;
-    public TextMeshProUGUI foragerText;
-    public TextMeshProUGUI droneText;
-    public TextMeshProUGUI builderText;
+    [Header("Drag dine objekter ind her!")]
+    public GameObject totalTextObj;
+    public GameObject queenTextObj;
+    public GameObject houseTextObj;
+    public GameObject nurseTextObj;
+    public GameObject foragerTextObj;
+    public GameObject droneTextObj;
+    public GameObject builderTextObj;
 
     void Update()
     {
         if (HiveManager.Instance == null) return;
 
-        // TOTAL: Bees / Capacity
-        totalText.text =
-            HiveManager.Instance.GetTotalBees() +
-            " / " +
-            HiveManager.Instance.GetHiveCapacity();
+        UpdateText(totalTextObj, HiveManager.Instance.GetTotalBees() + " / " + HiveManager.Instance.GetHiveCapacity());
 
-        if (queenText != null) queenText.text = GetCount(Bee.BeeType.Queen).ToString();
-        if (houseText != null) houseText.text = GetCount(Bee.BeeType.House).ToString();
-        if (nurseText != null) nurseText.text = GetCount(Bee.BeeType.Nurse).ToString();
-        if (foragerText != null) foragerText.text = GetCount(Bee.BeeType.Forager).ToString();
-        if (droneText != null) droneText.text = GetCount(Bee.BeeType.Drone).ToString();
-        if (builderText != null) builderText.text = GetCount(Bee.BeeType.Builder).ToString();
+        UpdateText(queenTextObj, GetCount(Bee.BeeType.Queen).ToString());
+        UpdateText(houseTextObj, GetCount(Bee.BeeType.House).ToString());
+        UpdateText(nurseTextObj, GetCount(Bee.BeeType.Nurse).ToString());
+        UpdateText(foragerTextObj, GetCount(Bee.BeeType.Forager).ToString());
+        UpdateText(droneTextObj, GetCount(Bee.BeeType.Drone).ToString());
+        UpdateText(builderTextObj, GetCount(Bee.BeeType.Builder).ToString());
+    }
+
+    void UpdateText(GameObject obj, string value)
+    {
+        if (obj == null) return;
+        
+        var tmp = obj.GetComponentInChildren<TMP_Text>();
+        if (tmp != null) 
+        {
+            tmp.text = value;
+            return;
+        }
+
+        var txt = obj.GetComponentInChildren<UnityEngine.UI.Text>();
+        if (txt != null)
+        {
+            txt.text = value;
+        }
     }
 
     int GetCount(Bee.BeeType type)

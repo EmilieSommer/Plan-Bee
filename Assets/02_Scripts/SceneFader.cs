@@ -43,7 +43,7 @@ public class SceneFader : MonoBehaviour
 
         while (t < fadeDuration)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             fadePanel.alpha = Mathf.Clamp01(1f - (t / fadeDuration));
             yield return null;
         }
@@ -59,7 +59,7 @@ public class SceneFader : MonoBehaviour
 
         while (t < fadeDuration)
         {
-            t += Time.deltaTime;
+            t += Time.unscaledDeltaTime;
             fadePanel.alpha = Mathf.Clamp01(t / fadeDuration);
             yield return null;
         }
@@ -73,6 +73,7 @@ public class SceneFader : MonoBehaviour
     void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
         UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        Time.timeScale = 1f;
         StartCoroutine(FadeIn());
     }
 }

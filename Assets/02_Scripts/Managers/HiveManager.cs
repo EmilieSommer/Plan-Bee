@@ -13,6 +13,7 @@ public class HiveManager : MonoBehaviour
 
     // NEW: queued eggs reserve capacity
     private int queuedEggs = 0;
+    public int QueuedEggs => queuedEggs;
 
     [Header("UI")]
     public TMPro.TextMeshProUGUI totalBeesText;
@@ -33,6 +34,18 @@ public class HiveManager : MonoBehaviour
         foreach (Bee bee in bees)
         {
             RegisterBee(bee);
+        }
+
+        // Auto-fix: Ensure all NurseBeeZones (Brood Chambers) have a SleepZone component
+        NurseBeeZone[] nurseZones = FindObjectsOfType<NurseBeeZone>();
+        foreach (NurseBeeZone nz in nurseZones)
+        {
+            if (nz.GetComponent<SleepZone>() == null)
+            {
+                var sz = nz.gameObject.AddComponent<SleepZone>();
+                sz.capacityPerZone = 1; // Default starting capacity
+                Debug.Log($"[HiveManager] Auto-added SleepZone component to {nz.name}");
+            }
         }
 
         SleepZone[] zones = FindObjectsOfType<SleepZone>();
@@ -61,7 +74,10 @@ public class HiveManager : MonoBehaviour
     {
         if (totalBeesText != null)
         {
-            totalBeesText.text = totalBees + " / " + GetHiveCapacity();
+            if (queuedEggs > 0)
+                totalBeesText.text = $"{totalBees} (+{queuedEggs} Eggs) / {GetHiveCapacity()}";
+            else
+                totalBeesText.text = $"{totalBees} / {GetHiveCapacity()}";
         }
     }
 

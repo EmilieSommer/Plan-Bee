@@ -217,7 +217,7 @@ public static class HUDBuilder
         var canvasGO = parent.transform.parent.parent.gameObject;
         var hudController = canvasGO.GetComponent<HUDController>();
         if (hudController == null) hudController = canvasGO.AddComponent<HUDController>();
-        hudController.speedLabel = speedBtn.GetComponentInChildren<TMP_Text>();
+        hudController.speedLabel = speedBtn.GetComponentInChildren<TMP_Text>().gameObject;
         var speedAction = (UnityAction)System.Delegate.CreateDelegate(
             typeof(UnityAction), hudController,
             typeof(HUDController).GetMethod("CycleSpeed"));
@@ -261,12 +261,12 @@ public static class HUDBuilder
             rrt.anchoredPosition = new Vector2(0, y);
             outRefs[i] = row;
         }
-        hudController.queenCountText   = outRefs[0];
-        hudController.nurseCountText   = outRefs[1];
-        hudController.builderCountText = outRefs[2];
-        hudController.houseCountText   = outRefs[3];
-        hudController.foragerCountText = outRefs[4];
-        hudController.droneCountText   = outRefs[5];
+        hudController.queenCountText   = outRefs[0].gameObject;
+        hudController.nurseCountText   = outRefs[1].gameObject;
+        hudController.builderCountText = outRefs[2].gameObject;
+        hudController.houseCountText   = outRefs[3].gameObject;
+        hudController.foragerCountText = outRefs[4].gameObject;
+        hudController.droneCountText   = outRefs[5].gameObject;
 
         var total = MakeText(panel, "TotalCount", "TOTAL: 0", fontBold, 14, HiveOrange, TextAlignmentOptions.Center);
         var totalRt = total.GetComponent<RectTransform>();
@@ -275,7 +275,7 @@ public static class HUDBuilder
         totalRt.pivot     = new Vector2(0.5f, 0);
         totalRt.sizeDelta = new Vector2(0, 22);
         totalRt.anchoredPosition = new Vector2(0, 8);
-        hudController.totalCountText = total;
+        hudController.totalCountText = total.gameObject;
     }
 
     private static void BuildEggQueuePlaceholder(GameObject parent)
