@@ -2862,7 +2862,7 @@ Transform:
   m_GameObject: {fileID: 4651482659832446032}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.23, y: 0.8154, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 18.5, y: 18.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2932,11 +2932,18 @@ MonoBehaviour:
   - type: 2
     capacity: 1
     current: 0
+  depositRadius: 1.5
+  isStorageZone: 0
   nurseCanvas: {fileID: 3040297141966562466}
   slots:
   - {fileID: 2879359856423169550}
   - {fileID: 8770563302417467611}
   - {fileID: 4858288723565428659}
+  foragerCost: 10
+  nurseCost: 5
+  houseCost: 5
+  builderCost: 15
+  droneCost: 20
 --- !u!1 &4700276772599572744
 GameObject:
   m_ObjectHideFlags: 0

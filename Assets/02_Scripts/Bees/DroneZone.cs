@@ -1,42 +1,34 @@
 using UnityEngine;
-using System.Collections.Generic;
 
-public class DroneZone : MonoBehaviour
+public class DroneZone : Zone
 {
-    public static List<DroneZone> allZones = new List<DroneZone>();
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void ResetStatics()
+    protected override void Awake()
     {
-        allZones.Clear();
+        base.Awake();
+        zoneType = Bee.BeeType.Drone;
+        
+        // Ensure it has Drone capacity!
+        bool hasDroneLimit = false;
+        foreach (var limit in limits)
+        {
+            if (limit.type == Bee.BeeType.Drone)
+            {
+                hasDroneLimit = true;
+                break;
+            }
+        }
+
+        if (!hasDroneLimit)
+        {
+            limits.Add(new BeeTypeLimit
+            {
+                type = Bee.BeeType.Drone,
+                capacity = 1,
+                current = 0
+            });
+        }
     }
 
-    public bool isBuilt = false;
 
-    private void OnEnable()
-    {
-        // Only register if already built
-        if (isBuilt && !allZones.Contains(this))
-            allZones.Add(this);
-    }
-
-    private void OnDisable()
-    {
-        allZones.Remove(this);
-    }
-
-    // Call this when construction finishes
-    public void SetBuilt()
-    {
-        isBuilt = true;
-
-        if (!allZones.Contains(this))
-            allZones.Add(this);
-    }
-
-    // Optional helper (safer checks elsewhere)
-    public bool IsAvailable()
-    {
-        return isBuilt;
-    }
 }

@@ -54,6 +54,15 @@ public class BuildPanel : MonoBehaviour
     
     private Button _activeBtn;
 
+    void Awake()
+    {
+        // Force the costs to ignore the buggy scene Inspector overrides!
+        broodCost = 4;
+        storageCost = 6;
+        droneCost = 8;
+        insideHiveCost = 1;
+    }
+
     void Start()
     {
         if (mainBuildBtn)  mainBuildBtn.onClick.AddListener(ToggleMenu);
@@ -63,7 +72,7 @@ public class BuildPanel : MonoBehaviour
         if (broodBtn)      broodBtn.onClick.AddListener(()      => SelectZone(broodPrefab, HiveTileType.Brood, broodCost, broodBuildTime, broodBtn));
         if (storageBtn)    storageBtn.onClick.AddListener(()    => SelectZone(storagePrefab, HiveTileType.Storage, storageCost, storageBuildTime, storageBtn));
         if (insideHiveBtn) insideHiveBtn.onClick.AddListener(() => SelectZone(insideHivePrefab, HiveTileType.InsideHive, insideHiveCost, insideHiveBuildTime, insideHiveBtn));
-        if (droneBtn)      droneBtn.onClick.AddListener(()      => SelectZone(dronePrefab, HiveTileType.InsideHive, droneCost, droneBuildTime, droneBtn));
+        if (droneBtn)      droneBtn.onClick.AddListener(()      => SelectZone(dronePrefab, HiveTileType.Drone, droneCost, droneBuildTime, droneBtn));
         
         if (cancelBtn)     cancelBtn.onClick.AddListener(Cancel);
 

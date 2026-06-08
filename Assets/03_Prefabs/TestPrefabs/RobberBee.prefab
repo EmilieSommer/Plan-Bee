@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 712798057771692665}
   - component: {fileID: 2200659978895263750}
   - component: {fileID: 3556056941159558104}
+  - component: {fileID: 8326082129915907787}
   m_Layer: 7
   m_Name: RobberBee
   m_TagString: Enemy
@@ -27,9 +28,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6435393925724816385}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -812.83, y: -413.55338, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -74,7 +75,9 @@ MonoBehaviour:
   enemyType: 6
   currentDroneAttackers: 0
   maxDroneAttackers: 2
+  prefersQueen: 0
   stealRange: 1
+  honeyCarryOffset: {x: 0.3, y: 0}
   fleeDroneRange: 4
   fleeSpeed: 2.5
   minX: -30
@@ -130,7 +133,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2548359296007908686, guid: 3874377f85fe4684db46c95a5e1901bb, type: 3}
+  m_Sprite: {fileID: 4776549866445018341, guid: f81fa3f06141b4062b43e4405fa9c2dd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -140,3 +143,25 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!95 &8326082129915907787
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6435393925724816385}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 3b506ea1edb3d47e9a9f55ff5d5bf2e8, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

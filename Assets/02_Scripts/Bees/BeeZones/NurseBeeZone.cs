@@ -15,7 +15,7 @@ public class NurseBeeZone : Zone
     {
         base.Awake();
         zoneType = Bee.BeeType.Nurse;
-        isStorageZone = true; // Act as a small storage drop-off
+        isStorageZone = false; // No longer acts as a honey storage drop-off
         depositRadius = 1.0f; // tighter radius for brood
         box = GetComponent<BoxCollider2D>();
     }
@@ -32,9 +32,6 @@ public class NurseBeeZone : Zone
         base.Start();
         foreach (QueueSlotUI slot in slots)
             slot.SetZone(this);
-            
-        if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.AddCapacity(5, 5);
 
         UpdateUIButtonText();
     }
@@ -62,16 +59,15 @@ public class NurseBeeZone : Zone
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.RemoveCapacity(5, 5);
     }
 
     public Vector2 GetRandomPoint()
     {
-        Bounds bounds = box.bounds;
-        return new Vector2(
-            Random.Range(bounds.min.x, bounds.max.x),
-            Random.Range(bounds.min.y, bounds.max.y)
+        Vector2 center = transform.position;
+        // Hardcode a tiny radius instead of relying on potentially broken BoxColliders!
+        return center + new Vector2(
+            Random.Range(-0.3f, 0.3f),
+            Random.Range(-0.3f, 0.3f)
         );
     }
 

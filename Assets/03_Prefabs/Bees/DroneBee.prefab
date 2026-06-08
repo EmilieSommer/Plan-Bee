@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5805705631776570731}
   - component: {fileID: 5744544486223779811}
   - component: {fileID: 8757966648302656444}
+  - component: {fileID: 7451911825257874571}
   m_Layer: 0
   m_Name: DroneBee
   m_TagString: Untagged
@@ -84,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4112356383579328530, guid: c29a312bd51814ece8411324eef0c97b, type: 3}
+  m_Sprite: {fileID: 2708788675331146717, guid: e042c38026b874882a0a90d2dbbd63aa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -195,3 +196,25 @@ MonoBehaviour:
   beeName: DroneBee
   zoneArrivalDistance: 1.5
   targetLockTime: 2
+--- !u!95 &7451911825257874571
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5723372737326062995}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: d4186013ab80f4f8bb22a8c9d4ae3b05, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

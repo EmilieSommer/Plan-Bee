@@ -21,19 +21,30 @@ public class HUDController : MonoBehaviour
     private void Start()
     {
         // Auto-find references if the user didn't rebuild the UI
-        if (queenCountText == null)   queenCountText = FindText("QueenCount");
-        if (nurseCountText == null)   nurseCountText = FindText("NurseCount");
-        if (builderCountText == null) builderCountText = FindText("BuilderCount");
-        if (houseCountText == null)   houseCountText = FindText("HouseCount");
-        if (foragerCountText == null) foragerCountText = FindText("ForagerCount");
-        if (droneCountText == null)   droneCountText = FindText("DroneCount");
-        if (totalCountText == null)   totalCountText = FindText("TotalCount");
+        if (queenCountText == null)   queenCountText = FindTextRobust("queen");
+        if (nurseCountText == null)   nurseCountText = FindTextRobust("nurse");
+        if (builderCountText == null) builderCountText = FindTextRobust("builder");
+        if (houseCountText == null)   houseCountText = FindTextRobust("house");
+        if (foragerCountText == null) foragerCountText = FindTextRobust("forager");
+        if (droneCountText == null)   droneCountText = FindTextRobust("drone");
+        if (totalCountText == null)   totalCountText = FindTextRobust("total", "capacity", "hive");
     }
 
-    private TMP_Text FindText(string n)
+    private TMP_Text FindTextRobust(params string[] keywords)
     {
-        GameObject go = GameObject.Find(n);
-        return go != null ? go.GetComponent<TMP_Text>() : null;
+        TMP_Text[] allTexts = FindObjectsOfType<TMP_Text>();
+        foreach(var t in allTexts)
+        {
+            string n = t.gameObject.name.ToLower();
+            foreach(string kw in keywords)
+            {
+                if (n.Contains(kw) && (n.Contains("count") || n.Contains("text") || n.Contains("num")))
+                {
+                    return t;
+                }
+            }
+        }
+        return null;
     }
 
     private void Update()

@@ -144,12 +144,10 @@ public class HiveVisuals : MonoBehaviour
         {
             builtTilemap.SetTile(pos, GetCachedTile(borderSprite));
         }
-        else if (type == HiveTileType.None)
+        else
         {
             builtTilemap.SetTile(pos, null);
         }
-        // If type != None but borderSprite is null, we safely do NOTHING! 
-        // This preserves Kristoffer's original hand-painted tiles instead of deleting them.
 
         // Clear existing overlays
         if (overlayTilemaps != null) {
@@ -176,8 +174,7 @@ public class HiveVisuals : MonoBehaviour
         foreach (var kvp in neighborMasks)
         {
             var nType = kvp.Key;
-            var invertedMask = 15 - kvp.Value; // Invert mask so the graphic appears on the connected side!
-            var overlaySprite = library.GetOverlaySprite(nType, invertedMask); // Fetch from neighbor's library!
+            var overlaySprite = library.GetOverlaySprite(nType, kvp.Value); // Fetch from neighbor's library!
 
             if (overlaySprite != null && overlayTilemaps != null && layerIndex < overlayTilemaps.Length)
             {
@@ -190,7 +187,7 @@ public class HiveVisuals : MonoBehaviour
         }
     }
 
-    void RefreshNeighbors(Vector3Int pos)
+    public void RefreshNeighbors(Vector3Int pos)
     {
         foreach (var d in Dirs) RefreshAt(pos + d);
     }

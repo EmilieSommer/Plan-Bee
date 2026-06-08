@@ -64,6 +64,8 @@ public class QueenBee : Bee
 
     protected override void Start()
     {
+        base.Start();
+        
         // Snap to the Brood now that HiveGrid has finished waking up!
         AssignZone();
 
@@ -138,14 +140,46 @@ public class QueenBee : Bee
         lockMovement = true;
     }
 
-    // ======================================================
-    // HEALTH UI
-    // ======================================================
+    public TMPro.TextMeshProUGUI healthText;
 
     void UpdateHealthUI()
     {
+        if (healthSlider == null)
+        {
+            Slider[] allSliders = FindObjectsOfType<Slider>(true);
+            foreach (var s in allSliders)
+            {
+                if (s.name.ToLower().Contains("health") || s.name.ToLower().Contains("queen"))
+                {
+                    healthSlider = s;
+                    break;
+                }
+            }
+        }
+
         if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
             healthSlider.value = currentHealth;
+
+            if (healthText == null)
+            {
+                TMPro.TextMeshProUGUI[] texts = healthSlider.GetComponentsInChildren<TMPro.TextMeshProUGUI>();
+                foreach (var t in texts)
+                {
+                    if (t.name.ToLower().Contains("text") || t.name.ToLower().Contains("value") || t.name.ToLower().Contains("health"))
+                    {
+                        healthText = t;
+                        break;
+                    }
+                }
+            }
+
+            if (healthText != null)
+            {
+                healthText.text = $"{Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+            }
+        }
     }
 
     // ======================================================

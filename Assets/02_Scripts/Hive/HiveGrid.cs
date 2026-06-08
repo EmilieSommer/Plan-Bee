@@ -36,8 +36,16 @@ public class HiveGrid : MonoBehaviour
         Instance = this;
         if (visuals == null) visuals = GetComponent<HiveVisuals>();
         
+#if UNITY_EDITOR
+        FixLibrary();
+#endif
+
         // Scan tiles immediately in Awake so the Grid is ready before any bees run Start()
         ScanPaintedTiles();
+
+#if UNITY_EDITOR
+        RefreshAllTiles();
+#endif
     }
 
     // ── Starting hive ─────────────────────────────────────────────────────────
@@ -138,6 +146,7 @@ public class HiveGrid : MonoBehaviour
         marked[pos] = true;
 
         visuals?.SetMarked(pos, type);
+        visuals?.RefreshNeighbors(pos);
 
         GameObject siteObj = new GameObject("TileConstruction_" + pos);
         siteObj.transform.position = CellToWorld(pos);
@@ -176,6 +185,7 @@ public class HiveGrid : MonoBehaviour
         types[pos]  = visualType;
         marked[pos] = true;
         visuals?.SetMarked(pos, visualType);
+        visuals?.RefreshNeighbors(pos);
 
         GameObject siteObj = new GameObject("ZoneConstruction_" + pos);
         siteObj.transform.position = CellToWorld(pos);
@@ -247,6 +257,15 @@ public class HiveGrid : MonoBehaviour
         return "Center";
     }
 
+    public void RefreshAllTiles()
+    {
+        var copy = new System.Collections.Generic.Dictionary<Vector3Int, HiveTileType>(types);
+        foreach (var kvp in copy)
+        {
+            Place(kvp.Key, kvp.Value);
+        }
+    }
+
     [ContextMenu("1. Fix Tile Library")]
     private void FixLibrary()
     {
@@ -257,14 +276,24 @@ public class HiveGrid : MonoBehaviour
         var sprites = new System.Collections.Generic.List<Sprite>();
         foreach (var g in guids) sprites.Add(UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(UnityEditor.AssetDatabase.GUIDToAssetPath(g)));
 
+        // Auto-populate sets if missing
+        var existingSets = new System.Collections.Generic.List<HiveTileLibrary.TileSet>(lib.sets ?? new HiveTileLibrary.TileSet[0]);
+        foreach (HiveTileType t in System.Enum.GetValues(typeof(HiveTileType)))
+        {
+            if (t == HiveTileType.None) continue;
+            if (!existingSets.Exists(s => s.type == t))
+            {
+                existingSets.Add(new HiveTileLibrary.TileSet { type = t, border = new Sprite[16], overlay = new Sprite[16] });
+            }
+        }
+        lib.sets = existingSets.ToArray();
+
         foreach (var set in lib.sets)
         {
             if (set.border == null || set.border.Length != 16) set.border = new Sprite[16];
             if (set.overlay == null || set.overlay.Length != 16) set.overlay = new Sprite[16];
-
-            string hint = set.type.ToString();
-            if (hint == "InsideHive") hint = "Inside";
-
+            
+            string folderPath = "/05_Tiles/" + set.type.ToString() + "/";
             for (int i = 0; i < 16; i++)
             {
                 // Border: Bit=1 means OPENING. Bit=0 means WALL.
@@ -281,8 +310,27 @@ public class HiveGrid : MonoBehaviour
                 bool oWr = (i & 8) != 0;
                 string overlayName = GetExpectedSpriteName(oWt, oWb, oWl, oWr);
 
-                set.border[i] = sprites.Find(s => s.name == borderName && UnityEditor.AssetDatabase.GetAssetPath(s).Contains(hint) && !UnityEditor.AssetDatabase.GetAssetPath(s).ToLower().Contains("overlay"));
-                set.overlay[i] = sprites.Find(s => (s.name == overlayName || s.name.EndsWith("_" + overlayName)) && UnityEditor.AssetDatabase.GetAssetPath(s).Contains(hint) && UnityEditor.AssetDatabase.GetAssetPath(s).ToLower().Contains("overlay"));
+                string bPathMatch1 = "/" + borderName + ".";
+                string bPathMatch2 = "_" + borderName + ".";
+                string oPathMatch1 = "/" + overlayName + ".";
+                string oPathMatch2 = "_" + overlayName + ".";
+
+                set.border[i] = sprites.Find(s => 
+                    (s.name == borderName || UnityEditor.AssetDatabase.GetAssetPath(s).Contains(bPathMatch1) || UnityEditor.AssetDatabase.GetAssetPath(s).Contains(bPathMatch2)) && 
+                    UnityEditor.AssetDatabase.GetAssetPath(s).Contains(folderPath) && 
+                    !UnityEditor.AssetDatabase.GetAssetPath(s).ToLower().Contains("overlay"));
+                    
+                set.overlay[i] = sprites.Find(s => 
+                    (s.name == overlayName || s.name.EndsWith("_" + overlayName) || UnityEditor.AssetDatabase.GetAssetPath(s).Contains(oPathMatch1) || UnityEditor.AssetDatabase.GetAssetPath(s).Contains(oPathMatch2)) && 
+                    UnityEditor.AssetDatabase.GetAssetPath(s).Contains(folderPath) && 
+                    UnityEditor.AssetDatabase.GetAssetPath(s).ToLower().Contains("overlay"));
+
+                if (set.type == HiveTileType.Hive && borderName == "Corner_TopLeft")
+                {
+                    Debug.Log($"Hive Corner_TopLeft search: bPath1={bPathMatch1}, bPath2={bPathMatch2}, folder={folderPath}");
+                    if (set.border[i] == null) Debug.LogWarning("FAILED to find Hive Corner_TopLeft!");
+                    else Debug.Log($"FOUND Hive Corner_TopLeft: {set.border[i].name} at {UnityEditor.AssetDatabase.GetAssetPath(set.border[i])}");
+                }
             }
         }
         UnityEditor.EditorUtility.SetDirty(lib);
@@ -492,6 +540,12 @@ public class HiveGrid : MonoBehaviour
         // Clear existing zones
         var existingZones = FindObjectsOfType<Zone>();
         foreach (var z in existingZones) DestroyImmediate(z.gameObject);
+        
+        var existingSleep = FindObjectsOfType<SleepZone>();
+        foreach (var z in existingSleep) DestroyImmediate(z.gameObject);
+        
+        var existingBees = FindObjectsOfType<Bee>();
+        foreach (var b in existingBees) DestroyImmediate(b.gameObject);
 
         // Instantiate prefabs
         var broodPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/BroodZone.prefab");
@@ -519,6 +573,16 @@ public class HiveGrid : MonoBehaviour
             go3.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(3, 0, 0));
             var go4 = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(storagePrefab);
             go4.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(3, -1, 0));
+        }
+
+        var insidePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/InsidehiveZone.prefab");
+        if (insidePrefab != null)
+        {
+            for (int y = 1; y <= 4; y++)
+            {
+                var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(insidePrefab);
+                go.transform.position = builtMap.GetCellCenterWorld(new Vector3Int(0, y, 0));
+            }
         }
 
         var existingQueen = FindObjectOfType<QueenBee>();
@@ -554,7 +618,9 @@ public class HiveGrid : MonoBehaviour
         {
             if (pendingZones[pos] != null)
             {
-                Instantiate(pendingZones[pos], CellToWorld(pos), Quaternion.identity);
+                var inst = Instantiate(pendingZones[pos], CellToWorld(pos), Quaternion.identity);
+                var cs = inst.GetComponent<ConstructionSite>();
+                if (cs != null) Destroy(cs); // Construction is already complete for grid tiles
             }
             pendingZones.Remove(pos);
         }
@@ -615,8 +681,50 @@ public class HiveGrid : MonoBehaviour
         visuals?.ClearIndicators();
     }
 
-    public HiveTileType GetType(Vector3Int pos) =>
-        types.TryGetValue(pos, out var t) ? t : HiveTileType.None;
+#if UNITY_EDITOR
+    [ContextMenu("4. Fix Bee Prefabs (Animator & Scale)")]
+    private void FixBeePrefabs()
+    {
+        string[] prefabs = new string[] 
+        {
+            "Assets/03_Prefabs/Bees/HouseBee.prefab",
+            "Assets/03_Prefabs/Bees/ForagerBee.prefab",
+            "Assets/03_Prefabs/Bees/NurseBee.prefab",
+            "Assets/03_Prefabs/Bees/DroneBee.prefab",
+            "Assets/03_Prefabs/Bees/BuilderBee.prefab",
+            "Assets/03_Prefabs/Bees/QueenBee.prefab"
+        };
+        
+        var controller = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/06_Animations/BeeController.controller");
+        if (controller == null)
+        {
+            Debug.LogError("Could not find BeeController!");
+            return;
+        }
+
+        foreach (string path in prefabs)
+        {
+            GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null)
+            {
+                var instance = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab);
+                Animator anim = instance.GetComponent<Animator>();
+                if (anim == null) anim = instance.AddComponent<Animator>();
+                anim.runtimeAnimatorController = controller;
+                instance.transform.localScale = Vector3.one;
+                UnityEditor.PrefabUtility.SaveAsPrefabAsset(instance, path);
+                DestroyImmediate(instance);
+            }
+        }
+        Debug.Log("All prefabs fixed.");
+    }
+#endif
+
+    public HiveTileType GetType(Vector3Int pos)
+    {
+        if (marked.TryGetValue(pos, out var m) && m) return HiveTileType.Hive;
+        return types.TryGetValue(pos, out var t) ? t : HiveTileType.None;
+    }
 
     public Vector3Int WorldToCell(Vector3 world) =>
         GetComponent<Grid>()?.WorldToCell(world) ?? Vector3Int.zero;

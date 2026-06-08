@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2690388482665982635}
   - component: {fileID: 9020879423088139091}
   - component: {fileID: 8286077023352569120}
+  - component: {fileID: 8003485608094445313}
   m_Layer: 0
   m_Name: BuilderBee
   m_TagString: Untagged
@@ -84,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 9026870794104122302, guid: 6a4f31056981d412da3aaad02d2c37ad, type: 3}
+  m_Sprite: {fileID: -8291016083515045658, guid: 9634bb7c7edae49bdadb66fd19bbc7b0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -194,3 +195,25 @@ MonoBehaviour:
   beeType: 4
   beeName: BuilderBee
   arrivalDistance: 0.5
+--- !u!95 &8003485608094445313
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7121661653501691770}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 33d83279c4d544c30961ec111d15f51b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

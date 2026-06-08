@@ -33,7 +33,9 @@ public class DroneBee : Bee
 
         if (targetEnemy == null)
         {
-            currentZone = FindDroneZone();
+            if (assignedZone == null) AssignZone();
+            currentZone = assignedZone as DroneZone;
+            
             if (currentZone != null)
             {
                 targetPosition = currentZone.transform.position;
@@ -58,7 +60,10 @@ public class DroneBee : Bee
         FindBestEnemy();
 
         if (targetEnemy == null && currentZone == null)
-            currentZone = FindDroneZone();
+        {
+            if (assignedZone == null) AssignZone();
+            currentZone = assignedZone as DroneZone;
+        }
     }
 
     // ======================================================
@@ -117,7 +122,9 @@ public class DroneBee : Bee
         FindBestEnemy();
         if (targetEnemy != null) return;
 
-        currentZone = FindDroneZone();
+        if (assignedZone == null) AssignZone();
+        currentZone = assignedZone as DroneZone;
+        
         if (currentZone != null)
         {
             MarkAsWorking();
@@ -129,6 +136,8 @@ public class DroneBee : Bee
     // ======================================================
     // WORK
     // ======================================================
+
+    private float patrolTimer;
 
     protected override void WorkBehavior()
     {
@@ -164,6 +173,18 @@ public class DroneBee : Bee
                 targetPosition = currentZone.transform.position;
                 currentState = BeeState.Moving;
             }
+            else
+            {
+                // Patrol slightly inside the zone so they don't form a singularity blob
+                patrolTimer -= Time.deltaTime;
+                if (patrolTimer <= 0f)
+                {
+                    patrolTimer = Random.Range(2f, 5f);
+                    Vector2 offset = Random.insideUnitCircle * 0.3f;
+                    targetPosition = (Vector2)currentZone.transform.position + offset;
+                    currentState = BeeState.Moving;
+                }
+            }
             return;
         }
 
@@ -176,8 +197,8 @@ public class DroneBee : Bee
 
     void ReturnToZone()
     {
-        if (currentZone == null)
-            currentZone = FindDroneZone();
+        if (assignedZone == null) AssignZone();
+        currentZone = assignedZone as DroneZone;
 
         if (currentZone != null)
         {
@@ -304,35 +325,7 @@ public class DroneBee : Bee
         }
     }
 
-    // ======================================================
-    // ZONE SEARCH
-    // ======================================================
 
-    DroneZone FindDroneZone()
-    {
-        if (DroneZone.allZones == null || DroneZone.allZones.Count == 0) return null;
-
-        DroneZone best = null;
-        float bestDist = Mathf.Infinity;
-
-        foreach (var zone in DroneZone.allZones)
-        {
-            if (zone == null) continue;
-
-            float dist = Vector2.Distance(transform.position, zone.transform.position);
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                best = zone;
-            }
-        }
-
-        return best;
-    }
-
-    // ======================================================
-    // CLEANUP
-    // ======================================================
 
     protected void OnDestroy()
     {

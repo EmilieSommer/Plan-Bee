@@ -57,14 +57,14 @@ public class HouseBeeZone : Zone
     {
         base.Start();
         if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.AddCapacity(25, 25);
+            CurrencyManager.Instance.AddCapacity(10, 10);
     }
 
     protected override void OnDestroy()
     {
         base.OnDestroy();
         if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.RemoveCapacity(25, 25);
+            CurrencyManager.Instance.RemoveCapacity(10, 10);
     }
 
     public void SetInactive()

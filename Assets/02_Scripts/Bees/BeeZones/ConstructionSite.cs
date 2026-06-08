@@ -105,9 +105,6 @@ public class ConstructionSite : MonoBehaviour
             if (sleep != null)
                 HiveManager.Instance.RegisterSleepZone(sleep);
 
-            DroneZone drone = GetComponent<DroneZone>();
-            if (drone != null)
-                drone.SetBuilt();
 
             if (parentZone != null)
                 parentZone.FinishBuild();

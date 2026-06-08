@@ -98,4 +98,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15a19d1432df5504589e83ee167c5207, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
-  eggPrefab: {fileID: 0}
+  eggType: 0
+  honeyCost: 0
+  hoverPopup: {fileID: 0}

@@ -201,10 +201,14 @@ public class HouseBee : Bee
                 GameObject h = Instantiate(honeyPrefab, spawnPos, Quaternion.identity);
                 h.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
                 SpriteRenderer sr = h.GetComponent<SpriteRenderer>();
-                if (sr != null) sr.sortingOrder = 4; // Above hive (0-3), below bees (10)
+                if (sr != null) sr.sortingOrder = 15; // Above bees (10)
 
-                // Auto-pickup after 1 second
-                StartCoroutine(PickupHoneyCoroutine(h, honeyAmount));
+                // Make it interactable!
+                if (h.GetComponent<Collider2D>() == null)
+                    h.AddComponent<CircleCollider2D>().radius = 0.5f;
+                
+                ClickableHoney clickScript = h.AddComponent<ClickableHoney>();
+                clickScript.amount = honeyAmount;
             }
             else
             {
@@ -215,23 +219,6 @@ public class HouseBee : Bee
         }
 
         ResetBee();
-    }
-
-    private System.Collections.IEnumerator PickupHoneyCoroutine(GameObject honeyObj, int amount)
-    {
-        yield return new WaitForSeconds(1f);
-        Vector2 pos = transform.position;
-        if (honeyObj != null)
-        {
-            pos = honeyObj.transform.position;
-            Destroy(honeyObj);
-        }
-            
-        if (CurrencyManager.Instance != null)
-        {
-            CurrencyManager.Instance.AddHoney(amount);
-            FloatingText.Create(pos, $"+{amount}", new Color(1f, 0.8f, 0.2f)); // Honey Yellow
-        }
     }
 
     void ResetBee()

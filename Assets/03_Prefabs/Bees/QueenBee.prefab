@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 561276718645060145}
   - component: {fileID: 6468001223451776749}
   - component: {fileID: 6147056273414456110}
+  - component: {fileID: 6130797787824427685}
   m_Layer: 0
   m_Name: QueenBee
   m_TagString: Untagged
@@ -84,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1602037291857631461, guid: fa3e7cda94b064ea7bc57c938f6aa506, type: 3}
+  m_Sprite: {fileID: 5494200059202041094, guid: e15877273ec364936932700c451a8755, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -195,10 +196,31 @@ MonoBehaviour:
   beeName: QueenBee
   gameOverCanvas: {fileID: 0}
   healthSlider: {fileID: 0}
-  regenRate: 0.5
-  regenDelay: 3
   protectionRadius: 8
   dangerMultiplier: 2
   foragerPrefab: {fileID: 5372089875030814663, guid: e742ab18dd40c4207885a57c9f210140, type: 3}
   nursePrefab: {fileID: 3727321604459963921, guid: e04732f2cbb384610ac090a65d059f50, type: 3}
   housePrefab: {fileID: 3390360998626142627, guid: fed8a168bc44446a6ad81d6b7a0dc6be, type: 3}
+  builderPrefab: {fileID: 0}
+--- !u!95 &6130797787824427685
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6357032819118751808}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 0003c7d5b6adc4db198137ad7a303368, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

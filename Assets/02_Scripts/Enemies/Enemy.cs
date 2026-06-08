@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using System.Collections.Generic;
 public class Enemy : MonoBehaviour
 {
     [Header("Stats")]
@@ -83,15 +83,20 @@ public class Enemy : MonoBehaviour
             // Generic enemy animation
             if (isMoving)
             {
+                Vector2 velocity = (transform.position - lastPos).normalized;
+                float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg - 90f;
+                
                 float waddle = Mathf.Sin(Time.time * 20f) * 10f;
-                transform.localRotation = Quaternion.Euler(0, 0, waddle);
+                transform.localRotation = Quaternion.Euler(0, 0, targetAngle + waddle);
                 
                 float bob = Mathf.Abs(Mathf.Sin(Time.time * 20f)) * 0.05f;
                 transform.localScale = baseScale + new Vector3(bob, bob, 0f);
             }
             else
             {
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.identity, Time.deltaTime * 10f);
+                // Just remove waddle but keep facing direction
+                Vector3 euler = transform.localRotation.eulerAngles;
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(0, 0, euler.z), Time.deltaTime * 10f);
                 transform.localScale = Vector3.Lerp(transform.localScale, baseScale, Time.deltaTime * 10f);
             }
         }
@@ -168,22 +173,51 @@ public class Enemy : MonoBehaviour
     // -------------------------
     // MOVEMENT
     // -------------------------
+    private List<Vector2> currentPath;
+    private int currentPathIndex;
+    private float pathUpdateTimer;
+
     protected virtual void MoveTowardsBee()
     {
         if (targetBee == null) return;
 
         float dist = Vector2.Distance(transform.position, targetBee.transform.position);
-
         if (dist <= attackRange) return;
 
-        Vector2 dir = (targetBee.transform.position - transform.position).normalized;
-        Vector3 step = (Vector3)(dir * moveSpeed * Time.deltaTime);
-        Vector3 nextPos = transform.position + step;
+        pathUpdateTimer -= Time.deltaTime;
+        if (pathUpdateTimer <= 0f || currentPath == null || currentPath.Count == 0)
+        {
+            currentPath = AStar.FindPathWorld(transform.position, targetBee.transform.position);
+            currentPathIndex = 0;
+            pathUpdateTimer = 0.5f; // Re-path every 0.5s
+        }
 
-        if (HiveGrid.Instance != null && HiveGrid.Instance.IsBlockingAt(nextPos))
-            return;
+        if (currentPath != null && currentPathIndex < currentPath.Count)
+        {
+            Vector2 targetPos = currentPath[currentPathIndex];
+            float distToWaypoint = Vector2.Distance(transform.position, targetPos);
+            
+            if (distToWaypoint < 0.1f)
+            {
+                currentPathIndex++;
+                if (currentPathIndex >= currentPath.Count) return;
+                targetPos = currentPath[currentPathIndex];
+            }
 
-        transform.position = nextPos;
+            Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
+            Vector3 step = (Vector3)(dir * moveSpeed * Time.deltaTime);
+            Vector3 nextPos = transform.position + step;
+
+            if (HiveGrid.Instance != null && HiveGrid.Instance.IsBlockingAt(nextPos))
+            {
+                // If blocked by a wall unexpectedly, just recalculate path next frame
+                pathUpdateTimer = 0f;
+            }
+            else
+            {
+                transform.position = nextPos;
+            }
+        }
     }
 
     // -------------------------
