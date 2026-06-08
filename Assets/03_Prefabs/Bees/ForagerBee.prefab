@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 2721961943892219944}
   - component: {fileID: 3883185605500231352}
   - component: {fileID: 7160345410009509613}
-  - component: {fileID: 3545391493429791195}
   m_Layer: 0
   m_Name: ForagerBee
   m_TagString: Untagged
@@ -85,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 9102540626692535219, guid: d9b329ace5b4e4e01bac3e7826535340, type: 3}
+  m_Sprite: {fileID: -3101189886920951990, guid: fff19cc4136204f33be9d8a219319f52, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -198,25 +197,3 @@ MonoBehaviour:
   pollenPerTrip: 5
   pollenPrefab: {fileID: 0}
   rainSlowMultiplier: 2
---- !u!95 &3545391493429791195
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5372089875030814663}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 5589d25e6515540dcbde7fb67a231a74, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0

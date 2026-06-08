@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 5751428642550838336}
   - component: {fileID: 8799457385219808093}
   - component: {fileID: 9011936562678364175}
-  - component: {fileID: -2373464912793475137}
   m_Layer: 9
   m_Name: HouseBee
   m_TagString: Bee
@@ -112,7 +111,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d60fa6a75012c54ca291f6363743906, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBee
-  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -126,21 +124,16 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
-  jobCheckInterval: 2
-  sleepDelayRange: 1.5
-  retaliationRange: 1.5
-  retaliationDamage: 1
-  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
   beeType: 1
-  beeName: Unnamed Bee
   workDistance: 1.2
   convertTime: 2
   workBuffer: 0.2
   honeyPrefab: {fileID: 251181548223704740, guid: 05a77bb90fdd12846af6728cbfc01ab6, type: 3}
   honeyAmount: 1
+  searchInterval: 0.5
 --- !u!212 &9011936562678364175
 SpriteRenderer:
   serializedVersion: 2
@@ -200,25 +193,3 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!95 &-2373464912793475137
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5076726635901290395}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f625b4420ae494b018f932da4aaa0838, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0

@@ -99,5 +99,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableEggUI
   eggType: 2
-  honeyCost: 0
-  hoverPopup: {fileID: 0}

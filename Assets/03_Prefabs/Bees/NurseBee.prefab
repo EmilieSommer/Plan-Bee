@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 5708791649362582653}
   - component: {fileID: 3993067854492854415}
   - component: {fileID: 3834527065584964131}
-  - component: {fileID: 109664622372044597}
   m_Layer: 0
   m_Name: NurseBee
   m_TagString: Untagged
@@ -85,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3088162751776509234, guid: 6ffe412ca88df44bcbbf606a512c870b, type: 3}
+  m_Sprite: {fileID: 7984994442375538816, guid: 1e39a6fd5a60a4b31959db7da9cd4176, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -196,25 +195,3 @@ MonoBehaviour:
   beeName: NurseBee
   workDistanceThreshold: 1.5
   maxTendingTime: 30
---- !u!95 &109664622372044597
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3727321604459963921}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 9aee53c4fc5f943768d9142907b69a49, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0

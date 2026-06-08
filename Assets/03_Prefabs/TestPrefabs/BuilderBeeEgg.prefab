@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.288, y: -0.345, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.39999998, y: 0.39999998, z: 0.39999998}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -82,8 +82,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2088631657478871339, guid: 27ba8eb87b9831c4db75cc3fcdef5929, type: 3}
-  m_Color: {r: 1, g: 0.7019608, b: 0.23137255, a: 1}
+  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_Color: {r: 0.39227167, g: 1, b: 0.047169685, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -106,5 +106,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Egg
   hatchTime: 10
   beePrefab: {fileID: 5393414303636691737, guid: b7638a07e12a44a4a894053c6deb6f14, type: 3}
+  nursesTending: 0
   tendSpeedMultiplier: 1
-  eggName: 
+  isHatched: 0
