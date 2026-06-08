@@ -27,13 +27,17 @@ public class CurrencyManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
 
-        // Start with empty max capacities, zones will register themselves in Start()
+        // Force starting honey to 0 so inspector values don't override it
         pollen = 0;
         maxPollen = 0;
-        honey = 50; // Give some starting honey so the player can build!
+        honey = 0; 
         maxHoney = 50;
     }
 

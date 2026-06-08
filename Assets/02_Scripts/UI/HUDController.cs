@@ -32,7 +32,7 @@ public class HUDController : MonoBehaviour
 
     private TMP_Text FindTextRobust(params string[] keywords)
     {
-        TMP_Text[] allTexts = FindObjectsOfType<TMP_Text>();
+        TMP_Text[] allTexts = GetComponentsInChildren<TMP_Text>(true);
         foreach(var t in allTexts)
         {
             string n = t.gameObject.name.ToLower();
