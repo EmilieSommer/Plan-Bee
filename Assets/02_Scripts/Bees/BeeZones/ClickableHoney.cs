@@ -25,8 +25,17 @@ public class ClickableHoney : MonoBehaviour
         }
     }
 
+    private float lifetime = 30f;
+
     private void Update()
     {
+        lifetime -= Time.deltaTime;
+        if (lifetime <= 0f)
+        {
+            Collect();
+            return;
+        }
+
         // Make the outline pulsate to catch the player's eye
         if (outlineObj != null)
         {
@@ -40,6 +49,14 @@ public class ClickableHoney : MonoBehaviour
 
     private void OnMouseDown()
     {
+        Collect();
+    }
+
+    private void Collect()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayHoneyCollect();
+
         if (CurrencyManager.Instance != null)
         {
             CurrencyManager.Instance.AddHoney(amount);

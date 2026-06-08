@@ -625,6 +625,9 @@ public class HiveGrid : MonoBehaviour
             pendingZones.Remove(pos);
         }
 
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayBuild();
+
         OnTileBuilt?.Invoke(pos);
     }
 
@@ -685,27 +688,25 @@ public class HiveGrid : MonoBehaviour
     [ContextMenu("4. Fix Bee Prefabs (Animator & Scale)")]
     private void FixBeePrefabs()
     {
-        string[] prefabs = new string[] 
+        var mappings = new System.Collections.Generic.Dictionary<string, string>
         {
-            "Assets/03_Prefabs/Bees/HouseBee.prefab",
-            "Assets/03_Prefabs/Bees/ForagerBee.prefab",
-            "Assets/03_Prefabs/Bees/NurseBee.prefab",
-            "Assets/03_Prefabs/Bees/DroneBee.prefab",
-            "Assets/03_Prefabs/Bees/BuilderBee.prefab",
-            "Assets/03_Prefabs/Bees/QueenBee.prefab"
+            { "Assets/03_Prefabs/Bees/HouseBee.prefab", "Assets/06_Animations/BeeController.controller" },
+            { "Assets/03_Prefabs/Bees/ForagerBee.prefab", "Assets/06_Animations/Overrides/Forager bee_Controller.overrideController" },
+            { "Assets/03_Prefabs/Bees/NurseBee.prefab", "Assets/06_Animations/Overrides/Nurse bee_Controller.overrideController" },
+            { "Assets/03_Prefabs/Bees/DroneBee.prefab", "Assets/06_Animations/Overrides/Drone_Controller.overrideController" },
+            { "Assets/03_Prefabs/Bees/BuilderBee.prefab", "Assets/06_Animations/Overrides/Builder bee_Controller.overrideController" },
+            { "Assets/03_Prefabs/Bees/QueenBee.prefab", "Assets/06_Animations/Overrides/The Queen_Controller.overrideController" }
         };
-        
-        var controller = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/06_Animations/BeeController.controller");
-        if (controller == null)
-        {
-            Debug.LogError("Could not find BeeController!");
-            return;
-        }
 
-        foreach (string path in prefabs)
+        foreach (var kvp in mappings)
         {
+            string path = kvp.Key;
+            string animPath = kvp.Value;
+
+            var controller = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.RuntimeAnimatorController>(animPath);
             GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (prefab != null)
+            
+            if (prefab != null && controller != null)
             {
                 var instance = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab);
                 Animator anim = instance.GetComponent<Animator>();

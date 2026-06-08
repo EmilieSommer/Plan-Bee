@@ -54,6 +54,8 @@ public class Enemy : MonoBehaviour
         UpdateAnimator();
     }
 
+    private float findTargetTimer = 0f;
+
     protected virtual void UpdateAnimator()
     {
         if (baseScale == Vector3.zero) baseScale = transform.localScale;
@@ -123,6 +125,10 @@ public class Enemy : MonoBehaviour
     // -------------------------
     protected virtual void FindNearestBee()
     {
+        findTargetTimer -= Time.deltaTime;
+        if (findTargetTimer > 0f) return;
+        findTargetTimer = 0.5f;
+
         if (prefersQueen)
         {
             var queen = FindObjectOfType<QueenBee>();

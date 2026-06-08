@@ -33,8 +33,8 @@ public class CurrencyManager : MonoBehaviour
         // Start with empty max capacities, zones will register themselves in Start()
         pollen = 0;
         maxPollen = 0;
-        honey = 0;
-        maxHoney = 0;
+        honey = 50; // Give some starting honey so the player can build!
+        maxHoney = 50;
     }
 
     private void Start()

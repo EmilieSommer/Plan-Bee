@@ -196,12 +196,15 @@ MonoBehaviour:
   beeName: QueenBee
   gameOverCanvas: {fileID: 0}
   healthSlider: {fileID: 0}
+  regenRate: 0.5
+  regenDelay: 3
   protectionRadius: 8
   dangerMultiplier: 2
   foragerPrefab: {fileID: 5372089875030814663, guid: e742ab18dd40c4207885a57c9f210140, type: 3}
   nursePrefab: {fileID: 3727321604459963921, guid: e04732f2cbb384610ac090a65d059f50, type: 3}
   housePrefab: {fileID: 3390360998626142627, guid: fed8a168bc44446a6ad81d6b7a0dc6be, type: 3}
   builderPrefab: {fileID: 0}
+  healthText: {fileID: 0}
 --- !u!95 &6130797787824427685
 Animator:
   serializedVersion: 7

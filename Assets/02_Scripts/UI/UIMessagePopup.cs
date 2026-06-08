@@ -25,6 +25,9 @@ public class UIMessagePopup : MonoBehaviour
         panel.SetActive(true);
         messageText.text = message;
 
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayNotification();
+
         hideRoutine = StartCoroutine(HideAfter(duration));
     }
 
