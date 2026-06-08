@@ -5,6 +5,7 @@ using System.Collections;
 public class SeasonManager : MonoBehaviour
 {
     public static SeasonManager Instance;
+    public static event System.Action<Season> OnSeasonChangedEvent;
 
     [Header("Season Settings")]
     public int daysPerSeason = 5;
@@ -75,6 +76,7 @@ public class SeasonManager : MonoBehaviour
             lastProfile = GetSeasonProfile(previousSeason);
 
             previousSeason = currentSeason;
+            OnSeasonChangedEvent?.Invoke(currentSeason);
             OnSeasonChanged();
         }
 

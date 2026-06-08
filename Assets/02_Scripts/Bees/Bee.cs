@@ -123,6 +123,19 @@ public abstract class Bee : MonoBehaviour
         currentState = BeeState.Idle;
         homePosition = transform.position;
 
+        // Auto-scale non-queen bees to exactly fit in a tile
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null && sr.sprite != null && beeType != BeeType.Queen)
+        {
+            float targetSize = 20f / 32f;
+            float currentSize = sr.sprite.bounds.size.x;
+            if (currentSize > 0)
+            {
+                float scale = targetSize / currentSize;
+                transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+
         PickRandomDirection();
         lastPosition = rb.position;
     }

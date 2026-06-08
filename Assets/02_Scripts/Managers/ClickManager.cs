@@ -3,6 +3,8 @@ using UnityEngine.EventSystems;
 
 public class ClickManager : MonoBehaviour
 {
+    public static ClickManager Instance;
+
     public LayerMask honeyLayer;
     public LayerMask zoneLayer;
     public LayerMask beeLayer;
@@ -36,6 +38,11 @@ public class ClickManager : MonoBehaviour
 
     private GameObject activeCanvas;
     private bool uiOpen;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Update()
     {
@@ -206,5 +213,11 @@ public class ClickManager : MonoBehaviour
             activeCanvas = null;
         }
         uiOpen = false;
+    }
+
+    public void RegisterCanvas(GameObject canvas)
+    {
+        activeCanvas = canvas;
+        uiOpen = true;
     }
 }

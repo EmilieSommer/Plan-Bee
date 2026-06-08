@@ -25,10 +25,46 @@ public class QueenBee : Bee
         base.Awake();
         beeType = BeeType.Queen;
         Instance = this;
+
+        // Automatically scale Queen to exactly 35/32 of a tile
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            float targetSize = 35f / 32f;
+            float currentSize = sr.sprite.bounds.size.x;
+            if (currentSize > 0)
+            {
+                float scale = targetSize / currentSize;
+                transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+        else
+        {
+            transform.localScale = Vector3.one;
+        }
+
+#if UNITY_EDITOR
+        if (foragerPrefab == null)
+            foragerPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/ForagerBee.prefab");
+        if (nursePrefab == null)
+            nursePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/NurseBee.prefab");
+        if (housePrefab == null)
+            housePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/HouseBee.prefab");
+        if (builderPrefab == null)
+            builderPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/BuilderBee.prefab");
+#endif
     }
+
+    [Header("Starting Bees")]
+    public GameObject foragerPrefab;
+    public GameObject nursePrefab;
+    public GameObject housePrefab; // Worker
+    public GameObject builderPrefab;
 
     protected override void Start()
     {
+        base.Start();
+
         AssignZone();
 
         // Queen starts frozen at home immediately
@@ -39,6 +75,16 @@ public class QueenBee : Bee
             healthSlider.maxValue = maxHealth;
             healthSlider.value = currentHealth;
         }
+
+        SpawnStartingBees();
+    }
+
+    private void SpawnStartingBees()
+    {
+        if (foragerPrefab != null) Instantiate(foragerPrefab, transform.position, Quaternion.identity);
+        if (nursePrefab != null) Instantiate(nursePrefab, transform.position, Quaternion.identity);
+        if (housePrefab != null) Instantiate(housePrefab, transform.position, Quaternion.identity);
+        if (builderPrefab != null) Instantiate(builderPrefab, transform.position, Quaternion.identity);
     }
 
     // ======================================================
