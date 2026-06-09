@@ -315,6 +315,13 @@ public abstract class Bee : MonoBehaviour
 
     private Vector3 baseScale;
 
+    [Header("Sprite Animation")]
+    public Sprite[] walkFrames;
+    public float animationFPS = 12f;
+    private float animTimer;
+    private int currentFrame;
+    private Sprite idleSprite;
+
     protected virtual void UpdateAnimator()
     {
         if (animator != null)
@@ -331,13 +338,42 @@ public abstract class Bee : MonoBehaviour
 
         bool moving = currentVelocity.sqrMagnitude > 0.01f;
 
+        // Custom Sprite Sheet Animation
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            if (idleSprite == null && sr.sprite != null)
+                idleSprite = sr.sprite; // Capture the initial default sprite
+
+            if (walkFrames != null && walkFrames.Length > 0)
+            {
+                if (moving)
+                {
+                    animTimer += Time.deltaTime;
+                    if (animTimer >= 1f / animationFPS)
+                    {
+                        animTimer -= 1f / animationFPS;
+                        currentFrame = (currentFrame + 1) % walkFrames.Length;
+                        sr.sprite = walkFrames[currentFrame];
+                    }
+                }
+                else
+                {
+                    sr.sprite = idleSprite;
+                    currentFrame = 0;
+                    animTimer = 0f;
+                }
+            }
+        }
+
         if (moving)
         {
             // Point "forward" towards velocity. The sprite natively faces UP, so subtract 90 degrees.
             float targetAngle = Mathf.Atan2(currentVelocity.y, currentVelocity.x) * Mathf.Rad2Deg - 90f;
             
             // Walk: Waddle rotation and slight uniform scale bobbing
-            float waddle = Mathf.Sin(Time.time * 25f) * 12f;
+            // Disable waddle if we have a sprite sheet animation!
+            float waddle = (walkFrames != null && walkFrames.Length > 0) ? 0f : Mathf.Sin(Time.time * 25f) * 12f;
             
             transform.localRotation = Quaternion.Euler(0, 0, targetAngle + waddle);
 

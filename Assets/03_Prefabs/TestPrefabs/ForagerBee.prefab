@@ -111,6 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d1f8f4e7ea8c304192413eeecea79bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ForagerBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -124,10 +125,22 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
+  jobCheckInterval: 2
+  sleepDelayRange: 1.5
+  retaliationRange: 1.5
+  retaliationDamage: 1
+  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
   beeType: 0
+  beeName: Unnamed Bee
+  walkFrames:
+  - {fileID: 9102540626692535219, guid: d9b329ace5b4e4e01bac3e7826535340, type: 3}
+  - {fileID: -8921588965086069823, guid: d9b329ace5b4e4e01bac3e7826535340, type: 3}
+  - {fileID: 1984136325584095063, guid: d9b329ace5b4e4e01bac3e7826535340, type: 3}
+  - {fileID: 921827832848868612, guid: d9b329ace5b4e4e01bac3e7826535340, type: 3}
+  animationFPS: 12
   foragingTime: 5
   pollenPerTrip: 5
   pollenPrefab: {fileID: 8394943868928672140, guid: 5986bb090b49d574a95f98d4049c739c, type: 3}

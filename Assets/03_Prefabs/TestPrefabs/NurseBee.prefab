@@ -111,6 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec68ffdff640d71419ec606617333aac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NurseBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -124,11 +125,24 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
+  jobCheckInterval: 2
+  sleepDelayRange: 1.5
+  retaliationRange: 1.5
+  retaliationDamage: 1
+  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
   beeType: 2
+  beeName: Unnamed Bee
+  walkFrames:
+  - {fileID: -3088162751776509234, guid: 6ffe412ca88df44bcbbf606a512c870b, type: 3}
+  - {fileID: -8804095376410646477, guid: 6ffe412ca88df44bcbbf606a512c870b, type: 3}
+  - {fileID: -4718057732560915946, guid: 6ffe412ca88df44bcbbf606a512c870b, type: 3}
+  - {fileID: 3588389227447071612, guid: 6ffe412ca88df44bcbbf606a512c870b, type: 3}
+  animationFPS: 12
   workDistanceThreshold: 0.5
+  maxTendingTime: 30
 --- !u!212 &4893835106054649628
 SpriteRenderer:
   serializedVersion: 2

@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobberBee
   maxHealth: 5
-  moveSpeed: 2
+  moveSpeed: 0.8
   attackRange: 1.2
   attackCooldown: 1
   enemyType: 6
@@ -78,7 +78,7 @@ MonoBehaviour:
   stealRange: 1
   honeyCarryOffset: {x: 0.3, y: 0}
   fleeDroneRange: 4
-  fleeSpeed: 3.5
+  fleeSpeed: 1.5
   minX: -30
   maxX: 30
   minY: -20

@@ -146,6 +146,13 @@ public class DroneBee : Bee
 
         if (targetEnemy != null)
         {
+            if (currentZone != null && Vector2.Distance(targetEnemy.position, currentZone.transform.position) > maxLeashDistance)
+            {
+                SetTarget(null);
+                ReturnToZone();
+                return;
+            }
+
             float dist = Vector2.Distance(transform.position, targetEnemy.position);
 
             if (dist > attackRange)
@@ -242,6 +249,9 @@ public class DroneBee : Bee
             enemy.TakeDamage(attackDamage);
     }
 
+    [Header("Drone Leash")]
+    public float maxLeashDistance = 10f;
+
     // ======================================================
     // TARGETING
     // ======================================================
@@ -257,6 +267,12 @@ public class DroneBee : Bee
         {
             if (enemy == null) continue;
             if (!enemy.CanBeTargetedByDrone()) continue;
+
+            if (currentZone != null)
+            {
+                if (Vector2.Distance(enemy.transform.position, currentZone.transform.position) > maxLeashDistance)
+                    continue;
+            }
 
             float dist = Vector2.Distance(transform.position, enemy.transform.position);
             float threat = enemy.GetThreatLevel();

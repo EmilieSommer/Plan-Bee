@@ -70,7 +70,7 @@ public class CurrencyManager : MonoBehaviour
     }
 
     public bool HasPollenSpace() => pollen < maxPollen;
-    public bool HasHoneySpace() => honey < maxHoney;
+    public bool HasHoneySpace() => true; // No cap for honey!
 
     // -------------------------
     // HONEY
@@ -90,7 +90,7 @@ public class CurrencyManager : MonoBehaviour
 
     public void AddHoney(int amount)
     {
-        honey = Mathf.Min(honey + amount, maxHoney);
+        honey += amount; // Removed maxHoney limit
         UpdateUI();
     }
 
@@ -134,7 +134,7 @@ public class CurrencyManager : MonoBehaviour
         }
 
         if (pollenText != null) pollenText.text = $"Pollen: {pollen} / {maxPollen}";
-        if (honeyText != null) honeyText.text = $"{honey} / {maxHoney}";
+        if (honeyText != null) honeyText.text = $"{honey}";
     }
 
     // -------------------------

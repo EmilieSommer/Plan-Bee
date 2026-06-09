@@ -111,6 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d60fa6a75012c54ca291f6363743906, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HouseBee
+  workSpeedMultiplier: 1
   maxHealth: 10
   moveSpeed: 2
   acceleration: 8
@@ -124,16 +125,27 @@ MonoBehaviour:
   roamRadius: 3
   stuckCheckInterval: 0.5
   stuckMoveThreshold: 0.05
+  jobCheckInterval: 2
+  sleepDelayRange: 1.5
+  retaliationRange: 1.5
+  retaliationDamage: 1
+  retaliationCooldown: 2
   attackDamage: 2
   attackRange: 1.2
   attackCooldown: 1
   beeType: 1
+  beeName: Unnamed Bee
+  walkFrames:
+  - {fileID: 1620748034013147344, guid: 228c630e6f9e244acacf819848768921, type: 3}
+  - {fileID: 8869510581519183629, guid: 228c630e6f9e244acacf819848768921, type: 3}
+  - {fileID: 3895267991862972133, guid: 228c630e6f9e244acacf819848768921, type: 3}
+  - {fileID: 6581502183573187351, guid: 228c630e6f9e244acacf819848768921, type: 3}
+  animationFPS: 12
   workDistance: 1.2
   convertTime: 2
   workBuffer: 0.2
   honeyPrefab: {fileID: 251181548223704740, guid: 05a77bb90fdd12846af6728cbfc01ab6, type: 3}
   honeyAmount: 1
-  searchInterval: 0.5
 --- !u!212 &9011936562678364175
 SpriteRenderer:
   serializedVersion: 2

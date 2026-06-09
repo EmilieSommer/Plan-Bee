@@ -43,7 +43,7 @@ public class HiveManager : MonoBehaviour
             if (nz.GetComponent<SleepZone>() == null)
             {
                 var sz = nz.gameObject.AddComponent<SleepZone>();
-                sz.capacityPerZone = 1; // Default starting capacity
+                sz.capacityPerZone = 2; // Default starting capacity
                 Debug.Log($"[HiveManager] Auto-added SleepZone component to {nz.name}");
             }
         }

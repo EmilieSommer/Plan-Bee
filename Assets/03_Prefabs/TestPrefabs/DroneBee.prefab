@@ -135,12 +135,14 @@ MonoBehaviour:
   attackCooldown: 1
   beeType: 3
   beeName: OG drone Bee
+  walkFrames:
+  - {fileID: 2708788675331146717, guid: e042c38026b874882a0a90d2dbbd63aa, type: 3}
+  - {fileID: 1685577877027620323, guid: e042c38026b874882a0a90d2dbbd63aa, type: 3}
+  - {fileID: -7490262324562480447, guid: e042c38026b874882a0a90d2dbbd63aa, type: 3}
+  - {fileID: 7952216143481378580, guid: e042c38026b874882a0a90d2dbbd63aa, type: 3}
+  animationFPS: 12
   zoneArrivalDistance: 1.5
   targetLockTime: 2
-  minX: -30
-  maxX: 30
-  minY: -30
-  maxY: 30
 --- !u!212 &4223563190110776065
 SpriteRenderer:
   serializedVersion: 2

@@ -5,8 +5,8 @@ public class DayCycleManager : MonoBehaviour
 {
     public static DayCycleManager Instance;
 
-    public const int DaysPerSeason = 7;
-    public const int DaysPerYear = DaysPerSeason * 4;
+    // 5 days for Spring, Summer, Autumn; 2 days for Winter
+    public const int DaysPerYear = 17;
 
     [Header("Day Settings")]
     public float dayLength = 600f; // 10 minutes full day

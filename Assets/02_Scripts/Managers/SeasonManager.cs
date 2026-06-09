@@ -6,8 +6,7 @@ public class SeasonManager : MonoBehaviour
 {
     public static SeasonManager Instance;
 
-    [Header("Season Settings")]
-    public int daysPerSeason = DayCycleManager.DaysPerSeason;
+    // Removed daysPerSeason since seasons now have different lengths
 
     [Header("UI")]
     public TextMeshProUGUI seasonText;
@@ -54,6 +53,12 @@ public class SeasonManager : MonoBehaviour
 
     private void Start()
     {
+        // Disable all season overlays per user request
+        if (spring != null && spring.scenery != null) spring.scenery.SetActive(false);
+        if (summer != null && summer.scenery != null) summer.scenery.SetActive(false);
+        if (autumn != null && autumn.scenery != null) autumn.scenery.SetActive(false);
+        if (winter != null && winter.scenery != null) winter.scenery.SetActive(false);
+
         UpdateSeason(true);
     }
 
@@ -70,10 +75,17 @@ public class SeasonManager : MonoBehaviour
     void UpdateSeason(bool force = false)
     {
         int day = DayCycleManager.Instance.currentDay;
-        int seasonIndex = (day - 1) / daysPerSeason;
-        int seasonEnumIndex = seasonIndex % 4;
+        int zeroIndexedDay = day - 1;
+        
+        int dayInCycle = zeroIndexedDay % 17; // 5 + 5 + 5 + 2
+        
+        Season calculatedSeason;
+        if (dayInCycle < 5) calculatedSeason = Season.Spring;
+        else if (dayInCycle < 10) calculatedSeason = Season.Summer;
+        else if (dayInCycle < 15) calculatedSeason = Season.Autumn;
+        else calculatedSeason = Season.Winter;
 
-        currentSeason = (Season)seasonEnumIndex;
+        currentSeason = calculatedSeason;
 
         if (force || currentSeason != previousSeason)
         {
@@ -216,6 +228,9 @@ public class SeasonManager : MonoBehaviour
 
     IEnumerator FadeScenery()
     {
+        // SEASON OVERLAYS DISABLED PER USER REQUEST
+        yield break;
+
         SeasonProfile current = GetCurrentProfile();
         SeasonProfile previous = lastProfile;
 

@@ -193,6 +193,12 @@ MonoBehaviour:
   attackCooldown: 1
   beeType: 5
   beeName: QueenBee
+  walkFrames:
+  - {fileID: 5494200059202041094, guid: e15877273ec364936932700c451a8755, type: 3}
+  - {fileID: -8968871517899794768, guid: e15877273ec364936932700c451a8755, type: 3}
+  - {fileID: 6389231815766169496, guid: e15877273ec364936932700c451a8755, type: 3}
+  - {fileID: 2108241748689659528, guid: e15877273ec364936932700c451a8755, type: 3}
+  animationFPS: 12
   gameOverCanvas: {fileID: 0}
   healthSlider: {fileID: 0}
   regenRate: 0.5
@@ -202,3 +208,5 @@ MonoBehaviour:
   foragerPrefab: {fileID: 5372089875030814663, guid: e742ab18dd40c4207885a57c9f210140, type: 3}
   nursePrefab: {fileID: 3727321604459963921, guid: e04732f2cbb384610ac090a65d059f50, type: 3}
   housePrefab: {fileID: 3390360998626142627, guid: fed8a168bc44446a6ad81d6b7a0dc6be, type: 3}
+  builderPrefab: {fileID: 0}
+  healthText: {fileID: 0}

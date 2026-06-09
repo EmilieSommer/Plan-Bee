@@ -225,7 +225,6 @@ public class ForagerBee : Bee
         if (CurrencyManager.Instance != null)
         {
             CurrencyManager.Instance.AddPollen(pollenPerTrip);
-            FloatingText.Create(pos, $"+{pollenPerTrip}", new Color(1f, 0.4f, 0f)); // Pollen Orange
         }
 
         StartForaging();

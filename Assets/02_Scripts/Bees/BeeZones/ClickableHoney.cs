@@ -13,7 +13,7 @@ public class ClickableHoney : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         if (sr != null)
         {
-            // Create a duplicate sprite renderer behind it, slightly larger and white
+            // Create a duplicate sprite renderer behind it, slightly larger and white silhouette
             outlineObj = new GameObject("Outline");
             outlineObj.transform.SetParent(transform);
             outlineObj.transform.localPosition = Vector3.zero;
@@ -21,8 +21,15 @@ public class ClickableHoney : MonoBehaviour
             
             SpriteRenderer outlineSr = outlineObj.AddComponent<SpriteRenderer>();
             outlineSr.sprite = sr.sprite;
-            outlineSr.color = Color.white;
             outlineSr.sortingOrder = sr.sortingOrder - 1; // Put behind honey
+            
+            // Use GUI/Text Shader to render it as a solid white silhouette
+            Shader guiTextShader = Shader.Find("GUI/Text Shader");
+            if (guiTextShader != null)
+            {
+                outlineSr.material = new Material(guiTextShader);
+            }
+            outlineSr.color = Color.white;
         }
 
         StartCoroutine(SpawnJuice());
@@ -45,42 +52,6 @@ public class ClickableHoney : MonoBehaviour
             yield return null;
         }
         transform.localScale = originalScale;
-
-        // 2. White flash overlay for 2 seconds
-        if (sr != null && sr.sprite != null)
-        {
-            GameObject flashGO = new GameObject("FlashOverlay");
-            flashGO.transform.SetParent(transform);
-            flashGO.transform.localPosition = Vector3.zero;
-            flashGO.transform.localScale = Vector3.one;
-
-            SpriteRenderer flashSr = flashGO.AddComponent<SpriteRenderer>();
-            flashSr.sprite = sr.sprite;
-            flashSr.sortingOrder = sr.sortingOrder + 1; // On top of honey
-
-            // Use GUI/Text Shader to render it solid white
-            Shader guiTextShader = Shader.Find("GUI/Text Shader");
-            if (guiTextShader != null)
-            {
-                flashSr.material = new Material(guiTextShader);
-            }
-            flashSr.color = Color.white;
-
-            // Stay solid white for 1.7 seconds, then fade out for 0.3 seconds
-            yield return new WaitForSeconds(1.7f);
-
-            float fadeElapsed = 0f;
-            float fadeDuration = 0.3f;
-            while (fadeElapsed < fadeDuration)
-            {
-                fadeElapsed += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, fadeElapsed / fadeDuration);
-                flashSr.color = new Color(1f, 1f, 1f, alpha);
-                yield return null;
-            }
-
-            Destroy(flashGO);
-        }
     }
 
     private float lifetime = 30f;

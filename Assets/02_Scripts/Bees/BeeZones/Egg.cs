@@ -56,10 +56,17 @@ public class Egg : MonoBehaviour
         allEggs.Remove(this);
     }
 
+    private void Awake()
+    {
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null) col.isTrigger = true;
+    }
+
     private void Start()
     {
         timer = hatchTime;
-
+        // Make eggs smaller so they don't block the screen as much
+        transform.localScale = new Vector3(0.25f, 0.25f, 1f);
     }
     private void Update()
     {
@@ -167,7 +174,13 @@ public class Egg : MonoBehaviour
 
         OnHatched?.Invoke();
 
-        GameObject beeObj = Instantiate(beePrefab, transform.position, Quaternion.identity);
+        // Spawn baby slightly underneath the egg's center visually
+        Vector3 spawnPos = transform.position + new Vector3(0, -0.3f, 0);
+        GameObject beeObj = Instantiate(beePrefab, spawnPos, Quaternion.identity);
+
+        // Optional: Put baby physically behind the egg in sorting order for a second?
+        SpriteRenderer sr = beeObj.GetComponent<SpriteRenderer>();
+        if (sr != null) sr.sortingOrder = 9; // Below normal bees (10)
 
         Bee bee = beeObj.GetComponent<Bee>();
         if (bee != null)
