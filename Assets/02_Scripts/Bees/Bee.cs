@@ -185,8 +185,31 @@ public abstract class Bee : MonoBehaviour
         lastPosition = rb.position;
     }
 
+    private static readonly string[] RandomBeeNames = {
+        "James", "Karen", "Mort", "Gary", "Linda", "Brenda", "Bob", "Susan", 
+        "Carol", "Richard", "Arthur", "Eunice", "Gladys", "Harold", "Milton", 
+        "Dolores", "Craig", "Kevin", "Stanley", "Phyllis", "Pam", "Angela", 
+        "Oscar", "Meredith", "Creed", "Toby", "Dwight", "Jim", "Michael",
+        "Janice", "Greg", "Deborah", "Barbara", "Kenneth", "Ronald", "Donald", 
+        "Gordon", "Margaret", "Dorothy", "Shirley", "Joan", "Walter", "Ralph", 
+        "Albert", "Eugene", "Clarence", "Martha"
+    };
+
     protected virtual void Start()
     {
+        bool hasDefaultName = string.IsNullOrWhiteSpace(beeName) || 
+                              beeName == "Unnamed Bee" || 
+                              beeName.ToLower().Contains("bee") ||
+                              beeName == beeType.ToString();
+
+        if (hasDefaultName)
+        {
+            if (beeType == BeeType.Queen) 
+                SetName("Beeyoncé");
+            else 
+                SetName(RandomBeeNames[UnityEngine.Random.Range(0, RandomBeeNames.Length)]);
+        }
+
         if (HiveManager.Instance != null)
             HiveManager.Instance.RegisterBee(this);
 

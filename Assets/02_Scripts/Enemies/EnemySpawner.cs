@@ -23,6 +23,9 @@ public class EnemySpawner : MonoBehaviour
     public float minSpawnTime = 60f;
     public float maxSpawnTime = 180f;
 
+    [Header("Spawn Limits")]
+    public int maxActiveEnemies = 15;
+
     private float timer;
 
     private void Start()
@@ -45,7 +48,17 @@ public class EnemySpawner : MonoBehaviour
 
         if (timer <= 0f)
         {
-            SpawnEnemy(profile);
+            // Enforce max enemies cap!
+            int currentEnemyCount = FindObjectsOfType<Enemy>().Length;
+            if (currentEnemyCount < maxActiveEnemies)
+            {
+                SpawnEnemy(profile);
+            }
+            else
+            {
+                Debug.Log("Enemy spawn skipped: Max enemy cap reached.");
+            }
+            
             timer = Random.Range(minSpawnTime, maxSpawnTime);
         }
     }

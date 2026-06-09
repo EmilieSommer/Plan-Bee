@@ -32,12 +32,7 @@ public class HUDController : MonoBehaviour
         if (totalCountText != null)
         {
             int total = HiveManager.Instance.GetTotalBees();
-            int cap   = HiveManager.Instance.GetHiveCapacity();
-            int eggs  = HiveManager.Instance.QueuedEggs;
-            if (eggs > 0)
-                SetTextValue(totalCountText, $"{total} (+{eggs} Eggs) / {cap}");
-            else
-                SetTextValue(totalCountText, $"{total} / {cap}");
+            SetTextValue(totalCountText, total.ToString());
         }
     }
 
@@ -45,7 +40,7 @@ public class HUDController : MonoBehaviour
     {
         if (obj == null) return;
         int count = HiveManager.Instance.GetBeeCount(type);
-        SetTextValue(obj, $"{label,-8}  {count}");
+        SetTextValue(obj, count.ToString());
     }
 
     private void SetTextValue(GameObject obj, string value)

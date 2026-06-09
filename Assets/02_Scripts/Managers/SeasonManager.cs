@@ -53,13 +53,29 @@ public class SeasonManager : MonoBehaviour
 
     private void Start()
     {
-        // Disable all season overlays per user request
-        if (spring != null && spring.scenery != null) spring.scenery.SetActive(false);
-        if (summer != null && summer.scenery != null) summer.scenery.SetActive(false);
-        if (autumn != null && autumn.scenery != null) autumn.scenery.SetActive(false);
-        if (winter != null && winter.scenery != null) winter.scenery.SetActive(false);
+        // Disable all season overlays per user request and push them behind bees!
+        FixScenery(spring?.scenery);
+        FixScenery(summer?.scenery);
+        FixScenery(autumn?.scenery);
+        FixScenery(winter?.scenery);
 
         UpdateSeason(true);
+    }
+
+    private void FixScenery(GameObject sceneryObj)
+    {
+        if (sceneryObj == null) return;
+
+        SpriteRenderer[] srs = sceneryObj.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var sr in srs)
+        {
+            // Push it far back so it never covers bees
+            sr.sortingOrder = -50; 
+            // Completely disable the renderer just in case SetActive fails
+            sr.enabled = false;
+        }
+
+        sceneryObj.SetActive(false);
     }
 
     private void Update()

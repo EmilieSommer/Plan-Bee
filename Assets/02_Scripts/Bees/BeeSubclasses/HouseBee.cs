@@ -190,8 +190,15 @@ public class HouseBee : Bee
     {
         if (target != null)
         {
+            int convertedAmount = UnityEngine.Random.Range(2, 4);
+
             if (CurrencyManager.Instance != null && CurrencyManager.Instance.pollen > 0)
-                CurrencyManager.Instance.UsePollen(1);
+            {
+                if (CurrencyManager.Instance.pollen < convertedAmount)
+                    convertedAmount = CurrencyManager.Instance.pollen;
+
+                CurrencyManager.Instance.UsePollen(convertedAmount);
+            }
 
             Vector2 spawnPos = target.transform.position;
             Destroy(target.gameObject);
@@ -208,13 +215,13 @@ public class HouseBee : Bee
                     h.AddComponent<CircleCollider2D>().radius = 0.5f;
                 
                 ClickableHoney clickScript = h.AddComponent<ClickableHoney>();
-                clickScript.amount = honeyAmount;
+                clickScript.amount = convertedAmount;
             }
             else
             {
                 Debug.LogWarning("Honey Prefab is NULL!");
                 if (CurrencyManager.Instance != null)
-                    CurrencyManager.Instance.AddHoney(honeyAmount);
+                    CurrencyManager.Instance.AddHoney(convertedAmount);
             }
         }
 

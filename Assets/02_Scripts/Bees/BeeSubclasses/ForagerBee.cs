@@ -224,7 +224,8 @@ public class ForagerBee : Bee
 
         if (CurrencyManager.Instance != null)
         {
-            CurrencyManager.Instance.AddPollen(pollenPerTrip);
+            int amount = UnityEngine.Random.Range(2, 4); // 2 to 3
+            CurrencyManager.Instance.AddPollen(amount);
         }
 
         StartForaging();

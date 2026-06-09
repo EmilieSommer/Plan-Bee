@@ -6,11 +6,11 @@ public class SpawnPanel : MonoBehaviour
     public GameObject spawnSubmenu;
 
     [Header("Costs")]
-    public int foragerCost = 10;
-    public int nurseCost = 5;
-    public int houseCost = 5;
-    public int builderCost = 15;
-    public int droneCost = 20;
+    public int foragerCost = 1;
+    public int nurseCost = 2;
+    public int houseCost = 2;
+    public int builderCost = 3;
+    public int droneCost = 4;
 
     private void Start()
     {
