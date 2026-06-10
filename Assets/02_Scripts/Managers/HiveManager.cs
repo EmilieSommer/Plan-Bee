@@ -36,18 +36,6 @@ public class HiveManager : MonoBehaviour
             RegisterBee(bee);
         }
 
-        // Auto-fix: Ensure all NurseBeeZones (Brood Chambers) have a SleepZone component
-        NurseBeeZone[] nurseZones = FindObjectsOfType<NurseBeeZone>();
-        foreach (NurseBeeZone nz in nurseZones)
-        {
-            if (nz.GetComponent<SleepZone>() == null)
-            {
-                var sz = nz.gameObject.AddComponent<SleepZone>();
-                sz.capacityPerZone = 2; // Default starting capacity
-                Debug.Log($"[HiveManager] Auto-added SleepZone component to {nz.name}");
-            }
-        }
-
         SleepZone[] zones = FindObjectsOfType<SleepZone>();
         foreach (SleepZone zone in zones)
         {
@@ -74,10 +62,7 @@ public class HiveManager : MonoBehaviour
     {
         if (totalBeesText != null)
         {
-            if (queuedEggs > 0)
-                totalBeesText.text = $"{totalBees} (+{queuedEggs} Eggs) / {GetHiveCapacity()}";
-            else
-                totalBeesText.text = $"{totalBees} / {GetHiveCapacity()}";
+            totalBeesText.text = $"{GetNonDroneBees()} / {GetHiveCapacity()}";
         }
     }
 
@@ -111,14 +96,18 @@ public class HiveManager : MonoBehaviour
     // QUEUE TRACKING (NEW)
     // ------------------------
 
-    public void RegisterQueuedEgg()
+    private int queuedDroneEggs = 0;
+
+    public void RegisterQueuedEgg(Bee.BeeType type)
     {
-        queuedEggs++;
+        if (type == Bee.BeeType.Drone) queuedDroneEggs++;
+        else queuedEggs++;
     }
 
-    public void UnregisterQueuedEgg()
+    public void UnregisterQueuedEgg(Bee.BeeType type)
     {
-        queuedEggs = Mathf.Max(0, queuedEggs - 1);
+        if (type == Bee.BeeType.Drone) queuedDroneEggs = Mathf.Max(0, queuedDroneEggs - 1);
+        else queuedEggs = Mathf.Max(0, queuedEggs - 1);
     }
 
     // ------------------------
@@ -127,13 +116,18 @@ public class HiveManager : MonoBehaviour
 
     public int GetTotalBees() => totalBees;
 
+    public int GetNonDroneBees()
+    {
+        return totalBees - GetBeeCount(Bee.BeeType.Drone);
+    }
+
     public int GetBeeCount(Bee.BeeType type)
     {
-        return beeCounts[type];
+        return beeCounts.ContainsKey(type) ? beeCounts[type] : 0;
     }
 
     // ------------------------
-    // SLEEP ZONES
+    // SLEEP ZONES & CAPACITY
     // ------------------------
 
     public void RegisterSleepZone(SleepZone zone)
@@ -151,22 +145,44 @@ public class HiveManager : MonoBehaviour
     public int GetHiveCapacity()
     {
         int total = 0;
-
         foreach (var zone in sleepZones)
         {
             if (zone == null) continue;
             total += zone.capacityPerZone;
         }
-
         return total;
+    }
+
+    public int GetDroneCapacity()
+    {
+        int cap = 0;
+        DroneZone[] zones = FindObjectsOfType<DroneZone>();
+        foreach(var z in zones)
+        {
+            if (z.limits != null)
+            {
+                foreach(var limit in z.limits)
+                {
+                    if (limit.type == Bee.BeeType.Drone) cap += limit.capacity;
+                }
+            }
+        }
+        return cap;
     }
 
     // ------------------------
     // SPAWN RULE (FIXED)
     // ------------------------
 
-    public bool CanSpawnBee()
+    public bool CanSpawnBee(Bee.BeeType type)
     {
-        return (totalBees + queuedEggs) < GetHiveCapacity();
+        if (type == Bee.BeeType.Drone)
+        {
+            return (GetBeeCount(Bee.BeeType.Drone) + queuedDroneEggs) < GetDroneCapacity();
+        }
+        else
+        {
+            return (GetNonDroneBees() + queuedEggs) < GetHiveCapacity();
+        }
     }
 }

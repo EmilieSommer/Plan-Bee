@@ -50,8 +50,10 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             return;
         }
 
+        Bee.BeeType beeType = egg.eggType.ToBeeType();
+
         // ❗ IMPORTANT: capacity check includes queued eggs now
-        if (!HiveManager.Instance.CanSpawnBee())
+        if (!HiveManager.Instance.CanSpawnBee(requiredType))
         {
             CurrencyManager.Instance.AddHoney(cost);
             egg.ResetToStartPosition();
@@ -60,7 +62,7 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
         }
 
         // 🧠 RESERVE CAPACITY IMMEDIATELY
-        HiveManager.Instance.RegisterQueuedEgg();
+        HiveManager.Instance.RegisterQueuedEgg(requiredType);
 
         egg.SnapToSlot(transform);
 
@@ -109,7 +111,8 @@ public class QueueSlotUI : MonoBehaviour, IDropHandler
             currentWorldEgg.OnHatched -= ClearSlot;
 
             // 🧠 release reserved slot
-            HiveManager.Instance.UnregisterQueuedEgg();
+            Bee.BeeType typeToRelease = currentWorldEgg.beeType;
+            HiveManager.Instance.UnregisterQueuedEgg(typeToRelease);
 
             currentWorldEgg = null;
         }

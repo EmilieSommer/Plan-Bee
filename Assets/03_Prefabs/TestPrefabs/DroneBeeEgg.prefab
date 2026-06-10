@@ -107,6 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Egg
   hatchTime: 10
   beePrefab: {fileID: 8236354148204188528, guid: 0e4ac3b758b95bf458f765d1ab4a083f, type: 3}
+  beeType: 0
   tendSpeedMultiplier: 1
   eggName: 
 --- !u!61 &7004110080085937605

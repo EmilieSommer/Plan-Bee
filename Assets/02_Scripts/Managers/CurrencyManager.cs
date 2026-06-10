@@ -24,6 +24,7 @@ public class CurrencyManager : MonoBehaviour
     public AudioClip warningSound;
 
     private Coroutine warningCoroutine;
+    private float lastWarningTime = 0f;
 
     private void Awake()
     {
@@ -155,8 +156,11 @@ public class CurrencyManager : MonoBehaviour
 
         warningCoroutine = StartCoroutine(FadeWarning());
 
-        if (audioSource != null && warningSound != null)
-            audioSource.PlayOneShot(warningSound);
+        if (audioSource != null && warningSound != null && Time.time > lastWarningTime + 1f)
+        {
+            lastWarningTime = Time.time;
+            audioSource.PlayOneShot(warningSound, 0.2f);
+        }
     }
 
     IEnumerator FadeWarning()

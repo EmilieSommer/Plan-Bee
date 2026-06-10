@@ -57,6 +57,17 @@ public class Enemy : MonoBehaviour
         lastPos = transform.position;
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        
+#if UNITY_EDITOR
+        if (animator == null || animator.runtimeAnimatorController == null)
+        {
+            if (animator == null) animator = gameObject.AddComponent<Animator>();
+            if (enemyType == EnemyType.Wasp)
+                animator.runtimeAnimatorController = UnityEditor.AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/06_Animations/Overrides/Wasp_Controller.overrideController");
+            else if (enemyType == EnemyType.RobberBee)
+                animator.runtimeAnimatorController = UnityEditor.AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/06_Animations/Overrides/RobbeBee_Controller.overrideController");
+        }
+#endif
     }
 
     protected virtual void UpdateAnimator()
@@ -95,7 +106,18 @@ public class Enemy : MonoBehaviour
             float targetAngle = 0f;
             if (isMoving)
             {
-                targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg - 90f;
+                // Wasps are drawn facing up (-90 offset). Bees are drawn facing right/left.
+                if (enemyType == EnemyType.Wasp)
+                {
+                    targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg - 90f;
+                }
+                else
+                {
+                    // For Robber Bee, we just flip X if moving left, and keep rotation at 0
+                    var sr = GetComponentInChildren<SpriteRenderer>();
+                    if (sr != null) sr.flipX = velocity.x < 0;
+                    targetAngle = 0f; // Don't rotate bees like a spaceship!
+                }
             }
             else
             {
@@ -141,6 +163,7 @@ public class Enemy : MonoBehaviour
     public virtual void TakeDamage(float amount)
     {
         currentHealth -= amount;
+        FloatingText.Create(transform.position, "-" + amount.ToString("F0"), Color.red);
 
         if (currentHealth <= 0f)
             Die();
@@ -210,9 +233,9 @@ public class Enemy : MonoBehaviour
     // -------------------------
     // MOVEMENT
     // -------------------------
-    private List<Vector2> currentPath;
-    private int currentPathIndex;
-    private float pathUpdateTimer;
+    protected List<Vector2> currentPath;
+    protected int currentPathIndex;
+    protected float pathUpdateTimer;
 
     protected virtual void MoveTowardsBee()
     {

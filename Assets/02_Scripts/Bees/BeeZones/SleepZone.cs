@@ -11,8 +11,15 @@ public class SleepZone : MonoBehaviour
 
     private void Start()
     {
-        if (HiveManager.Instance != null)
-            HiveManager.Instance.RegisterSleepZone(this);
+        ConstructionSite cs = GetComponent<ConstructionSite>();
+        
+        // If there's no construction site, or if it's already fully built, we register immediately.
+        // Otherwise, the ConstructionSite will register us when FinishBuild() is called!
+        if (cs == null || cs.GetProgress() >= 1f)
+        {
+            if (HiveManager.Instance != null)
+                HiveManager.Instance.RegisterSleepZone(this);
+        }
     }
 
     private void OnDestroy()

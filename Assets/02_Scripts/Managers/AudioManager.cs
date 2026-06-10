@@ -26,11 +26,11 @@ public class AudioManager : MonoBehaviour
         var audioManager = go.AddComponent<AudioManager>();
         
         // Auto-assign clips via AssetDatabase
-        audioManager.musicClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/A Serene Plucking 61BPM by Liyah Mackenzie.mp3");
-        audioManager.clickClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/Click 2 by 7778.mp3"); // A nice subtle click
-        audioManager.notificationClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/Ding by Ammaro.wav");
-        audioManager.honeyCollectClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/Cling Wrap Buttons 04 by MrFossy.wav");
-        audioManager.buildClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/Swoop Thick 01 by Willc2.aiff");
+        audioManager.musicClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/background music.mp3");
+        audioManager.clickClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/click.mp3"); 
+        audioManager.notificationClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/notification.wav");
+        audioManager.honeyCollectClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/honey_pickup.wav");
+        audioManager.buildClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/build_sound.aiff");
 
         DontDestroyOnLoad(go);
     }

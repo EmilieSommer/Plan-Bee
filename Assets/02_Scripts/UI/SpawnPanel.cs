@@ -77,9 +77,12 @@ public class SpawnPanel : MonoBehaviour
             return;
         }
 
-        if (!HiveManager.Instance.CanSpawnBee())
+        if (!HiveManager.Instance.CanSpawnBee(requiredZoneType))
         {
-            UIMessagePopup.Instance.ShowMessage("Hive is full! Build more Brood Chambers.");
+            if (requiredZoneType == Bee.BeeType.Drone)
+                UIMessagePopup.Instance.ShowMessage("No space for Drone! Build more Drone Posts.");
+            else
+                UIMessagePopup.Instance.ShowMessage("Hive is full! Build more Brood Chambers.");
             return;
         }
 
@@ -92,19 +95,19 @@ public class SpawnPanel : MonoBehaviour
         // Pick a random brood for the physical egg
         NurseBeeZone targetBrood = broods[Random.Range(0, broods.Length)];
 
-        HiveManager.Instance.RegisterQueuedEgg();
+        HiveManager.Instance.RegisterQueuedEgg(requiredZoneType);
 
         // Spawn it physically
         Egg worldEgg = EggSpawner.Instance.SpawnEgg(eggType, targetBrood);
 
         if (worldEgg != null)
         {
-            worldEgg.OnHatched += HiveManager.Instance.UnregisterQueuedEgg;
+            worldEgg.OnHatched += () => HiveManager.Instance.UnregisterQueuedEgg(requiredZoneType);
             EggNamePopup.Instance.Open(worldEgg);
         }
         else
         {
-            HiveManager.Instance.UnregisterQueuedEgg();
+            HiveManager.Instance.UnregisterQueuedEgg(requiredZoneType);
             // Refund if spawn failed unexpectedly
             CurrencyManager.Instance.AddHoney(cost);
             UIMessagePopup.Instance.ShowMessage("Failed to spawn egg.");

@@ -8,6 +8,10 @@ public class DroneZone : Zone
         base.Awake();
         zoneType = Bee.BeeType.Drone;
         
+        // Drone Zones shouldn't provide global capacity
+        SleepZone sz = GetComponent<SleepZone>();
+        if (sz != null) Destroy(sz);
+
         // Ensure it has Drone capacity!
         bool hasDroneLimit = false;
         foreach (var limit in limits)

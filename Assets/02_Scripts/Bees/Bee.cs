@@ -858,6 +858,7 @@ public abstract class Bee : MonoBehaviour
     public void TakeDamage(float amount, Enemy attacker = null)
     {
         currentHealth -= amount;
+        FloatingText.Create(transform.position, "-" + amount.ToString("F0"), Color.red);
         if (attacker != null) lastAttacker = attacker;
         if (currentHealth <= 0f) { currentHealth = 0f; Die(); return; }
         if (attacker != null) TryRetaliate(attacker);
@@ -893,8 +894,8 @@ public abstract class Bee : MonoBehaviour
         currentState = BeeState.Dead;
         UnregisterSleep();
 
-      if (lastAttacker != null)
-        BeeDeathPopup.Instance.ShowDeath(beeType.ToString(), beeName, lastAttacker.enemyType.ToString());
+        if (lastAttacker != null && BeeDeathPopup.Instance != null)
+            BeeDeathPopup.Instance.ShowDeath(beeType.ToString(), beeName, lastAttacker.enemyType.ToString());
 
         if (HiveManager.Instance != null) HiveManager.Instance.UnregisterBee(this);
         if (ZoneManager.Instance != null) ZoneManager.Instance.UnregisterBee(this);

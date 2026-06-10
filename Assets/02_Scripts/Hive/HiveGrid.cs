@@ -22,6 +22,9 @@ public class HiveGrid : MonoBehaviour
     // cells that cannot be demolished or modified (e.g. the hive entrance)
     private readonly HashSet<Vector3Int> lockedCells = new();
 
+    // InsideHive tiles spawn a SleepZone each, granting +1 bee capacity. Tracked here so we can remove on demolition.
+    private readonly Dictionary<Vector3Int, SleepZone> sleepZonesByPos = new();
+
     public event System.Action<Vector3Int> OnTileBuilt;
     public event System.Action<Vector3Int> OnTileMarked;
 
@@ -43,9 +46,38 @@ public class HiveGrid : MonoBehaviour
         // Scan tiles immediately in Awake so the Grid is ready before any bees run Start()
         ScanPaintedTiles();
 
+        // Existing InsideHive tiles from the starting layout each act as a SleepZone.
+        foreach (var kvp in types)
+            if (kvp.Value == HiveTileType.InsideHive)
+                EnsureSleepZoneAt(kvp.Key);
+
 #if UNITY_EDITOR
         RefreshAllTiles();
 #endif
+    }
+
+    /// <summary>
+    /// Creates an empty GameObject with a SleepZone component at the cell, so HiveManager
+    /// gains +1 bee capacity. SleepZone.Start() registers itself with HiveManager.
+    /// </summary>
+    private void EnsureSleepZoneAt(Vector3Int pos)
+    {
+        if (sleepZonesByPos.ContainsKey(pos)) return;
+        var go = new GameObject($"SleepZone_{pos.x}_{pos.y}");
+        go.transform.SetParent(this.transform);
+        go.transform.position = CellToWorld(pos);
+        var zone = go.AddComponent<SleepZone>();
+        zone.capacityPerZone = 2; // Insidehive gives 2 capacity!
+        sleepZonesByPos[pos] = zone;
+    }
+
+    private void RemoveSleepZoneAt(Vector3Int pos)
+    {
+        if (sleepZonesByPos.TryGetValue(pos, out var zone))
+        {
+            if (zone != null) Destroy(zone.gameObject);
+            sleepZonesByPos.Remove(pos);
+        }
     }
 
     // ── Starting hive ─────────────────────────────────────────────────────────
@@ -618,6 +650,21 @@ public class HiveGrid : MonoBehaviour
         marked[pos] = false;
         visuals?.ClearMarked(pos);
         Place(pos, types[pos]);
+
+        if (types[pos] == HiveTileType.InsideHive)
+        {
+            EnsureSleepZoneAt(pos);
+        }
+        
+        // Refresh neighbors so their walls adapt to the new tile!
+        if (visuals != null)
+        {
+            foreach (var dir in Dirs)
+            {
+                if (types.ContainsKey(pos + dir))
+                    visuals.RefreshAt(pos + dir);
+            }
+        }
         
         if (pendingZones != null && pendingZones.ContainsKey(pos))
         {

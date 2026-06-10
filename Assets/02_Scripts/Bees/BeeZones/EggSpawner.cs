@@ -57,6 +57,8 @@ public class EggSpawner : MonoBehaviour
 
         GameObject obj = Instantiate(prefab, spawnPosition, Quaternion.identity);
 
-        return obj.GetComponent<Egg>();
+        Egg spawned = obj.GetComponent<Egg>();
+        if (spawned != null) spawned.beeType = eggType.ToBeeType();
+        return spawned;
     }
 }

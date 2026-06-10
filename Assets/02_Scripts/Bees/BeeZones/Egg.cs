@@ -20,6 +20,8 @@ public class Egg : MonoBehaviour
 
     public GameObject beePrefab;
 
+    [HideInInspector] public Bee.BeeType beeType = Bee.BeeType.Forager;
+
     [Header("Tending")]
     public float tendSpeedMultiplier = 1f;
 
@@ -170,7 +172,7 @@ public class Egg : MonoBehaviour
             return;
 
         // 🧠 release reserved capacity
-        HiveManager.Instance.UnregisterQueuedEgg();
+        HiveManager.Instance.UnregisterQueuedEgg(beeType);
 
         OnHatched?.Invoke();
 

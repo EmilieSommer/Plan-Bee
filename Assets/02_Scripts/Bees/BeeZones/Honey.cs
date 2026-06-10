@@ -26,7 +26,11 @@ public class Honey : MonoBehaviour
     {
         if (isCarried) return; // ❌ block collection while stolen
 
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayHoneyCollect();
+
         CurrencyManager.Instance.AddHoney(value);
+        FloatingText.Create(transform.position, $"+{value} Honey", new Color(1f, 0.8f, 0.2f));
         Destroy(gameObject);
     }
 }

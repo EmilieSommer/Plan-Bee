@@ -29,11 +29,7 @@ public class HUDController : MonoBehaviour
         SetCount(foragerCountText, "Forager", Bee.BeeType.Forager);
         SetCount(droneCountText,   "Drone",   Bee.BeeType.Drone);
 
-        if (totalCountText != null)
-        {
-            int total = HiveManager.Instance.GetTotalBees();
-            SetTextValue(totalCountText, total.ToString());
-        }
+        // totalCountText is now safely handled by HiveManager.cs alone to prevent conflicts.
     }
 
     private void SetCount(GameObject obj, string label, Bee.BeeType type)

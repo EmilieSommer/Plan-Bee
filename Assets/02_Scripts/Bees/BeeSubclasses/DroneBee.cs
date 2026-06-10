@@ -352,5 +352,23 @@ public class DroneBee : Bee
         }
     }
 
+    protected override void GoHome()
+    {
+        // Drones sleep at their assigned DroneZone, not a general SleepZone.
+        if (assignedZone == null) AssignZone();
+        currentZone = assignedZone as DroneZone;
+        
+        if (currentZone != null)
+        {
+            targetPosition = currentZone.transform.position;
+            currentState = BeeState.Moving;
+        }
+        else
+        {
+            // Fallback if no drone zone exists
+            base.GoHome();
+        }
+    }
+
     protected override void ReturnBehavior() { }
 }

@@ -83,7 +83,7 @@ public class BuildPanel : MonoBehaviour
     {
         if (broodBtn) UpdateBtnText(broodBtn, $"Brood\n({broodCost} Honey)");
         if (storageBtn) UpdateBtnText(storageBtn, $"Storage\n({storageCost} Honey)");
-        if (insideHiveBtn) UpdateBtnText(insideHiveBtn, $"Space\n({insideHiveCost} Honey)");
+        if (insideHiveBtn) UpdateBtnText(insideHiveBtn, $"Space\nThis tile increases the amount of bees you can have\n({insideHiveCost} Honey)");
         if (droneBtn) UpdateBtnText(droneBtn, $"Drone Post\n({droneCost} Honey)");
     }
 

@@ -11,6 +11,8 @@ public class HiveWarningSystem : MonoBehaviour
     [Header("Check Interval")]
     public float checkInterval = 0.5f;
     private float checkTimer = 0f;
+    private float lastWarningTime = 0f;
+    private float warningCooldown = 1f;
 
     private float lastQueenHealth = -1f;
 
@@ -53,7 +55,10 @@ public class HiveWarningSystem : MonoBehaviour
     {
         BeeDeathPopup.Instance.ShowMessage(message, 4f);
 
-        if (audioSource != null && warningSound != null)
-            audioSource.PlayOneShot(warningSound);
+        if (audioSource != null && warningSound != null && Time.time > lastWarningTime + warningCooldown)
+        {
+            lastWarningTime = Time.time;
+            audioSource.PlayOneShot(warningSound, 0.2f);
+        }
     }
 }
