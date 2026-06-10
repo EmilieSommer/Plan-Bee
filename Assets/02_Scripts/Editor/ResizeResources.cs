@@ -7,8 +7,8 @@ public class ResizeResources : EditorWindow
     public static void ResizePrefabs()
     {
         string[] prefabsToResize = {
-            "Assets/03_Prefabs/TestPrefabs/Pollen.prefab",
-            "Assets/03_Prefabs/TestPrefabs/Honey.prefab"
+            "Assets/Resources/Prefabs/Pollen.prefab",
+            "Assets/Resources/Prefabs/Honey.prefab"
         };
 
         foreach (string path in prefabsToResize)

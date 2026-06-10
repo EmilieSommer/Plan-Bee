@@ -26,10 +26,9 @@ public class ForagerBee : Bee
         beeType = BeeType.Forager;
         baseMoveSpeed = moveSpeed;
 
-#if UNITY_EDITOR
+        // Resources.Load works in builds too (AssetDatabase is Editor-only).
         if (pollenPrefab == null)
-            pollenPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/Pollen.prefab");
-#endif
+            pollenPrefab = Resources.Load<GameObject>("Prefabs/Pollen");
     }
 
     protected override void Start()

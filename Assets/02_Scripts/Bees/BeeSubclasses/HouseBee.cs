@@ -24,10 +24,9 @@ public class HouseBee : Bee
         base.Awake();
         beeType = BeeType.House;
 
-#if UNITY_EDITOR
+        // Resources.Load works in builds too (AssetDatabase is Editor-only).
         if (honeyPrefab == null)
-            honeyPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/03_Prefabs/TestPrefabs/Honey.prefab");
-#endif
+            honeyPrefab = Resources.Load<GameObject>("Prefabs/Honey");
     }
 
     protected override void Start()

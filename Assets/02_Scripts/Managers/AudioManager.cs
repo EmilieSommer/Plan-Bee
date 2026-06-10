@@ -16,7 +16,6 @@ public class AudioManager : MonoBehaviour
     public AudioClip honeyCollectClip;
     public AudioClip buildClip;
 
-#if UNITY_EDITOR
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void AutoInit()
     {
@@ -24,17 +23,16 @@ public class AudioManager : MonoBehaviour
 
         GameObject go = new GameObject("AudioManager");
         var audioManager = go.AddComponent<AudioManager>();
-        
-        // Auto-assign clips via AssetDatabase
-        audioManager.musicClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/background music.mp3");
-        audioManager.clickClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/click.mp3"); 
-        audioManager.notificationClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/notification.wav");
-        audioManager.honeyCollectClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/honey_pickup.wav");
-        audioManager.buildClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/SFX/build_sound.aiff");
+
+        // Auto-assign clips via Resources so they load in builds, not just the Editor.
+        audioManager.musicClip = Resources.Load<AudioClip>("Audio/background music");
+        audioManager.clickClip = Resources.Load<AudioClip>("Audio/click");
+        audioManager.notificationClip = Resources.Load<AudioClip>("Audio/notification");
+        audioManager.honeyCollectClip = Resources.Load<AudioClip>("Audio/honey_pickup");
+        audioManager.buildClip = Resources.Load<AudioClip>("Audio/build_sound");
 
         DontDestroyOnLoad(go);
     }
-#endif
 
     private void Awake()
     {
