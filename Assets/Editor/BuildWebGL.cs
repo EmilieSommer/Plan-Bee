@@ -6,7 +6,11 @@ public static class BuildWebGL
     // Invoked from the command line via -executeMethod BuildWebGL.Build
     public static void Build()
     {
-        string[] scenes = { "Assets/01_Scenes/K-MainScene.unity" };
+        string[] scenes =
+        {
+            "Assets/01_Scenes/MainMenu.unity",        // index 0 — game boots here
+            "Assets/01_Scenes/Merged_MainScene.unity"
+        };
         string outputPath = "Builds/WebGL";
 
         var options = new BuildPlayerOptions
